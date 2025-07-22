@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "orga-ai-sdk-monorepo",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -11,7 +11,8 @@
   "devDependencies": {
     "prettier": "^3.6.2",
     "turbo": "^2.5.5",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "pnpm": "^8.0.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
