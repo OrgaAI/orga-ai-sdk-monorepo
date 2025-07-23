@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-
 import {
   OrgaAIHookReturn,
   OrgaAIHookCallbacks,
@@ -10,7 +9,6 @@ import {
   IceCandidateEvent,
 } from "../types";
 import {
-  PermissionError,
   ConnectionError,
   SessionError,
   ConfigurationError,
