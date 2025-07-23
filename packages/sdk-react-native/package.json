@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/sdk-react-native",
-  "version": "1.0.0",
+  "version": "0.0.0-test.1",
   "main": "lib/index.js",
   "publishConfig": {
     "access": "restricted"
