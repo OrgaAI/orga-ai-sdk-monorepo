@@ -8,25 +8,30 @@ import {
 } from "react-native-webrtc";
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel";
 import InCallManager from "react-native-incall-manager";
-import { SessionConfig, OrgaAI,  PermissionError,
-  ConnectionError,
-  SessionError,
-  ConfigurationError,
-  getMediaConstraints,
-  logger,
-  connectToRealtime,
-  RTCIceServer,
-  RTCIceCandidateInit,
- } from "@orga-ai-sdk/shared";
 
 import {
   OrgaAIHookReturn,
   OrgaAIHookCallbacks,
+  SessionConfig,
   Transcription,
   ConnectionState,
   CameraPosition,
   IceCandidateEvent,
 } from "../types";
+import {
+  PermissionError,
+  ConnectionError,
+  SessionError,
+  ConfigurationError,
+} from "../errors";
+import { OrgaAI } from "../core/OrgaAI";
+import {
+  getMediaConstraints,
+  logger,
+  connectToRealtime,
+  RTCIceServer,
+  RTCIceCandidateInit,
+} from "../utils";
 
 
 // Rename the original hook for internal use

@@ -1,5 +1,8 @@
 // src/utils/index.ts
 import { SessionConfig } from '../types';
+// import { RTCPeerConnection } from 'react-native-webrtc';
+// import { MediaTrackConstraints } from 'react-native-webrtc/lib/typescript/Constraints';
+// import { Constraints } from 'react-native-webrtc/lib/typescript/getUserMedia';
 import axios from 'axios';
 import { OrgaAI } from '../core/OrgaAI';
 
