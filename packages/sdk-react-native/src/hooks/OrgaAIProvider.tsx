@@ -1,6 +1,6 @@
 // sdk-react-native/src/OrgaAIProvider.tsx
 import React from 'react';
-import { createOrgaAIProvider } from '@orga-ai-sdk/shared';
+import { createOrgaAIProvider } from '../../../shared';
 import { useOrgaAI } from './useOrgaAI';
 import type { OrgaAIHookReturn } from '../types';
 

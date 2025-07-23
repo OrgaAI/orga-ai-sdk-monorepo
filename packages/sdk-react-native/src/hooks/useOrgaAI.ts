@@ -17,7 +17,7 @@ import { SessionConfig, OrgaAI,  PermissionError,
   connectToRealtime,
   RTCIceServer,
   RTCIceCandidateInit,
- } from "@orga-ai-sdk/shared";
+ } from "../../../shared";
 
 import {
   OrgaAIHookReturn,
