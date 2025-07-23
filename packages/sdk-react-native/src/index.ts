@@ -1,6 +1,5 @@
-export { OrgaAI } from "./core/OrgaAI";
+export * from "@orga-ai-sdk/shared";
 export {useOrgaAI } from "./hooks/useOrgaAI";
-export * from "./hooks/OrgaAIProvider";
+export { OrgaAIProvider, useOrgaAIContext } from "./hooks/OrgaAIProvider";
 export * from "./types";
-export * from "./errors";
 export { OrgaAICameraView } from "./components/OrgaAICameraView";

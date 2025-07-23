@@ -1,15 +1,17 @@
-// Allowed models and voices (example values, update as needed)
+// IN SHARED
 export const ORGAAI_MODELS = ["Orga (1) beta", "Orga (1)"] as const;
 export type OrgaAIModel = typeof ORGAAI_MODELS[number];
 
 export const ORGAAI_VOICES = ["Dora", "Sandra"] as const;
 export type OrgaAIVoice = typeof ORGAAI_VOICES[number];
 
+// IN SHARED
 export const ORGAAI_TEMPERATURE_RANGE = {
   min: 0.0,
   max: 1.0,
 };
 
+// IN SHARED
 export interface OrgaAIConfig {
   logLevel?: "debug" | "info" | "warn" | "error" | "none";
   timeout?: number;

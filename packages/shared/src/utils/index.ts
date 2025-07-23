@@ -1,7 +1,19 @@
 // src/utils/index.ts
-import { SessionConfig } from '../types';
 import axios from 'axios';
 import { OrgaAI } from '../core/OrgaAI';
+
+export interface SessionConfig {
+  enableTranscriptions?: boolean;
+  videoQuality?: "low" | "medium" | "high";
+  timeout?: number;
+  facingMode?: "user" | "environment";
+  // Optional parameters can be passed in to override the default values
+  voice?: string; // TODO: Add voice options
+  model?: string; // TODO: Add model options
+  temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
+  maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+}
+
 
 export const MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = {
   low: {

@@ -59,6 +59,9 @@ importers:
 
   packages/sdk-react-native:
     dependencies:
+      '@orga-ai-sdk/shared':
+        specifier: workspace:*
+        version: link:../shared
       axios:
         specifier: ^1.10.0
         version: 1.10.0
@@ -98,13 +101,16 @@ importers:
         version: 29.7.0(@types/node@22.15.3)
       ts-jest:
         specifier: ^29.4.0
-        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@30.0.5)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@30.0.5)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
 
   packages/sdk-web:
     dependencies:
+      '@orga-ai-sdk/shared':
+        specifier: workspace:*
+        version: link:../shared
       axios:
         specifier: ^1.10.0
         version: 1.10.0
@@ -135,7 +141,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       ts-jest:
         specifier: ^29.4.0
-        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@30.0.5)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@30.0.5)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -146,12 +152,18 @@ importers:
         specifier: ^1.6.0
         version: 1.10.0
     devDependencies:
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
       jest:
         specifier: ^29.0.0
         version: 29.7.0(@types/node@22.15.3)
+      react:
+        specifier: ^18.0.0
+        version: 18.3.1
       ts-jest:
         specifier: ^29.0.0
-        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@30.0.5)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@30.0.5)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3)
       typescript:
         specifier: ^5.0.0
         version: 5.8.3
@@ -6048,7 +6060,7 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
-  ts-jest@29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3):
+  ts-jest@29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@30.0.5)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@30.0.5)(jest@29.7.0(@types/node@22.15.3))(typescript@5.8.3):
     dependencies:
       bs-logger: 0.2.6
       ejs: 3.1.10
@@ -6064,9 +6076,9 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.28.0
       '@jest/transform': 29.7.0
-      '@jest/types': 29.6.3
+      '@jest/types': 30.0.5
       babel-jest: 29.7.0(@babel/core@7.28.0)
-      jest-util: 29.7.0
+      jest-util: 30.0.5
 
   turbo-darwin-64@2.5.5:
     optional: true
