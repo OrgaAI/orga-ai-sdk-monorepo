@@ -1,4 +1,5 @@
 export * from "../../shared";
+export {OrgaAI} from "../../shared"
 export {useOrgaAI } from "./hooks/useOrgaAI";
 export { OrgaAIProvider, useOrgaAIContext } from "./hooks/OrgaAIProvider";
 export * from "./types";
