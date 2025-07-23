@@ -1,14 +1,9 @@
-import { RTCPeerConnection, MediaStream } from "react-native-webrtc";
-import RTCIceCandidate from "react-native-webrtc/lib/typescript/RTCIceCandidate";
-import { RTCIceServer } from "../utils";
-// export declare type MessageEventData = string | ArrayBuffer | Blob;
-
-// Allowed models and voices (example values, update as needed)
 export const ORGAAI_MODELS = ["Orga (1) beta", "Orga (1)"] as const;
 export type OrgaAIModel = typeof ORGAAI_MODELS[number];
 
 export const ORGAAI_VOICES = ["Dora", "Sandra"] as const;
 export type OrgaAIVoice = typeof ORGAAI_VOICES[number];
+
 
 export const ORGAAI_TEMPERATURE_RANGE = {
   min: 0.0,
@@ -30,87 +25,4 @@ export interface OrgaAIConfig {
   voice?: OrgaAIVoice;
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
-}
-
-export type CameraPosition = "front" | "back";
-
-export type IceCandidateEvent = {
-  candidate: RTCIceCandidate | null;
-};
-
-export interface SessionConfig {
-  enableTranscriptions?: boolean;
-  videoQuality?: "low" | "medium" | "high";
-  timeout?: number;
-  facingMode?: "user" | "environment";
-  // Optional parameters can be passed in to override the default values
-  voice?: string; // TODO: Add voice options
-  model?: string; // TODO: Add model options
-  temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
-  maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
-}
-
-export interface MediaConstraints {
-  audio: boolean;
-  video: {
-    width: number;
-    height: number;
-    frameRate: number;
-    facingMode: "user" | "environment";
-  };
-}
-
-export type ConnectionState = RTCPeerConnection["connectionState"];
-
-export interface Transcription {
-  text: string;
-  timestamp: number;
-  isFinal: boolean;
-  confidence?: number;
-}
-
-export interface OrgaAIHookCallbacks {
-  onSessionStart?: () => void;
-  onSessionEnd?: () => void;
-  onTranscription?: (transcription: Transcription) => void;
-  onError?: (error: Error) => void;
-  onConnectionStateChange?: (
-    state: RTCPeerConnection["connectionState"]
-  ) => void;
-  onSessionConnected?: () => void;
-}
-
-export interface OrgaAIHookReturn {
-  // Session management
-  startSession: (config?: SessionConfig) => Promise<void>;
-  endSession: () => Promise<void>;
-
-  // Media controls
-  enableMic: () => Promise<void>;
-  disableMic: () => Promise<void>;
-  toggleMic: () => Promise<void>;
-  enableCamera: () => Promise<void>;
-  disableCamera: () => Promise<void>;
-  toggleCamera: () => Promise<void>;
-  flipCamera: () => Promise<void>;
-
-  // Manual control methods (for advanced usage)
-  requestPermissions: () => Promise<void>;
-  initializeMedia: (config?: Partial<SessionConfig>) => Promise<MediaStream>;
-  connect: () => Promise<void>;
-  cleanup: () => Promise<void>;
-
-  // State
-  connectionState: ConnectionState;
-  localStream: MediaStream | null;
-  remoteStream: MediaStream | null;
-  transcriptions: Transcription[];
-  isCameraOn: boolean;
-  isMicOn: boolean;
-  cameraPosition: CameraPosition;
-  videoStream: MediaStream | null;
-  audioStream: MediaStream | null;
-  conversationId: string | null;
-  // Utilities
-  hasPermissions: () => Promise<boolean>;
 }
