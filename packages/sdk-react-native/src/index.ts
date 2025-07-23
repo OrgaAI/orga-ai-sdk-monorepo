@@ -1,4 +1,4 @@
-export * from "@orga-ai-sdk/shared";
+export * from "../../shared";
 export {useOrgaAI } from "./hooks/useOrgaAI";
 export { OrgaAIProvider, useOrgaAIContext } from "./hooks/OrgaAIProvider";
 export * from "./types";

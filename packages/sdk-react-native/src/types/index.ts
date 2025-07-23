@@ -1,6 +1,6 @@
 import { RTCPeerConnection, MediaStream } from "react-native-webrtc";
 import RTCIceCandidate from "react-native-webrtc/lib/typescript/RTCIceCandidate";
-import { SessionConfig } from "@orga-ai-sdk/shared";
+import { SessionConfig } from "../../../shared";
 
 export type CameraPosition = "front" | "back";
 
