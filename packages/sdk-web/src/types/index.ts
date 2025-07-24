@@ -1,8 +1,3 @@
-// import { RTCPeerConnection, MediaStream } from "react-native-webrtc";
-// import RTCIceCandidate from "react-native-webrtc/lib/typescript/RTCIceCandidate";
-// import { RTCIceServer } from "../utils";
-// export declare type MessageEventData = string | ArrayBuffer | Blob;
-
 // Allowed models and voices (example values, update as needed)
 export const ORGAAI_MODELS = ["Orga (1) beta", "Orga (1)"] as const;
 export type OrgaAIModel = typeof ORGAAI_MODELS[number];
@@ -18,7 +13,7 @@ export const ORGAAI_TEMPERATURE_RANGE = {
 export interface OrgaAIConfig {
   logLevel?: "debug" | "info" | "warn" | "error" | "none";
   timeout?: number;
-  ephemeralEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesnt need a token or additional configuration.
+  ephemeralEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesn't need a token or additional configuration.
   fetchEphemeralTokenAndIceServers?: () => Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
@@ -26,7 +21,7 @@ export interface OrgaAIConfig {
   //FetchEphemeralToken is a function that fetches a token from the backend.
   //This allows them to setup the call sending the necessary tokens and headers.
   // Optional parameters can be passed to create default values for the session config
-  model?: OrgaAIModel; // <-- not OrgaAIModel | string
+  model?: OrgaAIModel; 
   voice?: OrgaAIVoice;
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
@@ -92,7 +87,6 @@ export interface OrgaAIHookReturn {
   enableCamera: () => Promise<void>;
   disableCamera: () => Promise<void>;
   toggleCamera: () => Promise<void>;
-  flipCamera: () => Promise<void>;
 
   // Manual control methods (for advanced usage)
   requestPermissions: () => Promise<void>;

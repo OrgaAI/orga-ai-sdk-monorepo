@@ -1,8 +1,4 @@
-// src/utils/index.ts
 import { SessionConfig } from '../types';
-// import { RTCPeerConnection } from 'react-native-webrtc';
-// import { MediaTrackConstraints } from 'react-native-webrtc/lib/typescript/Constraints';
-// import { Constraints } from 'react-native-webrtc/lib/typescript/getUserMedia';
 import axios from 'axios';
 import { OrgaAI } from '../core/OrgaAI';
 
@@ -38,7 +34,6 @@ export const getMediaConstraints = (config: SessionConfig = {}): MediaStreamCons
   };
 };
 
-// TODO: Replace with correct import if available from react-native-webrtc or DOM types
 // export type RTCPeerConnection = any; // Replace with actual type if available
 export type RTCIceCandidateInit = {
   candidate: string;

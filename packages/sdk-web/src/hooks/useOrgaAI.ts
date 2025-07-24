@@ -22,7 +22,6 @@ import {
   RTCIceCandidateInit,
 } from "../utils";
 
-// Rename the original hook for internal use
 export function useOrgaAI(
   callbacks: OrgaAIHookCallbacks = {}
 ): OrgaAIHookReturn {
@@ -106,7 +105,7 @@ export function useOrgaAI(
   // Check permissions
   const hasPermissions = useCallback(async (): Promise<boolean> => {
     // TODO: Implement permissions check
-    return true; // iOS permissions are handled by getUserMedia
+    return true;
   }, []);
 
   // Request permissions
@@ -121,7 +120,6 @@ export function useOrgaAI(
   const initializeMedia = useCallback(
     async (config: Partial<SessionConfig> = {}): Promise<MediaStream> => {
       logger.debug("Initializing media");
-      // No-op: do not call getUserMedia here
       return new MediaStream();
     },
     []
@@ -427,43 +425,6 @@ export function useOrgaAI(
     logger.debug("Camera toggled", !isCameraOn);
   }, [isCameraOn, enableCamera, disableCamera]);
 
-  const updateVideoStream = useCallback(async (newPosition: CameraPosition) => {
-    // Stop current video track
-    if (videoStream) {
-      videoStream.getVideoTracks().forEach((track) => track.stop());
-      setVideoStream(null);
-    }
-    const config = OrgaAI.getConfig();
-    // const facingMode = newPosition === "front" ? "user" : "environment";
-    const constraints = getMediaConstraints({...config, facingMode: newPosition === "front" ? "user" : "environment"});
-    logger.debug("Updating video stream with constraints:", constraints);
-    try {
-      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-      // Replace track in peer connection
-      if (videoTransceiverRef.current && newStream) {
-        const videoTrack = newStream.getVideoTracks()[0];
-        await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
-        videoTrack.enabled = true;
-      }
-      setVideoStream(newStream);
-    } catch (error) {
-      console.error("Error updating video stream:", error);
-    }
-  }, [videoStream, videoTransceiverRef]);
-
-
-  const flipCamera = useCallback(async (): Promise<void> => {
-    if (!isCameraOn) return;
-    setCameraPosition((current) => {
-      const newPosition = current === "front" ? "back" : "front";
-      if (isCameraOn) {
-        updateVideoStream(newPosition);
-      }
-      logger.debug("Camera flipped (transceiver)");
-      return newPosition;
-    });
-  }, [isCameraOn, cameraPosition, updateVideoStream]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -483,7 +444,6 @@ export function useOrgaAI(
     enableCamera,
     disableCamera,
     toggleCamera,
-    flipCamera,
 
     // Manual control methods
     requestPermissions,
