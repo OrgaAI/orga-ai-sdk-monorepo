@@ -1,135 +1,287 @@
-# Turborepo starter
+# Orga SDK
 
-This Turborepo starter is maintained by the Turborepo core team.
+The Orga SDK enables seamless integration of real-time AI-powered audio and video features into your React web or React Native applications.
 
-## Using this example
+---
 
-Run the following command:
+## Project Overview
+
+- **Purpose:** Add real-time audio and video interaction powered by Orga AI to your app.
+- **Supported Platforms:**
+  - React Web (with React context)
+  - React Native (mobile)
+- **Audience:**
+  - Developers with an Orga platform account and valid API key.
+  - Not free to use; requires an active subscription and API key.
+
+---
+
+## Installation
+
+Install the SDK from npm:
 
 ```sh
-npx create-turbo@latest
+npm install @orga-ai/sdk-web# Orga SDK Monorepo
+
+> **Internal Use Only**
+
+This repository contains the Orga SDKs for integrating our real-time AI audio and video features into React web and React Native applications. This README is for internal developers and partners. Please do not share or expose sensitive information.
+
+---
+
+## Project Overview
+
+- **Purpose:** Facilitate integration of Orga AI, enabling real-time audio and video interaction in client apps.
+- **Supported Platforms:**
+  - React Web (with React context, suitable for most React-based web apps)
+  - React Native (for mobile apps)
+- **Audience:**
+  - Internal developers, partners, and customers with a valid Orga platform account and API key.
+  - Not free to use; requires an active subscription and API key.
+  - Used internally for the Orga Playground (web) and mobile app (React Native).
+
+---
+
+## Prerequisites
+
+- **Node.js:** v18 or higher (see `package.json` for current minimum)
+- **pnpm:** Used for monorepo and dependency management (install globally if needed)
+- **npm Token:** Required for installing/publishing private packages. See `.npmrc` setup below.
+- **API Key:** Obtain from the Orga platform (link to be provided).
+
+### .npmrc Setup
+
+Before installing or publishing, configure your `.npmrc` in the project root:
+
+```ini
+@orga-ai:registry=https://registry.npmjs.org/
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
+```
+- Replace `${NPM_TOKEN}` with your actual token or set it as an environment variable.
+- **Never commit your real npm token to version control.**
+
+---
+
+## Installation
+
+Install the SDK from npm, specifying the desired tag (e.g., `test`, `alpha`, or a public version):
+
+```sh
+npm install @orga-ai/sdk-react-native@0.0.0-test.5
+# or
+npm install @orga-ai/sdk-web@0.0.0-alpha.2
+```
+- You can use `npm`, `pnpm`, or `bun` to install the SDK.
+- Make sure your `.npmrc` is configured for private package access.
+
+---
+
+## Initialization & Minimal Usage
+
+### 1. Initialize the SDK
+
+You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndIceServers` function. This function is responsible for securely fetching an ephemeral token and ICE servers from your backend using your API key.
+
+**Do not expose your API key in client code.**
+
+#### Example (Web or React Native)
+
+```ts
+import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+
+OrgaAI.init({
+  logLevel: 'debug',
+  fetchEphemeralTokenAndIceServers: async () => {
+    // Call your backend to get ephemeralToken and iceServers
+    // Never expose your API key here!
+    const response = await fetch('/api/orga-ephemeral');
+    const { ephemeralToken, iceServers } = await response.json();
+    return { ephemeralToken, iceServers };
+  },
+});
 ```
 
-## What's inside?
+### 2. Wrap Your App with the Provider
 
-This Turborepo includes the following packages/apps:
+```tsx
+import { OrgaAIProvider } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+function App() {
+  return (
+    <OrgaAIProvider>
+      {/* ...your app... */}
+    </OrgaAIProvider>
+  );
+}
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### 3. Use the Hook in Your Components
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+```tsx
+import { useOrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+function MyComponent() {
+  const {
+    startSession,
+    endSession,
+    videoStream,
+    toggleCamera,
+    // ...other methods and state
+  } = useOrgaAI();
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+  // ...
+}
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+> **Note:** For Next.js or SSR projects, ensure the provider and hooks are only used in client components.
 
+---
+
+## Configuration
+
+- **API Key:** Required for backend endpoint that provides ephemeral tokens. Never expose in client code.
+- **fetchEphemeralTokenAndIceServers:**
+  - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
+  - Must be provided to `OrgaAI.init`.
+- **Other Config Options:** See SDK source for available options (logLevel, model, etc.).
+
+---
+
+## Development & Testing
+
+- **Install from npm** for normal usage and integration.
+- **Internal SDK development:** Use [`yalc`](https://github.com/wclr/yalc) to test local changes before publishing:
+  1. Build the SDK (`pnpm build` in the relevant package)
+  2. Run `yalc publish` in the SDK package
+  3. In your test app, run `yalc add @orga-ai/sdk-react-native` (or `sdk-web`)
+- **Playground/Test App:** (Coming soon) A dedicated app for rapid SDK testing and demos.
+
+---
+
+## Versioning & Publishing
+
+- See internal maintenance docs for detailed workflow.
+- Only leads or authorized team members should publish new versions.
+- Coordinate with the team before publishing any release (test, alpha, or public).
+
+---
+
+## Known Issues & Future Work
+
+- **Breaking changes are expected** as the SDK evolves in early stages.
+- No shared code between web and native SDKs (yet) due to bundling issues.
+- Future work:
+  - Add shared core logic to reduce duplication
+  - Expand documentation and code examples
+  - Add automated tests and CI
+  - Improve Next.js/SSR support
+
+---
+
+## Support & Contact
+
+- **General/Monorepo:** Contact Austin (project lead) via Pumble or Jira
+- **Web SDK:** Contact Fran (WebSDK lead)
+- Use Jira for tickets (please specify which SDK and describe the issue clearly)
+
+---
+
+*This README is for internal use only. Do not distribute externally.*
+
+# or
+npm install @orga-ai/sdk-react-native
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+---
+
+## Quick Start
+
+### 1. Initialize the SDK
+
+You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndIceServers` function. This function should securely fetch an ephemeral token and ICE servers from your backend using your API key.
+
+**Never expose your API key in client code.**
+
+```ts
+import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+
+OrgaAI.init({
+  fetchEphemeralTokenAndIceServers: async () => {
+    // Call your backend to get ephemeralToken and iceServers
+    const response = await fetch('/api/orga-ephemeral');
+    const { ephemeralToken, iceServers } = await response.json();
+    return { ephemeralToken, iceServers };
+  },
+});
 ```
 
-### Remote Caching
+### 2. Wrap Your App with the Provider
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+```tsx
+import { OrgaAIProvider } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+function App() {
+  return (
+    <OrgaAIProvider>
+      {/* ...your app... */}
+    </OrgaAIProvider>
+  );
+}
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### 3. Use the Hook in Your Components
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+```tsx
+import { useOrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
 
+function MyComponent() {
+  const {
+    startSession,
+    endSession,
+    videoStream,
+    toggleCamera,
+    // ...other methods and state
+  } = useOrgaAIContext();
+
+  // ...
+}
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+> **Note:** For Next.js or SSR projects, ensure the provider and hooks are only used in client components.
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## Configuration
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- **API Key:** Required for your backend endpoint that provides ephemeral tokens. Never expose in client code.
+- **fetchEphemeralTokenAndIceServers:**
+  - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
+  - Must be provided to `OrgaAI.init`.
+- **Other Config Options:** See SDK documentation for available options (logLevel, model, etc.).
+
+---
+
+## Features
+
+- Real-time audio and video streaming
+- React context provider and hook-based API
+- Easy integration with both web and mobile React apps
+- Flexible configuration for custom backend authentication
+
+---
+
+## API Reference
+
+Full API documentation and usage examples coming soon.
+
+---
+
+## Support
+
+For questions or support, please contact your Orga platform representative or support channel.
+
+---
+
+## License
+
+Proprietary. All rights reserved.
