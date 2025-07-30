@@ -16,6 +16,8 @@ import {
   ConnectionState,
   CameraPosition,
   IceCandidateEvent,
+  DataChannelEvent,
+  ConversationItem,
 } from "../types";
 import {
   PermissionError,
@@ -32,12 +34,12 @@ import {
   RTCIceCandidateInit,
 } from "../utils";
 
-
 // Rename the original hook for internal use
 export function useOrgaAI(
   callbacks: OrgaAIHookCallbacks = {}
 ): OrgaAIHookReturn {
-  const [connectionState, setConnectionState] = useState<ConnectionState>("closed");
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>("closed");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
@@ -54,19 +56,22 @@ export function useOrgaAI(
   // Add state for camera, mic, and video
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
-  const [cameraPosition, setCameraPosition] = useState<CameraPosition>(
-    "front"
-  );
+  const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   const {
     onSessionStart,
     onSessionEnd,
-    onTranscription,
+    onTranscriptionInput,
     onError,
     onConnectionStateChange,
     onSessionConnected,
+    onDataChannelOpen,
+    onDataChannelMessage,
+    onTranscriptionInputCompleted,
+    onResponseOutputDone,
+    onConversationItemCreated,
   } = callbacks;
 
   // Cleanup function (update to stop and nullify both streams)
@@ -174,6 +179,7 @@ export function useOrgaAI(
   // Refactor buildPeerConnection to use localStream
   const buildPeerConnection = useCallback(
     async (iceServers: RTCIceServer[]): Promise<RTCPeerConnection> => {
+      const { voice, model } = OrgaAI.getConfig();
       const pc = new RTCPeerConnection({
         iceServers,
         iceTransportPolicy: "all",
@@ -215,14 +221,72 @@ export function useOrgaAI(
       }
 
       const dc = pc.createDataChannel("orga-realtime-client-events");
+      dataChannelRef.current = dc;
+
       dc.addEventListener("open", () => {
         logger.debug("Data channel opened");
+        onDataChannelOpen?.();
       });
+
       dc.addEventListener("message", (event) => {
-        onTranscription?.(event.data as unknown as Transcription); //TODO: Update when known
-        setTranscriptions((prev) => [...prev, event.data as unknown as Transcription]);
-        logger.debug("Data channel message received:", event.data);
+        try {
+          const dataChannelEvent = JSON.parse(
+            event.data as string
+          ) as DataChannelEvent;
+          logger.debug("Data channel message received:", dataChannelEvent);
+
+          // Call the general message handler
+          onDataChannelMessage?.(dataChannelEvent);
+
+          if (
+            dataChannelEvent.event ===
+            "conversation.item.input_audio_transcription.completed"
+          ) {
+            onTranscriptionInput?.(dataChannelEvent);
+            onTranscriptionInputCompleted?.(dataChannelEvent);
+
+            // Create conversation item for user input
+            if (conversationId) {
+              const conversationItem: ConversationItem = {
+                conversationId,
+                sender: "user",
+                content: {
+                  type: "text",
+                  message: dataChannelEvent.message || "",
+                },
+                modelVersion: model,
+              };
+              onConversationItemCreated?.(conversationItem);
+            }
+          }
+
+          if (dataChannelEvent.event === "response.output_item.done") {
+            onResponseOutputDone?.(dataChannelEvent);
+
+            // Create conversation item for assistant response
+            if (conversationId) {
+              const conversationItem: ConversationItem = {
+                conversationId,
+                sender: "assistant",
+                content: {
+                  type: "text",
+                  message: dataChannelEvent.message || "",
+                },
+                voiceType: voice,
+                modelVersion: model,
+                timestamp: new Date().toISOString(),
+              };
+              onConversationItemCreated?.(conversationItem);
+            }
+          }
+        } catch (error) {
+          logger.error("Error parsing data channel message:", error);
+          onError?.(
+            new Error(`Failed to parse data channel message: ${error}`)
+          );
+        }
       });
+
       dc.addEventListener("close", () => {
         logger.debug("Data channel closed");
       });
@@ -458,30 +522,35 @@ export function useOrgaAI(
     logger.debug("Camera toggled", !isCameraOn);
   }, [isCameraOn, enableCamera, disableCamera]);
 
-  const updateVideoStream = useCallback(async (newPosition: CameraPosition) => {
-    // Stop current video track
-    if (videoStream) {
-      videoStream.getVideoTracks().forEach((track) => track.stop());
-      setVideoStream(null);
-    }
-    const config = OrgaAI.getConfig();
-    // const facingMode = newPosition === "front" ? "user" : "environment";
-    const constraints = getMediaConstraints({...config, facingMode: newPosition === "front" ? "user" : "environment"});
-    logger.debug("Updating video stream with constraints:", constraints);
-    try {
-      const newStream = await mediaDevices.getUserMedia(constraints);
-      // Replace track in peer connection
-      if (videoTransceiverRef.current && newStream) {
-        const videoTrack = newStream.getVideoTracks()[0];
-        await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
-        videoTrack.enabled = true;
+  const updateVideoStream = useCallback(
+    async (newPosition: CameraPosition) => {
+      // Stop current video track
+      if (videoStream) {
+        videoStream.getVideoTracks().forEach((track) => track.stop());
+        setVideoStream(null);
       }
-      setVideoStream(newStream);
-    } catch (error) {
-      console.error("Error updating video stream:", error);
-    }
-  }, [videoStream, videoTransceiverRef]);
-
+      const config = OrgaAI.getConfig();
+      // const facingMode = newPosition === "front" ? "user" : "environment";
+      const constraints = getMediaConstraints({
+        ...config,
+        facingMode: newPosition === "front" ? "user" : "environment",
+      });
+      logger.debug("Updating video stream with constraints:", constraints);
+      try {
+        const newStream = await mediaDevices.getUserMedia(constraints);
+        // Replace track in peer connection
+        if (videoTransceiverRef.current && newStream) {
+          const videoTrack = newStream.getVideoTracks()[0];
+          await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
+          videoTrack.enabled = true;
+        }
+        setVideoStream(newStream);
+      } catch (error) {
+        console.error("Error updating video stream:", error);
+      }
+    },
+    [videoStream, videoTransceiverRef]
+  );
 
   const flipCamera = useCallback(async (): Promise<void> => {
     if (!isCameraOn) return;
@@ -527,12 +596,13 @@ export function useOrgaAI(
     localStream,
     remoteStream,
     transcriptions,
-    cameraPosition, 
+    cameraPosition,
     isCameraOn,
     isMicOn,
     videoStream,
     audioStream,
     conversationId,
+    dataChannel: dataChannelRef.current,
 
     // Utilities
     hasPermissions,

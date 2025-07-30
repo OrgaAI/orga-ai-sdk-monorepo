@@ -1,4 +1,3 @@
-// src/utils/index.ts
 import { SessionConfig } from '../types';
 import { RTCPeerConnection } from 'react-native-webrtc';
 import { MediaTrackConstraints } from 'react-native-webrtc/lib/typescript/Constraints';
@@ -84,13 +83,17 @@ export const connectToRealtime = async ({
   gathered: RTCIceCandidateInit[];
 }): Promise<{ conversation_id: string; answer: { sdp: string; type: string } }> => {
   const config = OrgaAI.getConfig();
-  const { voice, model, temperature, maxTokens } = config;
+  const { voice, model, temperature, maxTokens, history, return_transcription, instructions, modalities } = config;
   const realtimeUrl = 'https://staging.orga-ai.com/realtime';
   logger.debug(`[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`);
   logger.debug(`[OrgaAI] Voice: ${voice}`);
   logger.debug(`[OrgaAI] Model: ${model}`);
   logger.debug(`[OrgaAI] Temperature: ${temperature}`);
   logger.debug(`[OrgaAI] Max Tokens: ${maxTokens}`);
+  logger.debug(`[OrgaAI] History: ${history}`);
+  logger.debug(`[OrgaAI] Return Transcription: ${return_transcription}`);
+  logger.debug(`[OrgaAI] Instructions: ${instructions}`);
+  logger.debug(`[OrgaAI] Modalities: ${modalities}`);
   const response = await axios.post(
     realtimeUrl,
     {
@@ -98,11 +101,17 @@ export const connectToRealtime = async ({
         sdp: peerConnection.localDescription?.sdp,
         type: peerConnection.localDescription?.type,
         candidates: gathered,
-        voice: voice || 'Dora',
-        model: model || 'Orga (1) beta',
+      },
+      params: {
+        voice: voice || 'alloy',
+        model: model || 'orga-1-beta',
         temperature: temperature || 0.5,
         max_tokens: maxTokens || 50,
-      },
+        history: history || false,
+        return_transcription: return_transcription || false,
+        instructions: instructions || '',
+        modalities: modalities || ['audio', 'video'],
+      }
     },
     {
       headers: {
