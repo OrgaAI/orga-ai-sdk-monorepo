@@ -1,14 +1,31 @@
 import { RTCPeerConnection, MediaStream } from "react-native-webrtc";
+import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel";
 import RTCIceCandidate from "react-native-webrtc/lib/typescript/RTCIceCandidate";
 import { RTCIceServer } from "../utils";
 // export declare type MessageEventData = string | ArrayBuffer | Blob;
 
 // Allowed models and voices (example values, update as needed)
-export const ORGAAI_MODELS = ["Orga (1) beta", "Orga (1)"] as const;
-export type OrgaAIModel = typeof ORGAAI_MODELS[number];
+export const ORGAAI_MODELS = ["orga-1-beta", "Orga (1)"] as const;
+export type OrgaAIModel = (typeof ORGAAI_MODELS)[number];
+export const MODALITIES_ENUM = {
+  VIDEO: "video",
+  AUDIO: "audio",
+} as const;
+export type Modality = (typeof MODALITIES_ENUM)[keyof typeof MODALITIES_ENUM];
 
-export const ORGAAI_VOICES = ["Dora", "Sandra"] as const;
-export type OrgaAIVoice = typeof ORGAAI_VOICES[number];
+export const ORGAAI_VOICES = [
+  "alloy",
+  "ash",
+  "ballad",
+  "coral",
+  "echo",
+  "fable",
+  "onyx",
+  "nova",
+  "sage",
+  "shimmer",
+] as const;
+export type OrgaAIVoice = (typeof ORGAAI_VOICES)[number];
 
 export const ORGAAI_TEMPERATURE_RANGE = {
   min: 0.0,
@@ -30,6 +47,10 @@ export interface OrgaAIConfig {
   voice?: OrgaAIVoice;
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+  history?: boolean;
+  return_transcription?: boolean;
+  instructions?: string;
+  modalities?: Modality[];
 }
 
 export type CameraPosition = "front" | "back";
@@ -69,15 +90,41 @@ export interface Transcription {
   confidence?: number;
 }
 
+// Data channel event types
+export interface DataChannelEvent {
+  event: string;
+  message?: string;
+  [key: string]: any;
+}
+
+export interface ConversationItem {
+  conversationId: string;
+  sender: "user" | "assistant";
+  content: {
+    type: "text";
+    message: string;
+  };
+  voiceType?: OrgaAIVoice;
+  modelVersion?: OrgaAIModel;
+  timestamp?: string;
+}
+
 export interface OrgaAIHookCallbacks {
   onSessionStart?: () => void;
   onSessionEnd?: () => void;
-  onTranscription?: (transcription: Transcription) => void;
+  // onTranscription?: (transcription: Transcription) => void;
   onError?: (error: Error) => void;
   onConnectionStateChange?: (
     state: RTCPeerConnection["connectionState"]
   ) => void;
   onSessionConnected?: () => void;
+  // Data channel event callbacks
+  onDataChannelOpen?: () => void;
+  onDataChannelMessage?: (event: DataChannelEvent) => void;
+  onTranscriptionInput?: (event: DataChannelEvent) => void;
+  onTranscriptionInputCompleted?: (event: DataChannelEvent) => void;
+  onResponseOutputDone?: (event: DataChannelEvent) => void;
+  onConversationItemCreated?: (item: ConversationItem) => void;
 }
 
 export interface OrgaAIHookReturn {
@@ -111,6 +158,7 @@ export interface OrgaAIHookReturn {
   videoStream: MediaStream | null;
   audioStream: MediaStream | null;
   conversationId: string | null;
+  dataChannel: RTCDataChannel | null;
   // Utilities
   hasPermissions: () => Promise<boolean>;
 }
