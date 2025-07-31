@@ -278,6 +278,19 @@ export function useOrgaAI(
           throw new SessionError("Session is already active");
         }
 
+        // Extract callbacks from config and merge with existing callbacks
+        const sessionCallbacks = {
+          onSessionStart: config.onSessionStart || callbacks.onSessionStart,
+          onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
+          onTranscription: config.onTranscription || callbacks.onTranscription,
+          onError: config.onError || callbacks.onError,
+          onConnectionStateChange: config.onConnectionStateChange || callbacks.onConnectionStateChange,
+          onSessionConnected: config.onSessionConnected || callbacks.onSessionConnected,
+        };
+
+        // Update the callbacks for this session
+        Object.assign(callbacks, sessionCallbacks);
+
         currentConfigRef.current = config;
         setConnectionState("connecting");
 
@@ -292,7 +305,7 @@ export function useOrgaAI(
         throw new ConnectionError("Failed to start session");
       }
     },
-    [connectionState, requestPermissions, initializeMedia, connect, onError]
+    [connectionState, requestPermissions, initializeMedia, connect, onError, callbacks]
   );
 
   // End session

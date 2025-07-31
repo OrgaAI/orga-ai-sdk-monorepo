@@ -2,10 +2,9 @@ import { RTCPeerConnection, MediaStream } from "react-native-webrtc";
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel";
 import RTCIceCandidate from "react-native-webrtc/lib/typescript/RTCIceCandidate";
 import { RTCIceServer } from "../utils";
-// export declare type MessageEventData = string | ArrayBuffer | Blob;
 
 // Allowed models and voices (example values, update as needed)
-export const ORGAAI_MODELS = ["orga-1-beta", "Orga (1)"] as const;
+export const ORGAAI_MODELS = ["orga-1-beta"] as const;
 export type OrgaAIModel = (typeof ORGAAI_MODELS)[number];
 export const MODALITIES_ENUM = {
   VIDEO: "video",
@@ -65,10 +64,27 @@ export interface SessionConfig {
   timeout?: number;
   facingMode?: "user" | "environment";
   // Optional parameters can be passed in to override the default values
-  voice?: string; // TODO: Add voice options
-  model?: string; // TODO: Add model options
+  voice?: OrgaAIVoice; // Updated to use proper type
+  model?: OrgaAIModel; // Updated to use proper type
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+  instructions?: string; // Added for session instructions
+  modalities?: Modality[]; // Added for session modalities
+  // Callbacks for session events
+  onSessionStart?: () => void;
+  onSessionEnd?: () => void;
+  onError?: (error: Error) => void;
+  onConnectionStateChange?: (
+    state: RTCPeerConnection["connectionState"]
+  ) => void;
+  onSessionConnected?: () => void;
+  // Data channel event callbacks
+  onDataChannelOpen?: () => void;
+  onDataChannelMessage?: (event: DataChannelEvent) => void;
+  onTranscriptionInput?: (event: DataChannelEvent) => void;
+  onTranscriptionInputCompleted?: (event: DataChannelEvent) => void;
+  onResponseOutputDone?: (event: DataChannelEvent) => void;
+  onConversationItemCreated?: (item: ConversationItem) => void;
 }
 
 export interface MediaConstraints {
@@ -159,6 +175,30 @@ export interface OrgaAIHookReturn {
   audioStream: MediaStream | null;
   conversationId: string | null;
   dataChannel: RTCDataChannel | null;
+  
+  // Parameter management
+  currentModel: OrgaAIModel | null;
+  currentVoice: OrgaAIVoice | null;
+  currentTemperature: number | null;
+  currentInstructions: string | null;
+  currentModalities: Modality[];
+  isAudioEnabled: boolean;
+  isVideoEnabled: boolean;
+  updateModel: (model: OrgaAIModel) => void;
+  updateVoice: (voice: OrgaAIVoice) => void;
+  updateTemperature: (temperature: number) => void;
+  updateInstructions: (instructions: string) => void;
+  updateModalities: (modalities: Modality[]) => void;
+  updateParams: (params: {
+    model?: OrgaAIModel;
+    voice?: OrgaAIVoice;
+    temperature?: number;
+    instructions?: string;
+    modalities?: Modality[];
+  }) => void;
+  initializeParams: (config: SessionConfig) => void;
+  sendUpdatedParams: () => void;
+  
   // Utilities
   hasPermissions: () => Promise<boolean>;
 }

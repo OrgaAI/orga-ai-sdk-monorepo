@@ -106,11 +106,11 @@ export const connectToRealtime = async ({
         voice: voice || 'alloy',
         model: model || 'orga-1-beta',
         temperature: temperature || 0.5,
-        max_tokens: maxTokens || 50,
         history: history || false,
         return_transcription: return_transcription || false,
-        instructions: instructions || '',
-        modalities: modalities || ['audio', 'video'],
+        instructions: instructions || null,
+        // modalities: modalities || ['audio', 'video'],
+        // max_tokens: maxTokens || 50,
       }
     },
     {

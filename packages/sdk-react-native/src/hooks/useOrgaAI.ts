@@ -18,6 +18,9 @@ import {
   IceCandidateEvent,
   DataChannelEvent,
   ConversationItem,
+  OrgaAIModel,
+  OrgaAIVoice,
+  Modality,
 } from "../types";
 import {
   PermissionError,
@@ -60,6 +63,15 @@ export function useOrgaAI(
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
+  // Add state for current session parameters
+  const [currentModel, setCurrentModel] = useState<OrgaAIModel | null>(null);
+  const [currentVoice, setCurrentVoice] = useState<OrgaAIVoice | null>(null);
+  const [currentTemperature, setCurrentTemperature] = useState<number | null>(null);
+  const [currentInstructions, setCurrentInstructions] = useState<string | null>(null);
+  const [currentModalities, setCurrentModalities] = useState<Modality[]>([]);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+
   const {
     onSessionStart,
     onSessionEnd,
@@ -73,6 +85,119 @@ export function useOrgaAI(
     onResponseOutputDone,
     onConversationItemCreated,
   } = callbacks;
+
+  // Function to send updated parameters to the session
+  const sendUpdatedParams = useCallback(() => {
+    const dataChannel = dataChannelRef.current;
+    if (!dataChannel || dataChannel.readyState !== 'open') {
+      logger.warn('Cannot send updated params: data channel not open');
+      return;
+    }
+
+    const payload = {
+      event: 'session.update',
+      data: {
+        ...(currentModel && { model: currentModel }),
+        ...(currentVoice && { voice: currentVoice }),
+        ...(currentTemperature !== null && { temperature: currentTemperature }),
+        ...(currentInstructions && { instructions: currentInstructions }),
+        modalities: [...(isAudioEnabled ? ['audio'] : []), ...(isVideoEnabled ? ['video'] : [])],
+      },
+    };
+
+    logger.debug('📤 Sending updated parameters via data channel:', payload);
+    dataChannel.send(JSON.stringify(payload));
+    // setEvents((prev) => [payload, ...prev]); // This line was not in the new_code, so it's removed.
+  }, [currentModel, currentVoice, currentTemperature, currentInstructions, isAudioEnabled, isVideoEnabled]);
+
+  // Individual parameter update functions (immediate updates)
+  const updateModel = useCallback((model: OrgaAIModel) => {
+    setCurrentModel(model);
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  const updateVoice = useCallback((voice: OrgaAIVoice) => {
+    setCurrentVoice(voice);
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  const updateTemperature = useCallback((temperature: number) => {
+    setCurrentTemperature(temperature);
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  const updateInstructions = useCallback((instructions: string) => {
+    setCurrentInstructions(instructions);
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  const updateModalities = useCallback((modalities: Modality[]) => {
+    const audioEnabled = modalities.includes('audio');
+    const videoEnabled = modalities.includes('video');
+    setIsAudioEnabled(audioEnabled);
+    setIsVideoEnabled(videoEnabled);
+    setCurrentModalities(modalities);
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  // Batch update function
+  const updateParams = useCallback((params: {
+    model?: OrgaAIModel;
+    voice?: OrgaAIVoice;
+    temperature?: number;
+    instructions?: string;
+    modalities?: Modality[];
+  }) => {
+    if (params.model !== undefined) setCurrentModel(params.model);
+    if (params.voice !== undefined) setCurrentVoice(params.voice);
+    if (params.temperature !== undefined) setCurrentTemperature(params.temperature);
+    if (params.instructions !== undefined) setCurrentInstructions(params.instructions);
+    if (params.modalities !== undefined) {
+      const audioEnabled = params.modalities.includes('audio');
+      const videoEnabled = params.modalities.includes('video');
+      setIsAudioEnabled(audioEnabled);
+      setIsVideoEnabled(videoEnabled);
+      setCurrentModalities(params.modalities);
+    }
+
+    // Send updates immediately if connected
+    if (connectionState === 'connected') {
+      sendUpdatedParams();
+    }
+  }, [connectionState, sendUpdatedParams]);
+
+  // Initialize parameters from config when session starts
+  const initializeParams = useCallback((config: SessionConfig) => {
+    const orgaConfig = OrgaAI.getConfig();
+    
+    // Type-safe parameter initialization
+    const model = config.model || orgaConfig.model;
+    const voice = config.voice || orgaConfig.voice;
+    const temperature = config.temperature || orgaConfig.temperature;
+    const instructions = config.instructions || orgaConfig.instructions;
+    const modalities = config.modalities || orgaConfig.modalities || [];
+    
+    setCurrentModel(model || null);
+    setCurrentVoice(voice || null);
+    setCurrentTemperature(temperature || null);
+    setCurrentInstructions(instructions || null);
+    
+    const audioEnabled = modalities.includes('audio');
+    const videoEnabled = modalities.includes('video');
+    setIsAudioEnabled(audioEnabled);
+    setIsVideoEnabled(videoEnabled);
+    setCurrentModalities(modalities);
+  }, []);
 
   // Cleanup function (update to stop and nullify both streams)
   const cleanup = useCallback(async (): Promise<void> => {
@@ -219,6 +344,37 @@ export function useOrgaAI(
       if (videoTransceiverRef.current) {
         await videoTransceiverRef.current.sender.replaceTrack(videoStream);
       }
+
+      pc.addEventListener("track", (event) => {
+        const trackEvent = event as unknown as any;
+        if (trackEvent.track.kind === "audio") {
+          // Store reference to remote audio track
+          // ✅ CRITICAL: Explicitly enable the track
+          trackEvent.track.enabled = true;
+
+          logger.debug("🎵 Audio track received:", {
+            id: trackEvent.track.id,
+            enabled: trackEvent.track.enabled,
+            muted: trackEvent.track.muted,
+            readyState: trackEvent.track.readyState
+          });
+
+          // This event fires when you receive an audio track from the remote peer
+          trackEvent.track.addEventListener("unmute", () => {
+            logger.debug("🎵 Audio track unmuted");
+            // This fires when the remote peer starts sending audio
+            // console.log("Audio track unmuted", event.track);
+          });
+          trackEvent.track.addEventListener("mute", () => {
+            logger.debug("🔇 Audio track muted");
+            // This fires when the remote peer stops sending audio
+          });
+          trackEvent.track.addEventListener("ended", () => {
+            logger.debug("🔇 Audio track ended");
+          });
+          
+        }
+      });
 
       const dc = pc.createDataChannel("orga-realtime-client-events");
       dataChannelRef.current = dc;
@@ -409,8 +565,29 @@ export function useOrgaAI(
           throw new SessionError("Session is already active");
         }
 
+        // Extract callbacks from config and merge with existing callbacks
+        const sessionCallbacks = {
+          onSessionStart: config.onSessionStart || callbacks.onSessionStart,
+          onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
+          onError: config.onError || callbacks.onError,
+          onConnectionStateChange: config.onConnectionStateChange || callbacks.onConnectionStateChange,
+          onSessionConnected: config.onSessionConnected || callbacks.onSessionConnected,
+          onDataChannelOpen: config.onDataChannelOpen || callbacks.onDataChannelOpen,
+          onDataChannelMessage: config.onDataChannelMessage || callbacks.onDataChannelMessage,
+          onTranscriptionInput: config.onTranscriptionInput || callbacks.onTranscriptionInput,
+          onTranscriptionInputCompleted: config.onTranscriptionInputCompleted || callbacks.onTranscriptionInputCompleted,
+          onResponseOutputDone: config.onResponseOutputDone || callbacks.onResponseOutputDone,
+          onConversationItemCreated: config.onConversationItemCreated || callbacks.onConversationItemCreated,
+        };
+
+        // Update the callbacks for this session
+        Object.assign(callbacks, sessionCallbacks);
+
         currentConfigRef.current = config;
         setConnectionState("connecting");
+
+        // Initialize parameters from config
+        initializeParams(config);
 
         // Full flow: permissions → media → connection
         await requestPermissions();
@@ -423,7 +600,7 @@ export function useOrgaAI(
         throw new ConnectionError("Failed to start session");
       }
     },
-    [connectionState, requestPermissions, initializeMedia, connect, onError]
+    [connectionState, requestPermissions, initializeMedia, connect, onError, callbacks]
   );
 
   // End session
@@ -606,5 +783,22 @@ export function useOrgaAI(
 
     // Utilities
     hasPermissions,
+
+    // Parameter management
+    currentModel,
+    currentVoice,
+    currentTemperature,
+    currentInstructions,
+    currentModalities,
+    isAudioEnabled,
+    isVideoEnabled,
+    updateModel,
+    updateVoice,
+    updateTemperature,
+    updateInstructions,
+    updateModalities,
+    updateParams,
+    initializeParams,
+    sendUpdatedParams,
   };
 }

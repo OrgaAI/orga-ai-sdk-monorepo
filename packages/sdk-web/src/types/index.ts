@@ -43,6 +43,15 @@ export interface SessionConfig {
   model?: string; // TODO: Add model options
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+  // Callbacks for session events
+  onSessionStart?: () => void;
+  onSessionEnd?: () => void;
+  onTranscription?: (transcription: Transcription) => void;
+  onError?: (error: Error) => void;
+  onConnectionStateChange?: (
+    state: RTCPeerConnection["connectionState"]
+  ) => void;
+  onSessionConnected?: () => void;
 }
 
 export interface MediaConstraints {
