@@ -81,10 +81,10 @@ export interface SessionConfig {
   // Data channel event callbacks
   onDataChannelOpen?: () => void;
   onDataChannelMessage?: (event: DataChannelEvent) => void;
-  onTranscriptionInput?: (event: DataChannelEvent) => void;
-  onTranscriptionInputCompleted?: (event: DataChannelEvent) => void;
-  onResponseOutputDone?: (event: DataChannelEvent) => void;
-  onConversationItemCreated?: (item: ConversationItem) => void;
+  onUserSpeechTranscription?: (event: DataChannelEvent) => void;
+  onUserSpeechComplete?: (event: DataChannelEvent) => void;
+  onAssistantResponseComplete?: (event: DataChannelEvent) => void;
+  onConversationMessageCreated?: (item: ConversationItem) => void;
 }
 
 export interface MediaConstraints {
@@ -99,6 +99,7 @@ export interface MediaConstraints {
 
 export type ConnectionState = RTCPeerConnection["connectionState"];
 
+// TODO: Check if this is needed
 export interface Transcription {
   text: string;
   timestamp: number;
@@ -137,10 +138,10 @@ export interface OrgaAIHookCallbacks {
   // Data channel event callbacks
   onDataChannelOpen?: () => void;
   onDataChannelMessage?: (event: DataChannelEvent) => void;
-  onTranscriptionInput?: (event: DataChannelEvent) => void;
-  onTranscriptionInputCompleted?: (event: DataChannelEvent) => void;
-  onResponseOutputDone?: (event: DataChannelEvent) => void;
-  onConversationItemCreated?: (item: ConversationItem) => void;
+  onUserSpeechTranscription?: (event: DataChannelEvent) => void;
+  onUserSpeechComplete?: (event: DataChannelEvent) => void;
+  onAssistantResponseComplete?: (event: DataChannelEvent) => void;
+  onConversationMessageCreated?: (item: ConversationItem) => void;
 }
 
 export interface OrgaAIHookReturn {
@@ -168,6 +169,7 @@ export interface OrgaAIHookReturn {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   transcriptions: Transcription[];
+  conversationItems: ConversationItem[];
   isCameraOn: boolean;
   isMicOn: boolean;
   cameraPosition: CameraPosition;

@@ -1,50 +1,137 @@
-# Welcome to your Expo app 👋
+# OrgaAI Mobile SDK Playground
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native application for testing and exploring the OrgaAI SDK capabilities. This playground demonstrates real-time AI conversations, transcription management, and SDK configuration.
 
-## Get started
+## Features
 
-1. Install dependencies
+### 🎥 Camera & Audio Controls
+- **Camera Toggle**: Enable/disable video stream
+- **Microphone Toggle**: Enable/disable audio input
+- **Camera Flip**: Switch between front and back cameras
+- **Connection Management**: Start/stop AI sessions
 
+### 💬 Conversation Management
+- **Real-time Transcription**: View live conversation items
+- **Message History**: Scrollable conversation panel
+- **Status Indicators**: Visual feedback for listening/processing states
+- **Message Metadata**: Timestamps and sender information
+
+### ⚙️ SDK Configuration
+- **AI Model Selection**: Choose between available models
+- **Voice Selection**: Select AI response voice
+- **Temperature Control**: Adjust response creativity (0.0 - 1.0)
+- **Custom Instructions**: Set AI behavior instructions
+- **Real-time Updates**: Configuration changes apply immediately
+
+### 🎨 UI/UX Features
+- **Dark Theme**: Modern dark interface design
+- **Status Badges**: Connection and session status indicators
+- **Animated Indicators**: Pulsing animations for active states
+- **Responsive Layout**: Optimized for mobile screens
+- **Modal Settings**: Slide-up configuration panel
+
+## Getting Started
+
+1. **Install Dependencies**
    ```bash
+   cd apps/mobile
    npm install
    ```
 
-2. Start the app
-
+2. **Start the Development Server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. **Run on Device/Simulator**
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## SDK Integration
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+The app demonstrates key SDK features:
 
-## Get a fresh project
+```typescript
+import { useOrgaAIContext } from "@orga-ai/sdk-react-native";
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+const {
+  startSession,
+  endSession,
+  toggleCamera,
+  toggleMic,
+  conversationItems,
+  connectionState,
+  // ... more SDK features
+} = useOrgaAIContext();
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Session Management
+- Start AI sessions with custom callbacks
+- Handle connection state changes
+- Manage media streams (audio/video)
 
-## Learn more
+### Real-time Features
+- Live transcription display
+- Conversation item tracking
+- Status monitoring and feedback
 
-To learn more about developing your project with Expo, look at the following resources:
+### Configuration
+- Model and voice selection
+- Temperature adjustment
+- Custom instruction setting
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Architecture
 
-## Join the community
+### Components
+- **HomeScreen**: Main application interface
+- **OrgaControls**: Media and session controls
+- **TranscriptionPanel**: Conversation display
+- **TranscriptionStatus**: Real-time status indicators
+- **Settings Modal**: SDK configuration
 
-Join our community of developers creating universal apps.
+### State Management
+- Connection state tracking
+- Conversation item management
+- Configuration parameter updates
+- UI state synchronization
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Development
+
+### Adding New Features
+1. Create new components in `components/`
+2. Update main screen in `app/index.tsx`
+3. Add configuration options in `app/(modal)/settings.tsx`
+4. Test with different SDK parameters
+
+### Styling
+- Uses consistent color palette (slate theme)
+- Responsive design patterns
+- Dark theme optimization
+- Touch-friendly interface elements
+
+## Troubleshooting
+
+### Common Issues
+- **Camera Permissions**: Ensure camera/microphone access
+- **Connection Issues**: Check network connectivity
+- **SDK Errors**: Verify configuration parameters
+- **Performance**: Monitor device resources
+
+### Debug Features
+- Console logging for SDK events
+- Visual status indicators
+- Error handling and user feedback
+- Configuration validation
+
+## Contributing
+
+1. Follow TypeScript best practices
+2. Maintain consistent styling
+3. Add proper error handling
+4. Test on both iOS and Android
+5. Update documentation for new features
+
+## License
+
+Part of the OrgaAI SDK monorepo - see main README for license information.

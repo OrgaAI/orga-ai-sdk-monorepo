@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/sdk-web",
-  "version": "0.0.0-test.1",
+  "version": "0.0.0-test.7",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",

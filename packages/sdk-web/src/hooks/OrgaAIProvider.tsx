@@ -5,8 +5,8 @@ import { OrgaAI } from '../core/OrgaAI';
 import { logger } from '../utils';
 
 // Define the available options for model and voice
-const DEFAULT_MODEL: OrgaAIModel = "Orga (1) beta";
-const DEFAULT_VOICE: OrgaAIVoice = "Dora";
+const DEFAULT_MODEL: OrgaAIModel = "orga-1-beta";
+const DEFAULT_VOICE: OrgaAIVoice = "alloy";
 const DEFAULT_TEMPERATURE: number = 0.5;
 
 interface OrgaAIProviderProps {

@@ -36,6 +36,5 @@ export const GET = async () => {
         iceServers,
         ephemeralToken: data.ephemeral_token
       }
-      console.log("returnData", returnData)
     return NextResponse.json(returnData);
 }

@@ -44,3 +44,5 @@ next-env.d.ts
 .yalc
 yalc.lock
 
+# npm
+.npmrc

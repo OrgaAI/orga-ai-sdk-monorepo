@@ -1,45 +1,241 @@
 import OrgaControls from "@/components/OrgaControls";
-import { ThemedView } from "@/components/ui/ThemedComponents";
+import TranscriptionPanel from "@/components/TranscriptionPanel";
+import TranscriptionStatus from "@/components/TranscriptionStatus";
 import { OrgaAICameraView, useOrgaAIContext} from "@orga-ai/sdk-react-native";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useState, useEffect } from "react";
+import { useTranscription } from "@/context/TranscriptionContext";
 
 export default function HomeScreen() {
-  const { videoStream } = useOrgaAIContext();
+  const { videoStream, connectionState, conversationItems, isMicOn } = useOrgaAIContext();
+  const { isTranscriptionOpen, setIsTranscriptionOpen } = useTranscription();
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [lastTranscription, setLastTranscription] = useState<string>();
+
+  const isConnected = connectionState === "connected";
+
+  // Simulate listening state based on mic status and connection
+  useEffect(() => {
+    if (isConnected && isMicOn) {
+      setIsListening(true);
+      setIsProcessing(false);
+    } else {
+      setIsListening(false);
+      setIsProcessing(false);
+    }
+  }, [isConnected, isMicOn]);
+
+  // Update last transcription from conversation items
+  useEffect(() => {
+    if (conversationItems.length > 0) {
+      const lastUserMessage = conversationItems
+        .filter(item => item.sender === "user")
+        .pop();
+      
+      if (lastUserMessage) {
+        setLastTranscription(lastUserMessage.content.message);
+        setIsProcessing(false);
+      }
+    }
+  }, [conversationItems]);
 
   return (
-    <ThemedView>
-      <OrgaAICameraView
-        streamURL={videoStream ? videoStream.toURL() : undefined}
-        containerStyle={styles.cameraViewContainer}
-        style={{ width: "100%", height: "100%" }}
-        placeholder={
-          <Text
-            style={{
-              color: "white",
-              fontSize: 24,
-              fontWeight: "bold",
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              position: "absolute",
-            }}
-          >
-            Orga AI SDK Playground
-          </Text>
-        }
-      >
-        <OrgaControls />
-      </OrgaAICameraView>
-    </ThemedView>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        {/* Title */}
+        <Text style={styles.title}>OrgaAI</Text>
+        
+        {/* Connection Status */}
+        <View style={styles.statusContainer}>
+          <View style={[
+            styles.statusBadge,
+            isConnected ? styles.connectedBadge : styles.disconnectedBadge
+          ]}>
+            <Ionicons 
+              name={isConnected ? "checkmark-circle" : "wifi-outline"} 
+              size={16} 
+              color={isConnected ? "#166534" : "#64748b"} 
+            />
+            <Text style={[
+              styles.statusText,
+              isConnected ? styles.connectedText : styles.disconnectedText
+            ]}>
+              {isConnected ? "Connected" : "Ready"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Main Camera View */}
+      <View style={styles.cameraContainer}>
+        <OrgaAICameraView
+          streamURL={videoStream ? videoStream.toURL() : undefined}
+          containerStyle={styles.cameraViewContainer}
+          style={{ width: "100%", height: "100%" }}
+          placeholder={
+            <View style={styles.placeholderContainer}>
+              {isConnected ? (
+                <>
+                  <Ionicons name="camera" size={48} color="white" />
+                  {/* <Text style={styles.placeholderText}>Camera Preview</Text> */}
+                  <Text style={styles.placeholderSubtext}>{`Camera is ${isMicOn ? "active" : "inactive"}`}</Text>
+                </>
+              ) : (
+                <>
+                  <View style={styles.disconnectedIconContainer}>
+                    <Ionicons name="mic" size={32} color="#3b82f6" />
+                    <Ionicons name="add" size={16} color="#3b82f6" style={styles.plusIcon} />
+                  </View>
+                  <Text style={styles.placeholderText}>Start Your Conversation</Text>
+                  <Text style={styles.placeholderSubtext}>
+                    Tap the connect button below to begin
+                  </Text>
+                  <View style={styles.featureList}>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      <Text style={styles.featureText}>Real-time AI conversations</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      <Text style={styles.featureText}>Voice and video support</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      <Text style={styles.featureText}>Live transcription</Text>
+                    </View>
+                  </View>
+                </>
+              )}
+            </View>
+          }
+        >
+          <OrgaControls />
+          
+          {/* Transcription Status Overlay */}
+          <TranscriptionStatus
+            isListening={isListening}
+            isProcessing={isProcessing}
+            lastTranscription={lastTranscription}
+          />
+        </OrgaAICameraView>
+      </View>
+
+      {/* Transcription Panel */}
+      {isConnected && isTranscriptionOpen && (
+        <TranscriptionPanel 
+          conversationItems={conversationItems}
+          onClose={() => setIsTranscriptionOpen(false)}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#1e293b", // slate-800
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  connectedBadge: {
+    backgroundColor: "#dcfce7", // green-100
+  },
+  disconnectedBadge: {
+    backgroundColor: "#334155", // slate-700
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  connectedText: {
+    color: "#166534", // green-800
+  },
+  disconnectedText: {
+    color: "#cbd5e1", // slate-300
+  },
+  cameraContainer: {
+    flex: 1,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#334155", // slate-700
+  },
   cameraViewContainer: {
     width: "100%",
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-
+  },
+  placeholderContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    paddingHorizontal: 40,
+  },
+  placeholderText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 16,
+    textAlign: "center",
+  },
+  placeholderSubtext: {
+    color: "#94a3b8", // slate-400
+    fontSize: 16,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  disconnectedIconContainer: {
+    position: "relative",
+    marginBottom: 8,
+  },
+  plusIcon: {
+    position: "absolute",
+    bottom: -4,
+    right: -4,
+    backgroundColor: "white",
+    borderRadius: 8,
+  },
+  featureList: {
+    marginTop: 24,
+    gap: 8,
+  },
+  featureItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  featureText: {
+    color: "#cbd5e1", // slate-300
+    fontSize: 14,
   },
 });

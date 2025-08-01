@@ -46,6 +46,7 @@ export function useOrgaAI(
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
+  const [conversationItems, setConversationItems] = useState<ConversationItem[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
@@ -75,15 +76,15 @@ export function useOrgaAI(
   const {
     onSessionStart,
     onSessionEnd,
-    onTranscriptionInput,
+    onUserSpeechTranscription,
     onError,
     onConnectionStateChange,
     onSessionConnected,
     onDataChannelOpen,
     onDataChannelMessage,
-    onTranscriptionInputCompleted,
-    onResponseOutputDone,
-    onConversationItemCreated,
+    onUserSpeechComplete,
+    onAssistantResponseComplete,
+    onConversationMessageCreated,
   } = callbacks;
 
   // Function to send updated parameters to the session
@@ -398,8 +399,8 @@ export function useOrgaAI(
             dataChannelEvent.event ===
             "conversation.item.input_audio_transcription.completed"
           ) {
-            onTranscriptionInput?.(dataChannelEvent);
-            onTranscriptionInputCompleted?.(dataChannelEvent);
+                    onUserSpeechTranscription?.(dataChannelEvent);
+        onUserSpeechComplete?.(dataChannelEvent);
 
             // Create conversation item for user input
             if (conversationId) {
@@ -412,12 +413,12 @@ export function useOrgaAI(
                 },
                 modelVersion: model,
               };
-              onConversationItemCreated?.(conversationItem);
+              onConversationMessageCreated?.(conversationItem);
             }
           }
 
           if (dataChannelEvent.event === "response.output_item.done") {
-            onResponseOutputDone?.(dataChannelEvent);
+            onAssistantResponseComplete?.(dataChannelEvent);
 
             // Create conversation item for assistant response
             if (conversationId) {
@@ -432,7 +433,7 @@ export function useOrgaAI(
                 modelVersion: model,
                 timestamp: new Date().toISOString(),
               };
-              onConversationItemCreated?.(conversationItem);
+              onConversationMessageCreated?.(conversationItem);
             }
           }
         } catch (error) {
@@ -574,10 +575,10 @@ export function useOrgaAI(
           onSessionConnected: config.onSessionConnected || callbacks.onSessionConnected,
           onDataChannelOpen: config.onDataChannelOpen || callbacks.onDataChannelOpen,
           onDataChannelMessage: config.onDataChannelMessage || callbacks.onDataChannelMessage,
-          onTranscriptionInput: config.onTranscriptionInput || callbacks.onTranscriptionInput,
-          onTranscriptionInputCompleted: config.onTranscriptionInputCompleted || callbacks.onTranscriptionInputCompleted,
-          onResponseOutputDone: config.onResponseOutputDone || callbacks.onResponseOutputDone,
-          onConversationItemCreated: config.onConversationItemCreated || callbacks.onConversationItemCreated,
+          onUserSpeechTranscription: config.onUserSpeechTranscription || callbacks.onUserSpeechTranscription,
+          onUserSpeechComplete: config.onUserSpeechComplete || callbacks.onUserSpeechComplete,
+          onAssistantResponseComplete: config.onAssistantResponseComplete || callbacks.onAssistantResponseComplete,
+          onConversationMessageCreated: config.onConversationMessageCreated || callbacks.onConversationMessageCreated,
         };
 
         // Update the callbacks for this session
@@ -773,6 +774,7 @@ export function useOrgaAI(
     localStream,
     remoteStream,
     transcriptions,
+    conversationItems,
     cameraPosition,
     isCameraOn,
     isMicOn,
