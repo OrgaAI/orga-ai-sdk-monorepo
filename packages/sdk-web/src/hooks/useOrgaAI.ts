@@ -31,7 +31,9 @@ export function useOrgaAI(
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
-  const [conversationItems, setConversationItems] = useState<ConversationItem[]>([]);
+  const [conversationItems, setConversationItems] = useState<
+    ConversationItem[]
+  >([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const conversationIdRef = useRef<string | null>(null);
 
@@ -224,10 +226,16 @@ export function useOrgaAI(
   const cleanup = useCallback(async (): Promise<void> => {
     logger.debug("Cleaning up resources");
     try {
-      // Stop and nullify all streams
-      [localStream, videoStream, audioStream].forEach((stream) => {
-        if (stream) stream.getTracks().forEach((track) => track.stop());
-      });
+      [localStream, videoStream, audioStream, remoteStream].forEach(
+        (stream) => {
+          if (stream) {
+            stream.getTracks().forEach((track) => {
+              track.stop(); // This properly releases the hardware (camera/mic)
+              track.enabled = false;
+            });
+          }
+        }
+      );
       setLocalStream(null);
       setVideoStream(null);
       setAudioStream(null);
@@ -327,29 +335,38 @@ export function useOrgaAI(
           // Call the general message handler
           onDataChannelMessage?.(dataChannelEvent);
 
-          logger.debug("Processing data channel event:", dataChannelEvent.event, "Current conversationId:", conversationId);
+          logger.debug(
+            "Processing data channel event:",
+            dataChannelEvent.event,
+            "Current conversationId:",
+            conversationId
+          );
           if (
             dataChannelEvent.event ===
             "conversation.item.input_audio_transcription.completed"
           ) {
-                    onUserSpeechTranscription?.(dataChannelEvent);
-        onUserSpeechComplete?.(dataChannelEvent);
+            onUserSpeechTranscription?.(dataChannelEvent);
+            onUserSpeechComplete?.(dataChannelEvent);
 
             // Create conversation item for user input
-            const currentConversationId = conversationIdRef.current || conversationId;
-            logger.debug("Checking conversationId for user item:", currentConversationId);
+            const currentConversationId =
+              conversationIdRef.current || conversationId;
+            logger.debug(
+              "Checking conversationId for user item:",
+              currentConversationId
+            );
             if (currentConversationId) {
-                              const conversationItem: ConversationItem = {
-                  conversationId: currentConversationId,
-                  sender: "user",
-                  content: {
-                    type: "text",
-                    message: dataChannelEvent.message || "",
-                  },
-                  modelVersion: model,
-                };
+              const conversationItem: ConversationItem = {
+                conversationId: currentConversationId,
+                sender: "user",
+                content: {
+                  type: "text",
+                  message: dataChannelEvent.message || "",
+                },
+                modelVersion: model,
+              };
               logger.debug("User conversation item created:", conversationItem);
-              setConversationItems(prev => {
+              setConversationItems((prev) => {
                 const newItems = [...prev, conversationItem];
                 logger.debug("Updated conversationItems:", newItems);
                 return newItems;
@@ -363,8 +380,12 @@ export function useOrgaAI(
             onAssistantResponseComplete?.(dataChannelEvent);
 
             // Create conversation item for assistant response
-            const currentConversationId = conversationIdRef.current || conversationId;
-            logger.debug("Checking conversationId for assistant item:", currentConversationId);
+            const currentConversationId =
+              conversationIdRef.current || conversationId;
+            logger.debug(
+              "Checking conversationId for assistant item:",
+              currentConversationId
+            );
             if (currentConversationId) {
               const conversationItem: ConversationItem = {
                 conversationId: currentConversationId,
@@ -377,8 +398,11 @@ export function useOrgaAI(
                 modelVersion: model,
                 timestamp: new Date().toISOString(),
               };
-              logger.debug("Assistant conversation item created:", conversationItem);
-              setConversationItems(prev => {
+              logger.debug(
+                "Assistant conversation item created:",
+                conversationItem
+              );
+              setConversationItems((prev) => {
                 const newItems = [...prev, conversationItem];
                 logger.debug("Updated conversationItems:", newItems);
                 return newItems;
@@ -408,7 +432,7 @@ export function useOrgaAI(
             id: trackEvent.track.id,
             enabled: trackEvent.track.enabled,
             muted: trackEvent.track.muted,
-            readyState: trackEvent.track.readyState
+            readyState: trackEvent.track.readyState,
           });
 
           // This event fires when you receive an audio track from the remote peer
@@ -492,7 +516,7 @@ export function useOrgaAI(
       if (!answer) {
         throw new Error("Failed to connect to backend");
       }
-      
+
       // Use conversation_id from backend or generate a local one
       const finalConversationId = conversation_id || `local-${Date.now()}`;
       logger.debug("Setting conversation ID:", finalConversationId);
@@ -550,14 +574,25 @@ export function useOrgaAI(
           onSessionStart: config.onSessionStart || callbacks.onSessionStart,
           onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
           onError: config.onError || callbacks.onError,
-          onConnectionStateChange: config.onConnectionStateChange || callbacks.onConnectionStateChange,
-          onSessionConnected: config.onSessionConnected || callbacks.onSessionConnected,
-          onDataChannelOpen: config.onDataChannelOpen || callbacks.onDataChannelOpen,
-          onDataChannelMessage: config.onDataChannelMessage || callbacks.onDataChannelMessage,
-          onUserSpeechTranscription: config.onUserSpeechTranscription || callbacks.onUserSpeechTranscription,
-          onUserSpeechComplete: config.onUserSpeechComplete || callbacks.onUserSpeechComplete,
-          onAssistantResponseComplete: config.onAssistantResponseComplete || callbacks.onAssistantResponseComplete,
-          onConversationMessageCreated: config.onConversationMessageCreated || callbacks.onConversationMessageCreated,
+          onConnectionStateChange:
+            config.onConnectionStateChange || callbacks.onConnectionStateChange,
+          onSessionConnected:
+            config.onSessionConnected || callbacks.onSessionConnected,
+          onDataChannelOpen:
+            config.onDataChannelOpen || callbacks.onDataChannelOpen,
+          onDataChannelMessage:
+            config.onDataChannelMessage || callbacks.onDataChannelMessage,
+          onUserSpeechTranscription:
+            config.onUserSpeechTranscription ||
+            callbacks.onUserSpeechTranscription,
+          onUserSpeechComplete:
+            config.onUserSpeechComplete || callbacks.onUserSpeechComplete,
+          onAssistantResponseComplete:
+            config.onAssistantResponseComplete ||
+            callbacks.onAssistantResponseComplete,
+          onConversationMessageCreated:
+            config.onConversationMessageCreated ||
+            callbacks.onConversationMessageCreated,
         };
 
         // Update the callbacks for this session
@@ -565,7 +600,7 @@ export function useOrgaAI(
 
         currentConfigRef.current = config;
         setConnectionState("connecting");
-        
+
         // Clear conversation items when starting a new session
         setConversationItems([]);
 
@@ -598,13 +633,43 @@ export function useOrgaAI(
     logger.debug("Ending session");
 
     try {
+      // Stop video stream
+      if (videoStream) {
+        videoStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setVideoStream(null);
+      }
+
+      // Stop audio stream
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setAudioStream(null);
+      }
+
+      // Also try to stop any other active streams
+      try {
+        const activeStreams = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true,
+        });
+        activeStreams.getTracks().forEach((track) => {
+          track.stop();
+        });
+      } catch (e) {
+        logger.debug("No additional active streams found");
+      }
+
+      // Now call the regular cleanup
       await cleanup();
       onSessionEnd?.();
     } catch (error) {
       logger.error("Error ending session:", error);
       onError?.(error as Error);
     }
-  }, [cleanup, onSessionEnd, onError]);
+  }, [videoStream, audioStream, cleanup, onSessionEnd, onError]);
 
   // --- Mic Controls ---
   const enableMic = useCallback(async () => {
@@ -776,21 +841,21 @@ export function useOrgaAI(
     // Utilities
     hasPermissions,
 
-     // Parameter management
-     currentModel,
-     currentVoice,
-     currentTemperature,
-     currentInstructions,
-     currentModalities,
-     isAudioEnabled,
-     isVideoEnabled,
-     updateModel,
-     updateVoice,
-     updateTemperature,
-     updateInstructions,
-     updateModalities,
-     updateParams,
-     initializeParams,
-     sendUpdatedParams,
+    // Parameter management
+    currentModel,
+    currentVoice,
+    currentTemperature,
+    currentInstructions,
+    currentModalities,
+    isAudioEnabled,
+    isVideoEnabled,
+    updateModel,
+    updateVoice,
+    updateTemperature,
+    updateInstructions,
+    updateModalities,
+    updateParams,
+    initializeParams,
+    sendUpdatedParams,
   };
 }

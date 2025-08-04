@@ -6,7 +6,7 @@ type OrgaVideoProps = React.VideoHTMLAttributes<HTMLVideoElement> & {
     stream: MediaStream | null;
   };  
 
-export const OrgaVideo: React.FC<OrgaVideoProps> = ({ stream, ...props }) => {
+export const OrgaVideo = ({ stream, ...props }: OrgaVideoProps) => {
     const ref = useRef<HTMLVideoElement>(null);
     useEffect(() => {
       if (ref.current) ref.current.srcObject = stream || null;

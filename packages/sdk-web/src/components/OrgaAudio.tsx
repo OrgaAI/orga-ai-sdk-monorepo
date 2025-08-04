@@ -5,7 +5,7 @@ type OrgaAudioProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
     stream: MediaStream | null;
   };
 
-export const OrgaAudio: React.FC<OrgaAudioProps> = ({ stream, ...props }) => {
+export const OrgaAudio = ({ stream, ...props }: OrgaAudioProps) => {
     const ref = useRef<HTMLAudioElement>(null);
     useEffect(() => {
       if (ref.current) ref.current.srcObject = stream || null;

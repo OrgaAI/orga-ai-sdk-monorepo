@@ -64,15 +64,6 @@ export default function Home() {
 
   const isConnected = connectionState === "connected";
 
-  // Debug: Log context values
-  useEffect(() => {
-    console.log("Context values:", {
-      connectionState,
-      conversationItems,
-      isConnected
-    });
-  }, [connectionState, conversationItems, isConnected]);
-
   // Close conversation panel when disconnecting
   useEffect(() => {
     if (!isConnected) {
@@ -82,7 +73,6 @@ export default function Home() {
 
       // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
-      console.log("conversationItems updated:", conversationItems);
       if (conversationRef.current) {
         conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
       }
@@ -381,10 +371,9 @@ export default function Home() {
             <Button
               onClick={() => isConnected ? endSession() : startSession({
                 onDataChannelMessage: (event) => {
-                  console.log("Data channel message:", event);
                   if (event.event === "conversation.item.input_audio_transcription.completed" || 
                       event.event === "response.output_item.done") {
-                    console.log("Conversation-related event:", event.event, event.message);
+                    console.log("Conversation-related event:", event.event, event.message, event.conversationId);
                   }
                 },
                 onConversationMessageCreated: (item: ConversationItem) => {

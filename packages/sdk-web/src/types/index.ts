@@ -1,9 +1,24 @@
 // Allowed models and voices (example values, update as needed)
-export const ORGAAI_MODELS = ["Orga (1) beta", "Orga (1)"] as const;
+export const ORGAAI_MODELS = ["orga-1-beta"] as const;
 export type OrgaAIModel = typeof ORGAAI_MODELS[number];
-
-export const ORGAAI_VOICES = ["Dora", "Sandra"] as const;
-export type OrgaAIVoice = typeof ORGAAI_VOICES[number];
+export const MODALITIES_ENUM = {
+  VIDEO: "video",
+  AUDIO: "audio",
+} as const;
+export type Modality = (typeof MODALITIES_ENUM)[keyof typeof MODALITIES_ENUM];
+export const ORGAAI_VOICES = [
+  "alloy",
+  "ash",
+  "ballad",
+  "coral",
+  "echo",
+  "fable",
+  "onyx",
+  "nova",
+  "sage",
+  "shimmer",
+] as const;
+export type OrgaAIVoice = (typeof ORGAAI_VOICES)[number];
 
 export const ORGAAI_TEMPERATURE_RANGE = {
   min: 0.0,
@@ -25,9 +40,13 @@ export interface OrgaAIConfig {
   voice?: OrgaAIVoice;
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+  history?: boolean;
+  return_transcription?: boolean;
+  instructions?: string;
+  modalities?: Modality[];
 }
 
-export type CameraPosition = "front" | "back";
+export type CameraPosition = "front" | "back"; // TODO: Check if camera position is supported in web
 
 export type IceCandidateEvent = {
   candidate: RTCIceCandidate | null;
@@ -37,21 +56,29 @@ export interface SessionConfig {
   enableTranscriptions?: boolean;
   videoQuality?: "low" | "medium" | "high";
   timeout?: number;
-  facingMode?: "user" | "environment";
+  facingMode?: "user" | "environment"; // TODO: Check if camera position is supported in web
   // Optional parameters can be passed in to override the default values
-  voice?: string; // TODO: Add voice options
-  model?: string; // TODO: Add model options
+  voice?: OrgaAIVoice; // Updated to use proper type
+  model?: OrgaAIModel; // Updated to use proper type
   temperature?: number; // TODO: Add temperature options (0.0 - 1.0)
   maxTokens?: number; // TODO: Add maxTokens options (100 - 1000)
+  instructions?: string; // Added for session instructions
+  modalities?: Modality[]; // Added for session modalities
   // Callbacks for session events
   onSessionStart?: () => void;
   onSessionEnd?: () => void;
-  onTranscription?: (transcription: Transcription) => void;
   onError?: (error: Error) => void;
   onConnectionStateChange?: (
     state: RTCPeerConnection["connectionState"]
   ) => void;
   onSessionConnected?: () => void;
+  // Data channel event callbacks
+  onDataChannelOpen?: () => void;
+  onDataChannelMessage?: (event: DataChannelEvent) => void;
+  onUserSpeechTranscription?: (event: DataChannelEvent) => void;
+  onUserSpeechComplete?: (event: DataChannelEvent) => void;
+  onAssistantResponseComplete?: (event: DataChannelEvent) => void;
+  onConversationMessageCreated?: (item: ConversationItem) => void;
 }
 
 export interface MediaConstraints {
@@ -66,6 +93,7 @@ export interface MediaConstraints {
 
 export type ConnectionState = RTCPeerConnection["connectionState"];
 
+//TODO: Check if this is needed
 export interface Transcription {
   text: string;
   timestamp: number;
@@ -73,15 +101,41 @@ export interface Transcription {
   confidence?: number;
 }
 
+export interface DataChannelEvent {
+  event: string;
+  message?: string;
+  [key: string]: any;
+}
+
+export interface ConversationItem {
+  conversationId: string;
+  sender: "user" | "assistant";
+  content: {
+    type: "text";
+    message: string;
+  };
+  voiceType?: OrgaAIVoice;
+  modelVersion?: OrgaAIModel;
+  timestamp?: string;
+}
+
+
 export interface OrgaAIHookCallbacks {
   onSessionStart?: () => void;
   onSessionEnd?: () => void;
-  onTranscription?: (transcription: Transcription) => void;
+  // onTranscription?: (transcription: Transcription) => void;
   onError?: (error: Error) => void;
   onConnectionStateChange?: (
     state: RTCPeerConnection["connectionState"]
   ) => void;
   onSessionConnected?: () => void;
+  // Data channel event callbacks
+  onDataChannelOpen?: () => void;
+  onDataChannelMessage?: (event: DataChannelEvent) => void;
+  onUserSpeechTranscription?: (event: DataChannelEvent) => void;
+  onUserSpeechComplete?: (event: DataChannelEvent) => void;
+  onAssistantResponseComplete?: (event: DataChannelEvent) => void;
+  onConversationMessageCreated?: (item: ConversationItem) => void;
 }
 
 export interface OrgaAIHookReturn {
@@ -108,12 +162,37 @@ export interface OrgaAIHookReturn {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   transcriptions: Transcription[];
+  conversationItems: ConversationItem[];
   isCameraOn: boolean;
   isMicOn: boolean;
-  cameraPosition: CameraPosition;
+  cameraPosition: CameraPosition; // TODO: Check if camera position is supported in web
   videoStream: MediaStream | null;
   audioStream: MediaStream | null;
   conversationId: string | null;
+  dataChannel: RTCDataChannel | null;
+  // Parameter management
+  currentModel: OrgaAIModel | null;
+  currentVoice: OrgaAIVoice | null;
+  currentTemperature: number | null;
+  currentInstructions: string | null;
+  currentModalities: Modality[];
+  isAudioEnabled: boolean;
+  isVideoEnabled: boolean;
+  updateModel: (model: OrgaAIModel) => void;
+  updateVoice: (voice: OrgaAIVoice) => void;
+  updateTemperature: (temperature: number) => void;
+  updateInstructions: (instructions: string) => void;
+  updateModalities: (modalities: Modality[]) => void;
+  updateParams: (params: {
+    model?: OrgaAIModel;
+    voice?: OrgaAIVoice;
+    temperature?: number;
+    instructions?: string;
+    modalities?: Modality[];
+  }) => void;
+  initializeParams: (config: SessionConfig) => void;
+  sendUpdatedParams: () => void;
+  
   // Utilities
   hasPermissions: () => Promise<boolean>;
 }
