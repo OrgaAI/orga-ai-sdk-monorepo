@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { OrgaAIHookReturn, OrgaAIHookCallbacks, OrgaAIModel, OrgaAIVoice, ORGAAI_TEMPERATURE_RANGE, ORGAAI_MODELS, ORGAAI_VOICES } from '../types';
-import { useOrgaAI } from './useOrgaAI';
+import { useOrgaAI as useOrgaAIInternalHook } from './useOrgaAI';
 import { OrgaAI } from '../core/OrgaAI';
 import { logger } from '../utils';
 
@@ -25,10 +25,10 @@ interface OrgaAIContextValue extends OrgaAIHookReturn {
 
 const OrgaAIContext = createContext<OrgaAIContextValue | undefined>(undefined);
 
-export const OrgaAIProvider: React.FC<OrgaAIProviderProps> = ({
+export const OrgaAIProvider = ({
   children,
   callbacks,
-}) => {
+}: OrgaAIProviderProps) => {
   const config = OrgaAI.getConfig();
   const [model, _setModel] = useState<OrgaAIModel>(config.model ?? DEFAULT_MODEL);
   const [voice, _setVoice] = useState<OrgaAIVoice>(config.voice ?? DEFAULT_VOICE);
@@ -72,7 +72,7 @@ export const OrgaAIProvider: React.FC<OrgaAIProviderProps> = ({
     }
   };
 
-  const orgaAI = useOrgaAI({ ...callbacks });
+  const orgaAI = useOrgaAIInternalHook({ ...callbacks });
 
   // Always use the latest context values for session
   const wrappedStartSession = useCallback(
@@ -102,7 +102,7 @@ export const OrgaAIProvider: React.FC<OrgaAIProviderProps> = ({
   );
 };
 
-export function useOrgaAIContext(): OrgaAIContextValue {
+export function useOrgaAI(): OrgaAIContextValue {
   const context = useContext(OrgaAIContext);
   if (!context) {
     throw new Error('useOrgaAIContext must be used within an OrgaAIProvider');

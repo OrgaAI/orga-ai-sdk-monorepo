@@ -41,6 +41,7 @@ OrgaAI.init({
   },
 });
 ```
+> **Note:** See configuration below on how to setup this endpoint
 
 ### 2. Wrap Your App with the Provider
 
@@ -65,10 +66,10 @@ function MyComponent() {
   const {
     startSession,
     endSession,
-    videoStream,
+    userVideoStream,
     toggleCamera,
     // ...other methods and state
-  } = useOrgaAIContext();
+  } = useOrgaAI();
 
   // ...
 }
@@ -157,7 +158,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 
 | Option                          | Type      | Description                                                                                 | Default      | Required? |
 |----------------------------------|-----------|---------------------------------------------------------------------------------------------|--------------|-----------|
-| `logLevel`                      | `"debug" \| "info" \| "warn" \| "error" \| "none"` | Logging verbosity.                                    | `"warn"`     | No        |
+| `logLevel`                      | `"debug" \| "info" \| "warn" \| "error" \| "disabled"` | Logging verbosity.                                    | `"disabled"`     | No        |
 | `timeout`                       | `number`  | Timeout for requests, in milliseconds.                                                      | `30000`      | No        |
 | `ephemeralEndpoint`             | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
 | `fetchEphemeralTokenAndIceServers` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |

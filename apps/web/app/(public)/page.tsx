@@ -1,12 +1,14 @@
 "use client";
 import {
-  useOrgaAIContext,
+  useOrgaAI,
   OrgaVideo,
   OrgaAudio,
   ORGAAI_MODELS,
   ORGAAI_TEMPERATURE_RANGE,
   ORGAAI_VOICES,
   OrgaAIModel,
+  OrgaAIVoice,
+  ConnectionState,
 } from "@orga-ai/sdk-web";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,7 +20,17 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Video, CameraOffIcon, Settings, X, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Video,
+  CameraOffIcon,
+  Settings,
+  X,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ConversationItem } from "@orga-ai/sdk-web";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,31 +39,25 @@ export default function Home() {
   const {
     startSession,
     endSession,
-    videoStream,
-    audioStream,
+    userVideoStream,
+    aiAudioStream,
     connectionState,
     isCameraOn,
     isMicOn,
     toggleCamera,
     toggleMic,
-    remoteStream,
-    updateModel,
-    updateInstructions,
-    updateModalities,
-    updateTemperature,
-    updateVoice,
-    currentModel,
-    currentVoice,
-    currentTemperature,
-    currentInstructions,
+    model,
+    voice,
+    temperature,
     conversationItems,
-  } = useOrgaAIContext();
-  const [instructions, setInstructions] = useState("");
+    updateParams,
+  } = useOrgaAI();
+  const [instructionsText, setInstructionsText] = useState("");
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [instructionsUpdated, setInstructionsUpdated] = useState(false);
   const [isConversationOpen, setIsConversationOpen] = useState(false);
   const conversationRef = useRef<HTMLDivElement>(null);
-  
+
   const buttonText = () => {
     if (connectionState === "connected") {
       return "Disconnect";
@@ -71,12 +77,12 @@ export default function Home() {
     }
   }, [isConnected]);
 
-      // Auto-scroll to bottom when new messages arrive
-    useEffect(() => {
-      if (conversationRef.current) {
-        conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
-      }
-    }, [conversationItems]);
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    }
+  }, [conversationItems]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
@@ -84,20 +90,26 @@ export default function Home() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">OrgaAI Playground</h1>
-            <p className="text-slate-600 mt-1">Test and explore the OrgaAI SDK</p>
+            <h1 className="text-3xl font-bold text-slate-900">
+              OrgaAI Playground
+            </h1>
+            <p className="text-slate-600 mt-1">
+              Test and explore the OrgaAI SDK
+            </p>
           </div>
-          
+
           {/* Connection Status */}
           <div className="flex items-center gap-3">
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isConnected 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-slate-100 text-slate-600'
-            }`}>
+            <div
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                isConnected
+                  ? "bg-green-100 text-green-800"
+                  : "bg-slate-100 text-slate-600"
+              }`}
+            >
               {connectionState === "connected" ? "Connected" : "Disconnected"}
             </div>
-            
+
             {/* Config and Conversation Toggle Buttons */}
             {isConnected && (
               <div className="flex items-center gap-2">
@@ -109,9 +121,13 @@ export default function Home() {
                 >
                   <Settings className="w-4 h-4" />
                   Config
-                  {isConfigOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {isConfigOpen ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -120,7 +136,11 @@ export default function Home() {
                 >
                   <MessageSquare className="w-4 h-4" />
                   Conversation
-                  {isConversationOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {isConversationOpen ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             )}
@@ -134,9 +154,9 @@ export default function Home() {
             <div className="relative w-full max-w-2xl aspect-video bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
               {/* Camera Preview */}
               <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                {isCameraOn && videoStream ? (
+                {isCameraOn && userVideoStream ? (
                   <OrgaVideo
-                    stream={videoStream}
+                    stream={userVideoStream}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -151,13 +171,15 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              
+
               {/* Connection Status Overlay */}
               {!isConnected && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="text-center text-white">
                     <p className="text-lg font-medium mb-2">Not Connected</p>
-                    <p className="text-sm opacity-90">Connect to start using the camera</p>
+                    <p className="text-sm opacity-90">
+                      Connect to start using the camera
+                    </p>
                   </div>
                 </div>
               )}
@@ -168,7 +190,9 @@ export default function Home() {
           {isConnected && isConfigOpen && (
             <div className="w-96 bg-white rounded-xl shadow-lg border border-slate-200 p-6 overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-900">Model Configuration</h2>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  Model Configuration
+                </h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -181,10 +205,14 @@ export default function Home() {
               <div className="space-y-6">
                 {/* Model Selection */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Model</Label>
+                  <Label className="text-sm font-medium text-slate-700">
+                    Model
+                  </Label>
                   <Select
-                    value={currentModel as string}
-                    onValueChange={(value) => updateModel(value as OrgaAIModel)}
+                    value={model}
+                    onValueChange={(value) =>
+                      updateParams({ model: value as OrgaAIModel })
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a model" />
@@ -201,8 +229,15 @@ export default function Home() {
 
                 {/* Voice Selection */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Voice</Label>
-                  <Select value={currentVoice as string} onValueChange={updateVoice}>
+                  <Label className="text-sm font-medium text-slate-700">
+                    Voice
+                  </Label>
+                  <Select
+                    value={voice}
+                    onValueChange={(value) =>
+                      updateParams({ voice: value as OrgaAIVoice })
+                    }
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a voice" />
                     </SelectTrigger>
@@ -219,14 +254,18 @@ export default function Home() {
                 {/* Temperature Slider */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-slate-700">Temperature</Label>
+                    <Label className="text-sm font-medium text-slate-700">
+                      Temperature
+                    </Label>
                     <span className="text-sm text-slate-500">
-                      {currentTemperature?.toFixed(1)}
+                      {temperature?.toFixed(1)}
                     </span>
                   </div>
                   <Slider
-                    value={currentTemperature ? [currentTemperature] : [0]}
-                    onValueChange={(value) => updateTemperature(value[0])}
+                    value={temperature ? [temperature] : [0]}
+                    onValueChange={(value) =>
+                      updateParams({ temperature: value[0] })
+                    }
                     min={ORGAAI_TEMPERATURE_RANGE.min}
                     max={ORGAAI_TEMPERATURE_RANGE.max}
                     step={0.1}
@@ -240,22 +279,24 @@ export default function Home() {
 
                 {/* Instructions */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Instructions</Label>
+                  <Label className="text-sm font-medium text-slate-700">
+                    Instructions
+                  </Label>
                   <Textarea
-                    value={instructions}
+                    value={instructionsText}
                     onChange={(e) => {
-                      setInstructions(e.target.value);
+                      setInstructionsText(e.target.value);
                       setInstructionsUpdated(false);
                     }}
                     placeholder="Enter custom instructions for the AI..."
                     className="min-h-[100px] resize-none"
                   />
                   <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => {
-                        updateInstructions(instructions);
+                        updateParams({ instructions: instructionsText });
                         setInstructionsUpdated(true);
                         // Reset the success state after 3 seconds
                         setTimeout(() => setInstructionsUpdated(false), 3000);
@@ -281,8 +322,12 @@ export default function Home() {
             <div className="w-96 bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col h-[600px]">
               <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Conversation</h2>
-                  <p className="text-xs text-slate-500 mt-1">Real-time conversation items from SDK</p>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    Conversation
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Real-time conversation items from SDK
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
@@ -292,13 +337,18 @@ export default function Home() {
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              
-              <div ref={conversationRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+
+              <div
+                ref={conversationRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+              >
                 {conversationItems.length === 0 ? (
                   <div className="text-center text-slate-500 py-8">
                     <MessageSquare className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                     <p className="text-sm">No messages yet</p>
-                    <p className="text-xs mt-1">Start talking to see the conversation here</p>
+                    <p className="text-xs mt-1">
+                      Start talking to see the conversation here
+                    </p>
                   </div>
                 ) : (
                   conversationItems.map((item, index) => (
@@ -314,9 +364,13 @@ export default function Home() {
                         }`}
                       >
                         <p className="text-sm">{item.content.message}</p>
-                        <div className={`flex items-center gap-2 mt-1 text-xs ${
-                          item.sender === "user" ? "text-blue-100" : "text-slate-500"
-                        }`}>
+                        <div
+                          className={`flex items-center gap-2 mt-1 text-xs ${
+                            item.sender === "user"
+                              ? "text-blue-100"
+                              : "text-slate-500"
+                          }`}
+                        >
                           <span className="capitalize">{item.sender}</span>
                           {item.timestamp && (
                             <span>
@@ -339,7 +393,9 @@ export default function Home() {
             {/* Media Controls */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-700">Camera:</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Camera:
+                </span>
                 <Button
                   variant={isCameraOn ? "default" : "outline"}
                   size="sm"
@@ -347,13 +403,19 @@ export default function Home() {
                   disabled={!isConnected}
                   className="flex items-center gap-2"
                 >
-                  {isCameraOn ? <Video className="w-4 h-4" /> : <CameraOffIcon className="w-4 h-4" />}
+                  {isCameraOn ? (
+                    <Video className="w-4 h-4" />
+                  ) : (
+                    <CameraOffIcon className="w-4 h-4" />
+                  )}
                   {isCameraOn ? "On" : "Off"}
                 </Button>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-700">Microphone:</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Microphone:
+                </span>
                 <Button
                   variant={isMicOn ? "default" : "outline"}
                   size="sm"
@@ -361,7 +423,11 @@ export default function Home() {
                   disabled={!isConnected}
                   className="flex items-center gap-2"
                 >
-                  {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+                  {isMicOn ? (
+                    <Mic className="w-4 h-4" />
+                  ) : (
+                    <MicOff className="w-4 h-4" />
+                  )}
                   {isMicOn ? "On" : "Off"}
                 </Button>
               </div>
@@ -369,17 +435,30 @@ export default function Home() {
 
             {/* Connection Button */}
             <Button
-              onClick={() => isConnected ? endSession() : startSession({
-                onDataChannelMessage: (event) => {
-                  if (event.event === "conversation.item.input_audio_transcription.completed" || 
-                      event.event === "response.output_item.done") {
-                    console.log("Conversation-related event:", event.event, event.message, event.conversationId);
-                  }
-                },
-                onConversationMessageCreated: (item: ConversationItem) => {
-                  console.log("Conversation message created:", item);
-                }
-              })}
+              onClick={() =>
+                isConnected
+                  ? endSession()
+                  : startSession({
+                      onConversationMessageCreated: (item: ConversationItem) => {
+                        console.log("Conversation message created:", item);
+                      },
+                      onSessionConnected: () => {
+                        console.log("Session connected");
+                      },
+                      onSessionEnd: () => {
+                        console.log("Session ended");
+                      },
+                      onSessionStart: () => {
+                        console.log("Session started");
+                      },
+                      onError: (error: Error) => {
+                        console.log("Session error:", error);
+                      },
+                      onConnectionStateChange: (state: ConnectionState) => {
+                        console.log("Connection state changed:", state);
+                      },
+                    })
+              }
               variant={isConnected ? "destructive" : "default"}
               size="lg"
               className="px-8"
@@ -389,9 +468,9 @@ export default function Home() {
           </div>
         </div>
       </div>
-      
+
       {/* Audio Stream */}
-      <OrgaAudio stream={remoteStream} hidden />
+      <OrgaAudio stream={aiAudioStream} hidden />
     </div>
   );
 }

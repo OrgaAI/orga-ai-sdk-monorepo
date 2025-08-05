@@ -5,9 +5,13 @@ import { fetchEphemeralTokenAndIceServers } from "@/services/fetchTokenAndServer
 
 OrgaAI.init({
   logLevel: "debug",
-  return_transcription: true,
-  history: true,
+  enableTranscriptions: true,
   fetchEphemeralTokenAndIceServers: fetchEphemeralTokenAndIceServers,
+  // model: "orga-1-beta",
+  // voice: "coral",
+  // temperature: 0.5,
+  // maxTokens: 1000,
+  // modalities: ["audio", "video"],
 })
 
 export default function PublicLayout({
