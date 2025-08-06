@@ -1,4 +1,3 @@
-// In your SDK:
 import React, { useEffect, useRef } from "react";
 import { logger } from "../utils";
 

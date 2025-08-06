@@ -3,16 +3,17 @@ import { logger } from "../utils";
 
 type OrgaAudioProps = React.AudioHTMLAttributes<HTMLAudioElement> & {
     stream: MediaStream | null;
+    hidden?: boolean;
   };
 
-export const OrgaAudio = ({ stream, ...props }: OrgaAudioProps) => {
+export const OrgaAudio = ({ stream, hidden = true, ...props }: OrgaAudioProps) => {
     const ref = useRef<HTMLAudioElement>(null);
     useEffect(() => {
       if (ref.current) ref.current.srcObject = stream || null;
       logger.debug("OrgaAudio stream:", stream);
     }, [stream]);
-    return <audio ref={ref} autoPlay {...props} />;
+    return <audio ref={ref} hidden={hidden} autoPlay {...props} />;
   };
 
 //   Example usage:
-//   <OrgaAudio stream={remoteStream} hidden />
+//   <OrgaAudio stream={remoteStream} />

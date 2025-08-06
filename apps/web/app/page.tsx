@@ -470,7 +470,7 @@ export default function Home() {
       </div>
 
       {/* Audio Stream */}
-      <OrgaAudio stream={aiAudioStream} hidden />
+      <OrgaAudio stream={aiAudioStream} />
     </div>
   );
 }
