@@ -326,62 +326,12 @@ OrgaAI.init({
   },
 });
 ```
-> **Note:** See configuration below on how to setup this endpoint
 
 ---
 
 ## Secure Backend Example for Ephemeral Token & ICE Servers
 
 **Never expose your OrgaAI API key in client code. Always use a secure backend to fetch ephemeral tokens and ICE servers.**
-
-### Web Example (Next.js API Route)
-
-```ts
-// app/api/orga-ephemeral.ts
-import { NextResponse } from "next/server";
-
-const ORGA_API_KEY = process.env.ORGA_API_KEY;
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL
-
-const fetchIceServers = async (ephemeralToken: string) => {
-    const URL = `https://api.orga-ai.com/ice-config`;
-    try {
-      const iceServersResponse = await fetch(URL, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${ephemeralToken}`,
-        },
-      });
-      if (!iceServersResponse.ok) {
-        return NextResponse.json({ error: "Failed to fetch ICE servers" }, { status: 500 });
-      }
-      const data = await iceServersResponse.json();
-      return data.iceServers;
-    } catch (error) {
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    }
-  };
-
-export const GET = async () => {
-    const apiUrl = `https://staging.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
-    const ephemeralResponse = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${ORGA_API_KEY}`,
-        },
-      });
-      
-      if (!ephemeralResponse.ok) throw new Error('Failed to fetch ephemeral token');
-
-      const data = await ephemeralResponse.json();
-      const iceServers = await fetchIceServers(data.ephemeral_token);
-      const returnData = {
-        iceServers,
-        ephemeralToken: data.ephemeral_token
-      }
-    return NextResponse.json(returnData);
-}
-```
 
 ---
 
@@ -563,7 +513,7 @@ const handleStartSession = async () => {
     ```
   - _Usage:_
     ```tsx
-    <OrgaAudio stream={aiAudioStream} hidden />
+    <OrgaAudio stream={aiAudioStream} />
     ```
 
 ### Hooks
@@ -614,75 +564,7 @@ const handleStartSession = async () => {
     }
     ```
 
-### Usage Examples
-
-#### Advanced Session with Callbacks
-
-```tsx
-'use client'
-import { useOrgaAI, OrgaVideo, OrgaAudio } from '@orga-ai/sdk-web';
-
-function AdvancedComponent() {
-  const { startSession, conversationItems } = useOrgaAI();
-
-  const handleStart = async () => {
-    await startSession({
-      model: 'orga-1-beta',
-      voice: 'alloy',
-      temperature: 0.7,
-      videoQuality: 'high',
-      enableTranscriptions: true,
-      instructions: 'You are a helpful AI assistant. Be concise and friendly.',
-      
-      onSessionStart: () => {
-        console.log('🚀 Session started');
-      },
-      onSessionConnected: () => {
-        console.log('✅ Connected to OrgaAI');
-      },
-      onError: (error) => {
-        console.error('❌ Session error:', error);
-      },
-      onConversationMessageCreated: (item) => {
-        console.log('💬 New message:', item);
-      },
-      onConnectionStateChange: (state) => {
-        console.log('🔄 Connection state:', state);
-      },
-    });
-  };
-
-  return (
-    <div>
-      <button onClick={handleStart}>Start Advanced Session</button>
-      
-      {/* Video and audio components */}
-      <div className="media-container">
-        <OrgaVideo 
-          stream={userVideoStream} 
-          className="camera-feed"
-          style={{ 
-            width: '100%', 
-            maxWidth: '500px',
-            borderRadius: '8px',
-            border: '2px solid #e0e0e0'
-          }}
-        />
-        <OrgaAudio stream={aiAudioStream} />
-      </div>
-      
-      <div>
-        <h3>Conversation:</h3>
-        {conversationItems.map((item, index) => (
-          <div key={index}>
-            <strong>{item.sender}:</strong> {item.content.message}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-```
+### Advanced Usage Examples
 
 #### Custom Media Handling
 
