@@ -41,7 +41,7 @@ ORGA_DEV_EMAIL=your_developer_email@example.com
 Create the backend endpoint for fetching ephemeral tokens:
 
 ```ts
-// app/api/orga-ephemeral.ts
+// app/api/orga-ephemeral/route.ts
 import { NextResponse } from "next/server";
 
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
@@ -67,7 +67,21 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export const GET = async () => {
-  const apiUrl = `https://staging.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
+  if (!USER_EMAIL) {
+    return NextResponse.json(
+      { error: 'Missing ORGA_DEV_EMAIL environment variable' }, 
+      { status: 500 }
+    );
+  }
+
+  if (!ORGA_API_KEY) {
+    return NextResponse.json(
+      { error: 'Missing ORGA_API_KEY environment variable' }, 
+      { status: 500 }
+    );
+  }
+
+  const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
   const ephemeralResponse = await fetch(apiUrl, {
     method: "POST",
     headers: {
@@ -75,7 +89,12 @@ export const GET = async () => {
     },
   });
     
-  if (!ephemeralResponse.ok) throw new Error('Failed to fetch ephemeral token');
+  if (!ephemeralResponse.ok) {
+    return NextResponse.json(
+      { error: 'Failed to fetch ephemeral token' }, 
+      { status: ephemeralResponse.status }
+    );
+  }
 
   const data = await ephemeralResponse.json();
   const iceServers = await fetchIceServers(data.ephemeral_token);
@@ -90,7 +109,7 @@ export const GET = async () => {
 ### 3. Initialize the SDK
 
 ```tsx
-//app/providers.tsx (Client Component)
+//app/providers/OrgaClientProvider.tsx (Client Component)
 'use client'
 import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-web';
 
@@ -105,7 +124,7 @@ OrgaAI.init({
   voice: 'alloy',
 });
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function OrgaClientProvider({ children }: { children: React.ReactNode }) {
   return <OrgaAIProvider>{children}</OrgaAIProvider>;
 }
 ```
@@ -114,7 +133,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // app/layout.tsx
-import { Providers } from './providers';
+import { OrgaClientProvider } from './providers/OrgaProvider';
 
 export default function RootLayout({
   children,
@@ -124,9 +143,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-          <Providers>
+          <OrgaClientProvider>
             {children}
-          </Providers>
+          </OrgaClientProvider>
       </body>
     </html>
   );
@@ -140,7 +159,7 @@ export default function RootLayout({
 'use client'
 import { useOrgaAI, OrgaVideo, OrgaAudio } from '@orga-ai/sdk-web';
 
-function MyComponent() {
+export default function Home() {
   const {
     startSession,
     endSession,
@@ -149,37 +168,97 @@ function MyComponent() {
     connectionState,
     isCameraOn,
     toggleCamera,
+    toggleMic,
+    isMicOn,
   } = useOrgaAI();
 
   const handleStart = async () => {
     await startSession({
-      videoQuality: 'high',
-      enableTranscriptions: true,
       onSessionConnected: () => {
-        console.log('Connected!');
+        console.log("Connected!");
       },
     });
   };
 
   return (
-    <div>
-      <button onClick={handleStart}>Start Session</button>
-      <button onClick={endSession}>End Session</button>
-      <button onClick={toggleCamera}>
-        {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
-      </button>
-      
-      {/* Camera preview using OrgaVideo component */}
-      <OrgaVideo 
-        stream={userVideoStream} 
-        className="camera-preview"
-        style={{ width: '100%', maxWidth: '400px' }}
-      />
-      
-      {/* AI audio using OrgaAudio component */}
-      <OrgaAudio stream={aiAudioStream} />
-      
-      <div>Status: {connectionState}</div>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8">
+          OrgaAI SDK Quick Start
+        </h1>
+
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Camera Preview</h2>
+          <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+            <OrgaVideo
+              stream={userVideoStream}
+              className="w-full h-64 object-cover"
+            />
+            {!userVideoStream && (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <p>Camera preview will appear here</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Controls</h2>
+          <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+            <span className="font-medium">Status: {connectionState}</span>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleStart}
+              disabled={
+                connectionState === "connected" ||
+                connectionState === "connecting"
+              }
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg"
+            >
+              {connectionState === "connecting"
+                ? "Connecting..."
+                : "Start Session"}
+            </button>
+
+            <button
+              onClick={endSession}
+              disabled={connectionState !== "connected"}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg"
+            >
+              End Session
+            </button>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={toggleCamera}
+                disabled={connectionState !== "connected"}
+                className={`py-2 px-4 rounded-lg ${
+                  isCameraOn
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {isCameraOn ? "Camera On" : "Camera Off"}
+              </button>
+
+              <button
+                onClick={toggleMic}
+                disabled={connectionState !== "connected"}
+                className={`py-2 px-4 rounded-lg ${
+                  isMicOn
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {isMicOn ? "Mic On" : "Mic Off"}
+              </button>
+            </div>
+          </div>
+        </div>
+        <OrgaAudio stream={aiAudioStream} />
+      </div>
     </div>
   );
 }
