@@ -82,7 +82,6 @@ export const connectToRealtime = async ({
     voice,
     model,
     temperature,
-    maxTokens,
     enableTranscriptions,
     instructions,
     modalities,
@@ -96,11 +95,10 @@ export const connectToRealtime = async ({
   logger.debug(`[OrgaAI] Voice: ${voice}`);
   logger.debug(`[OrgaAI] Model: ${model}`);
   logger.debug(`[OrgaAI] Temperature: ${temperature}`);
-  logger.debug(`[OrgaAI] Max Tokens: ${maxTokens}`);
-  // logger.debug(`[OrgaAI] History: ${history}`);
   logger.debug(`[OrgaAI] Return Transcription: ${enableTranscriptions}`);
   logger.debug(`[OrgaAI] Instructions: ${instructions}`);
   logger.debug(`[OrgaAI] Modalities: ${modalities}`);
+  // logger.debug(`[OrgaAI] History: ${history}`);
   
   const requestBody = {
     offer: {
@@ -116,7 +114,6 @@ export const connectToRealtime = async ({
       instructions: instructions || null,
       modalities: modalities || ['audio', 'video'],
       // history: history || false,
-      // max_tokens: maxTokens || 50,
     },
   };
 

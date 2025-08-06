@@ -39,7 +39,6 @@ export interface OrgaAIConfig {
   model?: OrgaAIModel;
   voice?: OrgaAIVoice;
   temperature?: number; 
-  maxTokens?: number; 
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
@@ -59,7 +58,6 @@ export interface SessionConfig {
   voice?: OrgaAIVoice; // Updated to use proper type
   model?: OrgaAIModel; // Updated to use proper type
   temperature?: number; 
-  maxTokens?: number; 
   instructions?: string; // Added for session instructions
   modalities?: Modality[]; // Added for session modalities
   // Callbacks for session events

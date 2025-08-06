@@ -324,10 +324,10 @@ The `OrgaAI.init(config)` method accepts the following options:
 | `ephemeralEndpoint`             | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
 | `fetchEphemeralTokenAndIceServers` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
 | `enableTranscriptions` | `boolean` | Whether to return transcription data in the session. | `false`           | No      |
+| `instructions`                  | `string`  | Custom instructions for the AI in this session.                                            | —            | No | 
 | `model`                         | `OrgaAIModel` | Model to use (see SDK for allowed values).                                                 | —            | No        |
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
-| `maxTokens`                     | `number`  | Maximum tokens for responses. Must be between 100 and 1000.                                 | —            | No        |
 
 > **Note:** Either `ephemeralEndpoint` **or** `fetchEphemeralTokenAndIceServers` is required.
 
@@ -344,7 +344,6 @@ OrgaAI.init({
   model: 'orga-1-beta',
   voice: 'alloy',
   temperature: 0.7,
-  maxTokens: 500,
 });
 ```
 
@@ -357,7 +356,6 @@ OrgaAI.init({
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
-- **maxTokens:** Maximum number of tokens in responses. Must be between 100 and 1000.
 
 ---
 
@@ -375,7 +373,6 @@ When calling `startSession(config)`, you can pass configuration options that wil
 | `model`                         | `OrgaAIModel` | AI model to use for this session (overrides global model).                           | Global model  |
 | `voice`                         | `OrgaAIVoice` | Voice to use for this session (overrides global voice).                               | Global voice  |
 | `temperature`                   | `number`  | Temperature for this session (overrides global temperature).                               | Global temp   |
-| `maxTokens`                     | `number`  | Max tokens for this session (overrides global maxTokens).                                  | Global maxTokens|
 | `instructions`                  | `string`  | Custom instructions for the AI in this session.                                            | —            |
 | `modalities`                    | `Modality[]` | Audio/video modalities for this session (overrides global).                        | Global modalities|
 
