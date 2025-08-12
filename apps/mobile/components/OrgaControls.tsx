@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useOrgaAIContext } from "@orga-ai/sdk-react-native";
+import { useOrgaAI } from "@orga-ai/sdk-react-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -21,7 +21,7 @@ const OrgaControls = () => {
     isCameraOn,
     flipCamera,
     conversationItems,
-  } = useOrgaAIContext();
+  } = useOrgaAI();
 
   const ConnectingWithOrga = () => {
     return (
@@ -39,15 +39,6 @@ const OrgaControls = () => {
       },
       onConversationMessageCreated(message) {
         console.log("conversationMessageCreated", message);
-      },
-      onUserSpeechTranscription: (transcription) => {
-        console.log("transcription", transcription);
-      },
-      onUserSpeechComplete: (transcription) => {
-        console.log("transcriptionInputCompleted", transcription);
-      },
-      onAssistantResponseComplete: (response) => {
-        console.log("responseOutputDone", response);
       },
     });
   };

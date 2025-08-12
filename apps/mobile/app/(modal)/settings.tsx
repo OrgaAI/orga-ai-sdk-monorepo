@@ -2,7 +2,7 @@ import {
   ORGAAI_MODELS,
   ORGAAI_VOICES,
   ORGAAI_TEMPERATURE_RANGE,
-  useOrgaAIContext,
+  useOrgaAI,
 } from "@orga-ai/sdk-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,14 +19,12 @@ import { Ionicons } from "@expo/vector-icons";
 const settings = () => {
   const {
     temperature,
-    updateModel,
-    updateVoice,
-    updateTemperature,
-    currentModel,
-    currentVoice,
-    updateInstructions,
+    updateParams,
+    model,
+    voice,
+    instructions,
     connectionState,
-  } = useOrgaAIContext();
+  } = useOrgaAI();
   
   const [temperatureValue, setTemperatureValue] = useState(
     temperature.toString()
@@ -45,10 +43,10 @@ const settings = () => {
       if (isNaN(value)) value = 0.0;
       if (value < 0.0) value = 0.0;
       if (value > 1.0) value = 1.0;
-      updateTemperature(value);
+      updateParams({ temperature: value });
     }, 300);
     return () => clearTimeout(handler);
-  }, [temperatureValue, updateTemperature]);
+  }, [temperatureValue, updateParams]);
 
   // Sync local state if context temperature changes externally
   useEffect(() => {
@@ -61,7 +59,7 @@ const settings = () => {
   };
 
   const handleSaveInstructions = () => {
-    updateInstructions(instructionsValue);
+    updateParams({ instructions: instructionsValue });
     setInstructionsUpdated(true);
     // Reset the success state after 3 seconds
     setTimeout(() => setInstructionsUpdated(false), 3000);
@@ -74,11 +72,11 @@ const settings = () => {
         "Changing the model will affect the current session. Continue?",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Continue", onPress: () => updateModel(model as any) },
+          { text: "Continue", onPress: () => updateParams({ model: model as any }) },
         ]
       );
     } else {
-      updateModel(model as any);
+      updateParams({ model: model as any });
     }
   };
 
@@ -89,11 +87,11 @@ const settings = () => {
         "Changing the voice will affect the current session. Continue?",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Continue", onPress: () => updateVoice(voice as any) },
+          { text: "Continue", onPress: () => updateParams({ voice: voice as any }) },
         ]
       );
     } else {
-      updateVoice(voice as any);
+      updateParams({ voice: voice as any });
     }
   };
 
@@ -135,22 +133,22 @@ const settings = () => {
               Choose the AI model for conversation
             </Text>
             <View style={styles.optionsGrid}>
-              {models.map((model) => (
+              {models.map((modelItem) => (
                 <TouchableOpacity
-                  key={model}
-                  onPress={() => handleModelChange(model)}
+                  key={modelItem}
+                  onPress={() => handleModelChange(modelItem)}
                   style={[
                     styles.optionCard,
-                    model === currentModel ? styles.selectedOptionCard : styles.unselectedOptionCard
+                    modelItem === model ? styles.selectedOptionCard : styles.unselectedOptionCard
                   ]}
                 >
                   <Text style={[
                     styles.optionText,
-                    model === currentModel ? styles.selectedOptionText : styles.unselectedOptionText
+                    modelItem === model ? styles.selectedOptionText : styles.unselectedOptionText
                   ]}>
-                    {model}
+                    {modelItem}
                   </Text>
-                  {model === currentModel && (
+                  {modelItem === model && (
                     <Ionicons name="checkmark" size={16} color="#10b981" />
                   )}
                 </TouchableOpacity>
@@ -165,22 +163,22 @@ const settings = () => {
               Select the voice for AI responses
             </Text>
             <View style={styles.optionsGrid}>
-              {voices.map((voice) => (
+              {voices.map((voiceItem) => (
                 <TouchableOpacity
-                  key={voice}
-                  onPress={() => handleVoiceChange(voice)}
+                  key={voiceItem}
+                  onPress={() => handleVoiceChange(voiceItem)}
                   style={[
                     styles.optionCard,
-                    voice === currentVoice ? styles.selectedOptionCard : styles.unselectedOptionCard
+                    voiceItem === voice ? styles.selectedOptionCard : styles.unselectedOptionCard
                   ]}
                 >
                   <Text style={[
                     styles.optionText,
-                    voice === currentVoice ? styles.selectedOptionText : styles.unselectedOptionText
+                    voiceItem === voice ? styles.selectedOptionText : styles.unselectedOptionText
                   ]}>
-                    {voice}
+                    {voiceItem}
                   </Text>
-                  {voice === currentVoice && (
+                  {voiceItem === voice && (
                     <Ionicons name="checkmark" size={16} color="#10b981" />
                   )}
                 </TouchableOpacity>

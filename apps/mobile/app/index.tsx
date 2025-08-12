@@ -1,15 +1,14 @@
 import OrgaControls from "@/components/OrgaControls";
 import TranscriptionPanel from "@/components/TranscriptionPanel";
-import TranscriptionStatus from "@/components/TranscriptionStatus";
-import { OrgaAICameraView, useOrgaAIContext} from "@orga-ai/sdk-react-native";
+import { OrgaAICameraView, useOrgaAI} from "@orga-ai/sdk-react-native";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { useTranscription } from "@/context/TranscriptionContext";
 
 export default function HomeScreen() {
-  const { videoStream, connectionState, conversationItems, isMicOn } = useOrgaAIContext();
-  const { isTranscriptionOpen, setIsTranscriptionOpen } = useTranscription();
+  const { userVideoStream, connectionState, conversationItems, isMicOn, aiAudioStream } = useOrgaAI();
+  const { showTranscriptions, toggleTranscriptions } = useTranscription();
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastTranscription, setLastTranscription] = useState<string>();
@@ -72,7 +71,7 @@ export default function HomeScreen() {
       {/* Main Camera View */}
       <View style={styles.cameraContainer}>
         <OrgaAICameraView
-          streamURL={videoStream ? videoStream.toURL() : undefined}
+          streamURL={userVideoStream ? userVideoStream.toURL() : undefined}
           containerStyle={styles.cameraViewContainer}
           style={{ width: "100%", height: "100%" }}
           placeholder={
@@ -113,21 +112,14 @@ export default function HomeScreen() {
           }
         >
           <OrgaControls />
-          
-          {/* Transcription Status Overlay */}
-          <TranscriptionStatus
-            isListening={isListening}
-            isProcessing={isProcessing}
-            lastTranscription={lastTranscription}
-          />
         </OrgaAICameraView>
       </View>
 
       {/* Transcription Panel */}
-      {isConnected && isTranscriptionOpen && (
+      {isConnected && showTranscriptions && (
         <TranscriptionPanel 
           conversationItems={conversationItems}
-          onClose={() => setIsTranscriptionOpen(false)}
+          onClose={toggleTranscriptions}
         />
       )}
     </View>

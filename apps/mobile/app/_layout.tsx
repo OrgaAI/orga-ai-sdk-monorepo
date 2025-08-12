@@ -7,20 +7,19 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { fetchEphemeralTokenAndIceServers } from "@/services/fetch";
 import { Ionicons } from "@expo/vector-icons";
-import { OrgaAIProvider, OrgaAI } from "@orga-ai/sdk-react-native";
+import { OrgaAIProvider, OrgaAI,useOrgaAI } from "@orga-ai/sdk-react-native";
 import { TouchableOpacity } from "react-native";
-import { useOrgaAIContext } from "@orga-ai/sdk-react-native";
 import { TranscriptionProvider, useTranscription } from "@/context/TranscriptionContext";
 
 OrgaAI.init({
   fetchEphemeralTokenAndIceServers,
   logLevel: "debug",
-  return_transcription: true,
+  enableTranscriptions: true,
   model: "orga-1-beta",
   voice: "echo",
   temperature: 0.5,
-  maxTokens: 50,
-  instructions: "Refer to me as 'Austin'"
+  instructions: "Refer to me as 'Austin'",
+  modalities: ["audio"]
 });
 
 function HeaderRight() {
@@ -40,8 +39,8 @@ function HeaderRight() {
 }
 
 function HeaderLeft() {
-  const { connectionState } = useOrgaAIContext();
-  const { toggleTranscription } = useTranscription();
+  const { connectionState } = useOrgaAI();
+  const { toggleTranscriptions } = useTranscription();
   const isConnected = connectionState === "connected";
 
   if (!isConnected) {
@@ -50,7 +49,7 @@ function HeaderLeft() {
 
   return (
     <TouchableOpacity
-      onPress={toggleTranscription}
+      onPress={toggleTranscriptions}
     >
       <Ionicons
         name="chatbubbles"
