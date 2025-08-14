@@ -538,7 +538,18 @@ export function useOrgaAI(
       onSessionStart?.();
       InCallManager.start({ media: "video" });
     } catch (error) {
-      logger.error("❌ Failed to connect:", error);
+      // Improve error message for better debugging
+      let errorMessage = "Failed to connect";
+      if (error instanceof Error) {
+        if (error.message.includes('JSON') && error.message.includes('Unexpected character')) {
+          errorMessage = "Failed to connect: The server returned HTML instead of JSON. Please check your endpoint configuration.";
+        } else if (error.message.includes('fetch')) {
+          errorMessage = `Failed to connect: Network error - ${error.message}`;
+        } else {
+          errorMessage = `Failed to connect: ${error.message}`;
+        }
+      }
+      logger.error("❌", errorMessage, error);
       setConnectionState("failed");
       setConversationId(null);
       onError?.(error as Error);
@@ -589,7 +600,18 @@ export function useOrgaAI(
         // Removed initializeMedia call - media streams will be created when user enables camera/mic
         await connect();
       } catch (error) {
-        logger.error("❌ Failed to start session:", error);
+        // Improve error message for better debugging
+        let errorMessage = "Failed to start session";
+        if (error instanceof Error) {
+          if (error.message.includes('JSON') && error.message.includes('Unexpected character')) {
+            errorMessage = "Failed to start session: The server returned HTML instead of JSON. Please check your endpoint configuration.";
+          } else if (error.message.includes('fetch')) {
+            errorMessage = `Failed to start session: Network error - ${error.message}`;
+          } else {
+            errorMessage = `Failed to start session: ${error.message}`;
+          }
+        }
+        logger.error("❌", errorMessage, error);
         setConnectionState("failed");
         onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
