@@ -1,10 +1,15 @@
-import { SessionConfig } from '../types';
-import { RTCPeerConnection } from 'react-native-webrtc';
-import { MediaTrackConstraints } from 'react-native-webrtc/lib/typescript/Constraints';
-import { Constraints } from 'react-native-webrtc/lib/typescript/getUserMedia';
-import axios from 'axios';
-import { OrgaAI } from '../core/OrgaAI';
+import { SessionConfig } from "../types";
+import { RTCPeerConnection } from "react-native-webrtc";
+import { MediaTrackConstraints } from "react-native-webrtc/lib/typescript/Constraints";
+import { Constraints } from "react-native-webrtc/lib/typescript/getUserMedia";
+// import RTCIceCandidateInit from "react-native-webrtc/lib/typescript/RTCIceCandidate"; //TODO: Remove init
+import { OrgaAI } from "../core/OrgaAI";
 
+interface RTCIceCandidateInit {
+  candidate?: string;
+  sdpMLineIndex?: number | null;
+  sdpMid?: string | null;
+}
 export const MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = {
   low: {
     width: { min: 320, ideal: 640, max: 1280 },
@@ -20,30 +25,31 @@ export const MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = {
     width: { min: 1280, ideal: 1920, max: 2560 },
     height: { min: 720, ideal: 1080, max: 1440 },
     frameRate: { min: 30, ideal: 30, max: 30 },
-  }
-}
+  },
+};
 
-export const getMediaConstraints = (config: SessionConfig = {}): Constraints => {
-  const videoQuality = config.videoQuality || 'medium';
-  const facingMode = config.facingMode || 'user';
+export const getMediaConstraints = (
+  config: SessionConfig = {}
+): Constraints => {
+  const videoQuality = config.videoQuality || "medium";
+  const facingMode = config.facingMode || "user";
 
   const video: MediaTrackConstraints = {
     facingMode,
-    ...MIN_MAX_IDEAL_VIDEO_CONSTRAINTS[videoQuality]
-  }
+    ...MIN_MAX_IDEAL_VIDEO_CONSTRAINTS[videoQuality],
+  };
   return {
     audio: false,
-    video
+    video,
   };
 };
 
 // TODO: Replace with correct import if available from react-native-webrtc or DOM types
-// export type RTCPeerConnection = any; // Replace with actual type if available
-export type RTCIceCandidateInit = {
-  candidate: string;
-  sdpMid?: string;
-  sdpMLineIndex?: number;
-};
+// export type RTCIceCandidateInit = {
+//   candidate: string;
+//   sdpMid?: string;
+//   sdpMLineIndex?: number;
+// };
 export type RTCIceServer = {
   urls: string | string[];
   username?: string;
@@ -55,17 +61,26 @@ export type RTCIceServer = {
  * @param ephemeralEndpoint - The URL to the developer's backend proxy endpoint.
  * Returns: { ephemeralToken: string, iceServers: RTCIceServer[] }
  */
-export const fetchEphemeralTokenAndIceServers = async (ephemeralEndpoint: string): Promise<{
+export const fetchEphemeralTokenAndIceServers = async (
+  ephemeralEndpoint: string
+): Promise<{
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }> => {
-  const response = await axios.get(ephemeralEndpoint);
-  if (!response.data?.ephemeralToken || !response.data?.iceServers) {
-    throw new Error('Invalid response from ephemeral token endpoint');
+  const response = await fetch(ephemeralEndpoint);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ephemeral token: ${response.status} ${response.statusText}`);
   }
+
+  const data = await response.json();
+  if (!data?.ephemeralToken || !data?.iceServers) {
+    throw new Error("Invalid response from ephemeral token endpoint");
+  }
+
   return {
-    ephemeralToken: response.data.ephemeralToken,
-    iceServers: response.data.iceServers,
+    ephemeralToken: data.ephemeralToken,
+    iceServers: data.iceServers,
   };
 };
 
@@ -81,70 +96,107 @@ export const connectToRealtime = async ({
   ephemeralToken: string;
   peerConnection: RTCPeerConnection;
   gathered: RTCIceCandidateInit[];
-}): Promise<{ conversation_id: string; answer: { sdp: string; type: string } }> => {
+}): Promise<{
+  conversation_id: string;
+  answer: { sdp: string; type: string };
+}> => {
   const config = OrgaAI.getConfig();
-  const { voice, model, temperature, maxTokens, history, return_transcription, instructions, modalities } = config;
-  const realtimeUrl = 'https://staging.orga-ai.com/realtime';
-  logger.debug(`[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`);
+  const {
+    voice,
+    model,
+    temperature,
+    enableTranscriptions,
+    instructions,
+    modalities,
+  } = config;
+  const realtimeUrl = "https://staging.orga-ai.com/realtime";
+  logger.debug(
+    `[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`
+  );
   logger.debug(`[OrgaAI] Voice: ${voice}`);
   logger.debug(`[OrgaAI] Model: ${model}`);
   logger.debug(`[OrgaAI] Temperature: ${temperature}`);
-  logger.debug(`[OrgaAI] Max Tokens: ${maxTokens}`);
-  logger.debug(`[OrgaAI] History: ${history}`);
-  logger.debug(`[OrgaAI] Return Transcription: ${return_transcription}`);
+  logger.debug(`[OrgaAI] Enable Transcriptions: ${enableTranscriptions}`);
   logger.debug(`[OrgaAI] Instructions: ${instructions}`);
   logger.debug(`[OrgaAI] Modalities: ${modalities}`);
-  const response = await axios.post(
-    realtimeUrl,
-    {
-      offer: {
-        sdp: peerConnection.localDescription?.sdp,
-        type: peerConnection.localDescription?.type,
-        candidates: gathered,
-      },
-      params: {
-        voice: voice || 'alloy',
-        model: model || 'orga-1-beta',
-        temperature: temperature || 0.5,
-        history: history || false,
-        return_transcription: return_transcription || false,
-        instructions: instructions || null,
-        // modalities: modalities || ['audio', 'video'],
-        // max_tokens: maxTokens || 50,
-      }
+
+  const requestBody = {
+    offer: {
+      sdp: peerConnection.localDescription?.sdp,
+      type: peerConnection.localDescription?.type,
+      candidates: gathered,
     },
-    {
+    params: {
+      voice: voice || "alloy",
+      model: model || "orga-1-beta",
+      temperature: temperature || 0.5,
+      return_transcription: enableTranscriptions || false,
+      instructions: instructions || null,
+      modalities: modalities || ["audio", "video"],
+      // history: history || false,
+    },
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(realtimeUrl, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${ephemeralToken}`,
+        'Authorization': `Bearer ${ephemeralToken}`,
       },
-      timeout: 10000,
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Failed to connect to realtime: ${response.status} ${response.statusText}`);
     }
-  );
-  const { answer, conversation_id } = response.data;
-  if (!answer) throw new Error('No answer in response');
-  return { conversation_id, answer };
+
+    const data = await response.json();
+    const { answer, conversation_id } = data;
+
+    if (!answer) {
+      throw new Error("No answer in response");
+    }
+
+    return { conversation_id, answer };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout: Failed to connect to realtime within 10 seconds');
+    }
+    throw error;
+  }
 };
 
 export const logger = {
   debug: (message: string, ...args: any[]) => {
-    if (globalThis.OrgaAI?.config?.logLevel === 'debug') {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (logLevel === "debug") {
       console.log(`[OrgaAI Debug] ${message}`, ...args);
     }
   },
   info: (message: string, ...args: any[]) => {
-    if (globalThis.OrgaAI?.config?.logLevel && ['debug', 'info'].includes(globalThis.OrgaAI.config.logLevel)) {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (["debug", "info"].includes(logLevel)) {
       console.info(`[OrgaAI Info] ${message}`, ...args);
     }
   },
   warn: (message: string, ...args: any[]) => {
-    if (globalThis.OrgaAI?.config?.logLevel && ['debug', 'info', 'warn'].includes(globalThis.OrgaAI.config.logLevel)) {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (["debug", "info", "warn"].includes(logLevel)) {
       console.warn(`[OrgaAI Warn] ${message}`, ...args);
     }
   },
   error: (message: string, ...args: any[]) => {
-    if (globalThis.OrgaAI?.config?.logLevel !== 'none') {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (logLevel !== "disabled") {
       console.error(`[OrgaAI Error] ${message}`, ...args);
     }
-  }
+  },
 };

@@ -7,12 +7,12 @@ import {
   MediaStream,
 } from "react-native-webrtc";
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel";
+// import RTCIceCandidateInit from "react-native-webrtc/lib/typescript/RTCIceCandidate";
 import InCallManager from "react-native-incall-manager";
 import {
   OrgaAIHookReturn,
   OrgaAIHookCallbacks,
   SessionConfig,
-  Transcription,
   ConnectionState,
   CameraPosition,
   IceCandidateEvent,
@@ -21,6 +21,7 @@ import {
   OrgaAIModel,
   OrgaAIVoice,
   Modality,
+  DataChannelEventTypes,
 } from "../types";
 import {
   PermissionError,
@@ -34,265 +35,244 @@ import {
   logger,
   connectToRealtime,
   RTCIceServer,
-  RTCIceCandidateInit,
 } from "../utils";
+
+interface RTCIceCandidateInit {
+  candidate?: string;
+  sdpMLineIndex?: number | null;
+  sdpMid?: string | null;
+}
 
 // Rename the original hook for internal use
 export function useOrgaAI(
   callbacks: OrgaAIHookCallbacks = {}
 ): OrgaAIHookReturn {
+  const [userVideoStream, setUserVideoStream] = useState<MediaStream | null>(
+    null
+  );
+  const [userAudioStream, setUserAudioStream] = useState<MediaStream | null>(
+    null
+  );
+  const [aiAudioStream, setAiAudioStream] = useState<MediaStream | null>(null);
+  const [conversationItems, setConversationItems] = useState<
+    ConversationItem[]
+  >([]);
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("closed");
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
-  const [conversationItems, setConversationItems] = useState<ConversationItem[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
+
+  // const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  // const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const currentConfigRef = useRef<SessionConfig>({});
 
-  // Add refs for transceivers
   const audioTransceiverRef = useRef<any>(null);
   const videoTransceiverRef = useRef<any>(null);
 
-  // Add state for camera, mic, and video
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
   const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
-  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
-  // Add state for current session parameters
-  const [currentModel, setCurrentModel] = useState<OrgaAIModel | null>(null);
-  const [currentVoice, setCurrentVoice] = useState<OrgaAIVoice | null>(null);
-  const [currentTemperature, setCurrentTemperature] = useState<number | null>(null);
-  const [currentInstructions, setCurrentInstructions] = useState<string | null>(null);
-  const [currentModalities, setCurrentModalities] = useState<Modality[]>([]);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const [model, setModel] = useState<OrgaAIModel | null>(null);
+  const [voice, setVoice] = useState<OrgaAIVoice | null>(null);
+  const [temperature, setTemperature] = useState<number | null>(null);
+  const [instructions, setInstructions] = useState<string | null>(null);
+  const [modalities, setModalities] = useState<Modality[]>([]);
 
   const {
     onSessionStart,
     onSessionEnd,
-    onUserSpeechTranscription,
     onError,
     onConnectionStateChange,
     onSessionConnected,
-    onDataChannelOpen,
-    onDataChannelMessage,
-    onUserSpeechComplete,
-    onAssistantResponseComplete,
     onConversationMessageCreated,
   } = callbacks;
 
   // Function to send updated parameters to the session
   const sendUpdatedParams = useCallback(() => {
     const dataChannel = dataChannelRef.current;
-    if (!dataChannel || dataChannel.readyState !== 'open') {
-      logger.warn('Cannot send updated params: data channel not open');
+    if (!dataChannel || dataChannel.readyState !== "open") {
+      logger.warn("Cannot send updated params: data channel not open");
       return;
     }
 
     const payload = {
-      event: 'session.update',
+      event: DataChannelEventTypes.SESSION_UPDATE,
       data: {
-        ...(currentModel && { model: currentModel }),
-        ...(currentVoice && { voice: currentVoice }),
-        ...(currentTemperature !== null && { temperature: currentTemperature }),
-        ...(currentInstructions && { instructions: currentInstructions }),
-        modalities: [...(isAudioEnabled ? ['audio'] : []), ...(isVideoEnabled ? ['video'] : [])],
+        ...(model && { model: model }),
+        ...(voice && { voice: voice }),
+        ...(temperature !== null && { temperature: temperature }),
+        ...(instructions && { instructions: instructions }),
+        modalities: modalities,
       },
     };
 
-    logger.debug('📤 Sending updated parameters via data channel:', payload);
+    logger.debug("📤 Sending updated parameters via data channel:", payload);
+    logger.info("⚙️ Sending updated parameters:", {
+      model,
+      voice,
+      temperature,
+    });
     dataChannel.send(JSON.stringify(payload));
-    // setEvents((prev) => [payload, ...prev]); // This line was not in the new_code, so it's removed.
-  }, [currentModel, currentVoice, currentTemperature, currentInstructions, isAudioEnabled, isVideoEnabled]);
+  }, [model, voice, temperature, instructions, modalities]);
 
-  // Individual parameter update functions (immediate updates)
-  const updateModel = useCallback((model: OrgaAIModel) => {
-    setCurrentModel(model);
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
+  // Parameter update function
+  const updateParams = useCallback(
+    (params: {
+      model?: OrgaAIModel;
+      voice?: OrgaAIVoice;
+      temperature?: number;
+      instructions?: string;
+      modalities?: Modality[];
+    }) => {
+      logger.debug("🔄 Updating parameters:", params);
+      if (params.model !== undefined) setModel(params.model);
+      if (params.voice !== undefined) setVoice(params.voice);
+      if (params.temperature !== undefined) setTemperature(params.temperature);
+      if (params.instructions !== undefined)
+        setInstructions(params.instructions);
+      if (params.modalities !== undefined) {
+        setModalities(params.modalities);
+      }
 
-  const updateVoice = useCallback((voice: OrgaAIVoice) => {
-    setCurrentVoice(voice);
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
-
-  const updateTemperature = useCallback((temperature: number) => {
-    setCurrentTemperature(temperature);
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
-
-  const updateInstructions = useCallback((instructions: string) => {
-    setCurrentInstructions(instructions);
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
-
-  const updateModalities = useCallback((modalities: Modality[]) => {
-    const audioEnabled = modalities.includes('audio');
-    const videoEnabled = modalities.includes('video');
-    setIsAudioEnabled(audioEnabled);
-    setIsVideoEnabled(videoEnabled);
-    setCurrentModalities(modalities);
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
-
-  // Batch update function
-  const updateParams = useCallback((params: {
-    model?: OrgaAIModel;
-    voice?: OrgaAIVoice;
-    temperature?: number;
-    instructions?: string;
-    modalities?: Modality[];
-  }) => {
-    if (params.model !== undefined) setCurrentModel(params.model);
-    if (params.voice !== undefined) setCurrentVoice(params.voice);
-    if (params.temperature !== undefined) setCurrentTemperature(params.temperature);
-    if (params.instructions !== undefined) setCurrentInstructions(params.instructions);
-    if (params.modalities !== undefined) {
-      const audioEnabled = params.modalities.includes('audio');
-      const videoEnabled = params.modalities.includes('video');
-      setIsAudioEnabled(audioEnabled);
-      setIsVideoEnabled(videoEnabled);
-      setCurrentModalities(params.modalities);
-    }
-
-    // Send updates immediately if connected
-    if (connectionState === 'connected') {
-      sendUpdatedParams();
-    }
-  }, [connectionState, sendUpdatedParams]);
+      if (connectionState === "connected") {
+        sendUpdatedParams();
+      }
+    },
+    [connectionState, sendUpdatedParams]
+  );
 
   // Initialize parameters from config when session starts
   const initializeParams = useCallback((config: SessionConfig) => {
+    logger.debug("🔧 Initializing parameters from config:", config);
     const orgaConfig = OrgaAI.getConfig();
-    
+
     // Type-safe parameter initialization
     const model = config.model || orgaConfig.model;
     const voice = config.voice || orgaConfig.voice;
     const temperature = config.temperature || orgaConfig.temperature;
     const instructions = config.instructions || orgaConfig.instructions;
     const modalities = config.modalities || orgaConfig.modalities || [];
-    
-    setCurrentModel(model || null);
-    setCurrentVoice(voice || null);
-    setCurrentTemperature(temperature || null);
-    setCurrentInstructions(instructions || null);
-    
-    const audioEnabled = modalities.includes('audio');
-    const videoEnabled = modalities.includes('video');
-    setIsAudioEnabled(audioEnabled);
-    setIsVideoEnabled(videoEnabled);
-    setCurrentModalities(modalities);
+
+    setModel(model || null);
+    setVoice(voice || null);
+    setTemperature(temperature || null);
+    setInstructions(instructions || null);
+    setModalities(modalities);
   }, []);
 
-  // Cleanup function (update to stop and nullify both streams)
+  // Cleanup function
   const cleanup = useCallback(async (): Promise<void> => {
-    logger.debug("Cleaning up resources");
+    logger.info("🧹 Cleaning up resources");
+    logger.debug("🔄 Stopping all media tracks and closing connections");
     try {
-      // Stop and nullify local stream
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-        setLocalStream(null);
+      // if (localStream) {
+      //   localStream.getTracks().forEach((track) => track.stop());
+      // }
+
+      // if (videoStream) {
+      //   videoStream.getTracks().forEach((track) => track.stop());
+      // }
+
+      // if (audioStream) {
+      //   audioStream.getTracks().forEach((track) => track.stop());
+      // }
+
+      [userVideoStream, userAudioStream, aiAudioStream].forEach((stream) => {
+        if (stream) {
+          stream.getTracks().forEach((track) => {
+            logger.debug(`🛑 Stopping track: ${track.kind} (${track.id})`);
+            track.stop();
+            track.enabled = false;
+          });
+        }
+      });
+
+      setUserVideoStream(null);
+      setUserAudioStream(null);
+
+      if (audioTransceiverRef.current) {
+        logger.debug("🔄 Detaching audio transceiver");
+        await audioTransceiverRef.current.sender.replaceTrack(null);
       }
-      // Stop and nullify video stream
-      if (videoStream) {
-        videoStream.getTracks().forEach((track) => track.stop());
-        setVideoStream(null);
+      if (videoTransceiverRef.current) {
+        logger.debug("🔄 Detaching video transceiver");
+        await videoTransceiverRef.current.sender.replaceTrack(null);
       }
-      // Stop and nullify audio stream
-      if (audioStream) {
-        audioStream.getTracks().forEach((track) => track.stop());
-        setAudioStream(null);
-      }
-      // Close peer connection
+
       if (peerConnectionRef.current) {
+        logger.debug("🔄 Closing peer connection");
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
-      // Close data channel
+
       if (dataChannelRef.current) {
+        logger.debug("🔄 Closing data channel");
         dataChannelRef.current.close();
         dataChannelRef.current = null;
       }
-      // Reset states
       setConversationId(null);
-      setRemoteStream(null);
-      setTranscriptions([]);
+      // setRemoteStream(null);
       setConnectionState("closed");
       setIsCameraOn(false);
       setIsMicOn(false);
       setCameraPosition("front");
-      setVideoStream(null);
-      setAudioStream(null);
-      // Stop InCallManager
+      // setVideoStream(null);
+      // setAudioStream(null);
       InCallManager.stop();
     } catch (error) {
-      logger.error("Error during cleanup:", error);
+      logger.error("❌ Error during cleanup:", error);
     }
   }, []);
 
   // Check permissions
-  const hasPermissions = useCallback(async (): Promise<boolean> => {
-    if (Platform.OS === "android") {
-      const cameraPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.CAMERA
-      );
-      const microphonePermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
-      );
-      return cameraPermission && microphonePermission;
-    }
-    return true; // iOS permissions are handled by getUserMedia
-  }, []);
+  // const hasPermissions = useCallback(async (): Promise<boolean> => {
+  //   if (Platform.OS === "android") {
+  //     const cameraPermission = await PermissionsAndroid.check(
+  //       PermissionsAndroid.PERMISSIONS.CAMERA
+  //     );
+  //     const microphonePermission = await PermissionsAndroid.check(
+  //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+  //     );
+  //     return cameraPermission && microphonePermission;
+  //   }
+  //   return true; // iOS permissions are handled by getUserMedia
+  // }, []);
 
-  // Request permissions
-  const requestPermissions = useCallback(async (): Promise<void> => {
-    logger.debug("Requesting permissions");
+  // // Request permissions
+  // const requestPermissions = useCallback(async (): Promise<void> => {
+  //   logger.debug("Requesting permissions");
 
-    if (Platform.OS === "android") {
-      const grants = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-      ]);
+  //   if (Platform.OS === "android") {
+  //     const grants = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.CAMERA,
+  //       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  //     ]);
 
-      const cameraGranted =
-        grants[PermissionsAndroid.PERMISSIONS.CAMERA] === "granted";
-      const microphoneGranted =
-        grants[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] === "granted";
+  //     const cameraGranted =
+  //       grants[PermissionsAndroid.PERMISSIONS.CAMERA] === "granted";
+  //     const microphoneGranted =
+  //       grants[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] === "granted";
 
-      if (!cameraGranted || !microphoneGranted) {
-        throw new PermissionError(
-          "Camera and microphone permissions are required"
-        );
-      }
-    }
-  }, []);
+  //     if (!cameraGranted || !microphoneGranted) {
+  //       throw new PermissionError(
+  //         "Camera and microphone permissions are required"
+  //       );
+  //     }
+  //   }
+  // }, []);
 
   // Initialize media
   const initializeMedia = useCallback(
     async (config: Partial<SessionConfig> = {}): Promise<MediaStream> => {
-      logger.debug("Initializing media");
-
+      logger.debug("🎬 Initializing media with config:", config);
       try {
         const constraints = getMediaConstraints(config);
         const stream = await mediaDevices.getUserMedia(constraints);
-        setLocalStream(stream);
-        logger.info("Media initialized successfully");
+        logger.info("🎬 Media initialized successfully");
         return stream;
       } catch (error) {
         logger.error("Failed to initialize media:", error);
@@ -302,9 +282,10 @@ export function useOrgaAI(
     []
   );
 
-  // Refactor buildPeerConnection to use localStream
+  // Build peer connection
   const buildPeerConnection = useCallback(
     async (iceServers: RTCIceServer[]): Promise<RTCPeerConnection> => {
+      logger.debug("🔧 Building peer connection with ICE servers:", iceServers);
       const { voice, model } = OrgaAI.getConfig();
       const pc = new RTCPeerConnection({
         iceServers,
@@ -312,77 +293,42 @@ export function useOrgaAI(
         iceCandidatePoolSize: 0,
       });
 
+      logger.debug("🎤 Adding audio transceiver");
+      // Start with sendrecv for immediate audio capture
       audioTransceiverRef.current = pc.addTransceiver("audio", {
         direction: "sendrecv",
       });
+      logger.debug("🎤 Audio transceiver:", audioTransceiverRef.current.direction);
+      logger.debug("📹 Adding video transceiver");
       videoTransceiverRef.current = pc.addTransceiver("video", {
         direction: "sendonly",
       });
 
-      const stream = await mediaDevices.getUserMedia({
+      // Initialize audio stream for immediate capture
+      const audioStream = await mediaDevices.getUserMedia({
         audio: true,
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          frameRate: { ideal: 5 },
-        },
+        video: false,
+      });
+      const audioTrack = audioStream.getAudioTracks()[0];
+      await audioTransceiverRef.current.sender.replaceTrack(audioTrack);
+      audioTrack.enabled = true;
+      setUserAudioStream(audioStream);
+      setIsMicOn(true);
+      setModalities(prev => {
+        // Ensure we don't add duplicate audio modality
+        const newModalities = Array.from(new Set([...prev, "audio" as Modality]));
+        logger.debug("🎤 Updated modalities for mic enable:", newModalities);
+        return newModalities;
       });
 
-      const audioStream = new MediaStream(stream.getAudioTracks());
-      const videoStream = new MediaStream(stream.getVideoTracks());
-
-      audioStream.getAudioTracks().forEach((track) => {
-        track.enabled = false;
-      });
-
-      videoStream.getVideoTracks().forEach((track) => {
-        track.enabled = false;
-      });
-
-      if (audioTransceiverRef.current) {
-        await audioTransceiverRef.current.sender.replaceTrack(audioStream);
-      }
-      if (videoTransceiverRef.current) {
-        await videoTransceiverRef.current.sender.replaceTrack(videoStream);
-      }
-
-      pc.addEventListener("track", (event) => {
-        const trackEvent = event as unknown as any;
-        if (trackEvent.track.kind === "audio") {
-          // Store reference to remote audio track
-          // ✅ CRITICAL: Explicitly enable the track
-          trackEvent.track.enabled = true;
-
-          logger.debug("🎵 Audio track received:", {
-            id: trackEvent.track.id,
-            enabled: trackEvent.track.enabled,
-            muted: trackEvent.track.muted,
-            readyState: trackEvent.track.readyState
-          });
-
-          // This event fires when you receive an audio track from the remote peer
-          trackEvent.track.addEventListener("unmute", () => {
-            logger.debug("🎵 Audio track unmuted");
-            // This fires when the remote peer starts sending audio
-            // console.log("Audio track unmuted", event.track);
-          });
-          trackEvent.track.addEventListener("mute", () => {
-            logger.debug("🔇 Audio track muted");
-            // This fires when the remote peer stops sending audio
-          });
-          trackEvent.track.addEventListener("ended", () => {
-            logger.debug("🔇 Audio track ended");
-          });
-          
-        }
-      });
-
+      // Video track starts null - will be enabled on user action
+      await videoTransceiverRef.current.sender.replaceTrack(null);
+      logger.debug("📡 Creating data channel");
       const dc = pc.createDataChannel("orga-realtime-client-events");
       dataChannelRef.current = dc;
 
       dc.addEventListener("open", () => {
-        logger.debug("Data channel opened");
-        onDataChannelOpen?.();
+        logger.info("📡 Data channel opened");
       });
 
       dc.addEventListener("message", (event) => {
@@ -390,22 +336,21 @@ export function useOrgaAI(
           const dataChannelEvent = JSON.parse(
             event.data as string
           ) as DataChannelEvent;
-          logger.debug("Data channel message received:", dataChannelEvent);
-
-          // Call the general message handler
-          onDataChannelMessage?.(dataChannelEvent);
+          logger.debug(
+            "📨 Data channel message received:",
+            dataChannelEvent.event
+          );
 
           if (
             dataChannelEvent.event ===
-            "conversation.item.input_audio_transcription.completed"
+            DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION
           ) {
-                    onUserSpeechTranscription?.(dataChannelEvent);
-        onUserSpeechComplete?.(dataChannelEvent);
-
-            // Create conversation item for user input
-            if (conversationId) {
+            const currentConversationId =
+              conversationIdRef.current || conversationId;
+            logger.debug("🎤 Processing user speech transcription");
+            if (currentConversationId) {
               const conversationItem: ConversationItem = {
-                conversationId,
+                conversationId: currentConversationId,
                 sender: "user",
                 content: {
                   type: "text",
@@ -413,17 +358,25 @@ export function useOrgaAI(
                 },
                 modelVersion: model,
               };
+              logger.debug(
+                "💬 Creating user conversation item:",
+                conversationItem
+              );
+              setConversationItems((prev) => [...prev, conversationItem]);
               onConversationMessageCreated?.(conversationItem);
             }
           }
 
-          if (dataChannelEvent.event === "response.output_item.done") {
-            onAssistantResponseComplete?.(dataChannelEvent);
-
-            // Create conversation item for assistant response
-            if (conversationId) {
+          if (
+            dataChannelEvent.event ===
+            DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE
+          ) {
+            const currentConversationId =
+              conversationIdRef.current || conversationId;
+            logger.debug("🤖 Processing assistant response");
+            if (currentConversationId) {
               const conversationItem: ConversationItem = {
-                conversationId,
+                conversationId: currentConversationId,
                 sender: "assistant",
                 content: {
                   type: "text",
@@ -433,11 +386,16 @@ export function useOrgaAI(
                 modelVersion: model,
                 timestamp: new Date().toISOString(),
               };
+              logger.debug(
+                "💬 Creating assistant conversation item:",
+                conversationItem
+              );
+              setConversationItems((prev) => [...prev, conversationItem]);
               onConversationMessageCreated?.(conversationItem);
             }
           }
         } catch (error) {
-          logger.error("Error parsing data channel message:", error);
+          logger.error("❌ Error parsing data channel message:", error);
           onError?.(
             new Error(`Failed to parse data channel message: ${error}`)
           );
@@ -445,10 +403,32 @@ export function useOrgaAI(
       });
 
       dc.addEventListener("close", () => {
-        logger.debug("Data channel closed");
+        logger.info("📡 Data channel closed");
       });
 
-      // ICE, track, and connection state listeners can be added here as needed
+      pc.addEventListener("track", (event) => {
+        const trackEvent = event as unknown as any;
+        if (trackEvent.track.kind === "audio") {
+          trackEvent.track.enabled = true;
+          logger.debug("🎵 Audio track received:", {
+            id: trackEvent.track.id,
+            enabled: trackEvent.track.enabled,
+            muted: trackEvent.track.muted,
+            readyState: trackEvent.track.readyState,
+          });
+          logger.info("🎵 AI audio track received");
+          trackEvent.track.addEventListener("unmute", () => {
+            logger.debug("🎵 Audio track unmuted");
+          });
+          trackEvent.track.addEventListener("mute", () => {
+            logger.debug("🔇 Audio track muted");
+          });
+          trackEvent.track.addEventListener("ended", () => {
+            logger.debug("🔇 Audio track ended");
+          });
+          setAiAudioStream(event.streams[0]); // TODO: Review if needed with RN
+        }
+      });
       return pc;
     },
     []
@@ -462,19 +442,20 @@ export function useOrgaAI(
       const candidates: RTCIceCandidateInit[] = [];
       const onIceCandidate = (event: IceCandidateEvent) => {
         if (event.candidate) {
+          logger.debug("🧊 ICE candidate gathered:", event.candidate.candidate);
           candidates.push({
             candidate: event.candidate.candidate,
             sdpMid: event.candidate.sdpMid ?? undefined,
             sdpMLineIndex: event.candidate.sdpMLineIndex ?? undefined,
           });
         } else if (pc.iceGatheringState === "complete") {
-          logger.debug("ICE gathering complete");
+          logger.info("🧊 ICE gathering complete");
+          logger.debug("🧊 Total ICE candidates gathered:", candidates.length);
           pc.removeEventListener("icecandidate", onIceCandidate);
           resolve(candidates);
         }
       };
       pc.addEventListener("icecandidate", onIceCandidate);
-      // Fallback in case icegatheringstatechange doesn't fire
       setTimeout(() => {
         pc.removeEventListener("icecandidate", onIceCandidate);
         resolve(candidates);
@@ -482,33 +463,32 @@ export function useOrgaAI(
     });
   };
 
-  // Refactored connect/session flow
+  // Connect to backend
   const connect = useCallback(async (): Promise<void> => {
-    logger.debug("Connecting to backend (modular, robust flow)");
+    logger.info("🌐 Connecting to OrgaAI backend...");
     try {
       const config = OrgaAI.getConfig();
       const fetchFn = config.fetchEphemeralTokenAndIceServers;
       if (!fetchFn) {
         throw new Error("fetchEphemeralTokenAndIceServers is not defined");
       }
+      logger.debug("🔑 Fetching ephemeral token and ICE servers");
       const { ephemeralToken, iceServers } = await fetchFn();
-      logger.debug("Ephemeral token and ice servers fetched");
 
-      // Use modular buildPeerConnection with localStream
       const pc = await buildPeerConnection(iceServers);
       peerConnectionRef.current = pc;
 
-      // Create offer
+      logger.debug("📝 Creating offer");
       const offer = await pc.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: false,
       });
       await pc.setLocalDescription(offer);
 
-      // Gather ICE candidates
+      logger.debug("🧊 Gathering ICE candidates");
       const gathered = await gatherIceCandidates(pc);
 
-      // Send offer/candidates to backend, receive answer
+      logger.debug("📤 Sending offer to backend");
       const { answer, conversation_id } = await connectToRealtime({
         ephemeralToken,
         peerConnection: pc,
@@ -517,8 +497,12 @@ export function useOrgaAI(
       if (!answer || !conversation_id) {
         throw new Error("Failed to connect to backend");
       }
-      setConversationId(conversation_id);
 
+      logger.info("🆔 Conversation ID:", conversation_id);
+      setConversationId(conversation_id);
+      conversationIdRef.current = conversation_id;
+
+      logger.debug("📥 Setting remote description");
       await pc.setRemoteDescription(
         new RTCSessionDescription({
           sdp: answer.sdp,
@@ -528,32 +512,45 @@ export function useOrgaAI(
 
       setConnectionState("connected");
       pc.addEventListener("connectionstatechange", (event) => {
-        if (pc.connectionState === "connected") {
+        const newState = (event.target as RTCPeerConnection).connectionState;
+        logger.debug("🔄 Connection state changed:", newState);
+        logger.info("🔄 Connection state:", newState);
+
+        setConnectionState(newState);
+
+        if (newState === "connected") {
           onSessionConnected?.();
+        } else if (newState === "failed" || newState === "disconnected") {
+          logger.warn("⚠️ Connection lost, cleaning up...");
+          cleanup();
         }
-        logger.debug(
-          "Connection state changed:",
-          (event.target as RTCPeerConnection).connectionState
-        );
-        onConnectionStateChange?.(
-          (event.target as RTCPeerConnection).connectionState
-        );
+        onConnectionStateChange?.(newState);
       });
+
+      pc.addEventListener("iceconnectionstatechange", () => {
+        const iceState = pc.iceConnectionState;
+        logger.debug("🧊 ICE connection state:", iceState);
+        if (iceState === "failed" || iceState === "disconnected") {
+          logger.warn("⚠️ ICE connection failed");
+        }
+      });
+
       onSessionStart?.();
       InCallManager.start({ media: "video" });
     } catch (error) {
-      logger.error("Failed to connect (modular flow):", error);
+      logger.error("❌ Failed to connect:", error);
       setConnectionState("failed");
       setConversationId(null);
       onError?.(error as Error);
       throw error;
     }
-  }, [buildPeerConnection, localStream, onSessionStart, onError]);
+  }, [buildPeerConnection, onSessionStart, onError]);
 
-  // Start session (main method)
+  // Start session
   const startSession = useCallback(
     async (config: SessionConfig = {}): Promise<void> => {
-      logger.debug("Starting session");
+      logger.info("🚀 Starting OrgaAI session...");
+      logger.debug("📋 Session config:", config);
 
       try {
         if (!OrgaAI.isInitialized()) {
@@ -571,179 +568,330 @@ export function useOrgaAI(
           onSessionStart: config.onSessionStart || callbacks.onSessionStart,
           onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
           onError: config.onError || callbacks.onError,
-          onConnectionStateChange: config.onConnectionStateChange || callbacks.onConnectionStateChange,
-          onSessionConnected: config.onSessionConnected || callbacks.onSessionConnected,
-          onDataChannelOpen: config.onDataChannelOpen || callbacks.onDataChannelOpen,
-          onDataChannelMessage: config.onDataChannelMessage || callbacks.onDataChannelMessage,
-          onUserSpeechTranscription: config.onUserSpeechTranscription || callbacks.onUserSpeechTranscription,
-          onUserSpeechComplete: config.onUserSpeechComplete || callbacks.onUserSpeechComplete,
-          onAssistantResponseComplete: config.onAssistantResponseComplete || callbacks.onAssistantResponseComplete,
-          onConversationMessageCreated: config.onConversationMessageCreated || callbacks.onConversationMessageCreated,
+          onConnectionStateChange:
+            config.onConnectionStateChange || callbacks.onConnectionStateChange,
+          onSessionConnected:
+            config.onSessionConnected || callbacks.onSessionConnected,
+          onConversationMessageCreated:
+            config.onConversationMessageCreated ||
+            callbacks.onConversationMessageCreated,
         };
 
-        // Update the callbacks for this session
         Object.assign(callbacks, sessionCallbacks);
 
         currentConfigRef.current = config;
         setConnectionState("connecting");
 
-        // Initialize parameters from config
+        setConversationItems([]);
         initializeParams(config);
 
-        // Full flow: permissions → media → connection
-        await requestPermissions();
-        await initializeMedia(config);
+        // await requestPermissions(); //TODO: Add permissions check
+        // Removed initializeMedia call - media streams will be created when user enables camera/mic
         await connect();
       } catch (error) {
-        logger.error("Failed to start session:", error);
+        logger.error("❌ Failed to start session:", error);
         setConnectionState("failed");
         onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
       }
     },
-    [connectionState, requestPermissions, initializeMedia, connect, onError, callbacks]
+    [
+      connectionState,
+      connect,
+      onError,
+      callbacks,
+      initializeParams, //Needed ?
+      // requestPermissions,
+    ]
   );
 
   // End session
   const endSession = useCallback(async (): Promise<void> => {
-    logger.debug("Ending session");
+    logger.info("🔚 Ending session");
 
     try {
+      if (userVideoStream) {
+        logger.debug("🛑 Stopping video stream tracks");
+        userVideoStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setUserVideoStream(null);
+      }
+
+      if (userAudioStream) {
+        logger.debug("🛑 Stopping audio stream tracks");
+        userAudioStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setUserAudioStream(null);
+      }
+
       await cleanup();
+      setConnectionState("closed");
       onSessionEnd?.();
     } catch (error) {
-      logger.error("Error ending session:", error);
+      logger.error("❌ Error ending session:", error);
       onError?.(error as Error);
     }
-  }, [cleanup, onSessionEnd, onError]);
+  }, [userVideoStream, userAudioStream, cleanup, onSessionEnd, onError]);
 
-  // --- Mic Controls ---
+  // Mic Controls
   const enableMic = useCallback(async () => {
+    logger.info("🎤 Enabling microphone");
+    logger.debug("🔄 Requesting microphone permissions");
+
+    if (userAudioStream) {
+      logger.debug("🛑 Stopping previous audio stream");
+      userAudioStream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      setUserAudioStream(null);
+    }
+    
     const stream = await mediaDevices.getUserMedia({
       audio: true,
       video: false,
     });
-    setAudioStream(stream);
+    logger.debug(
+      "✅ Microphone stream obtained:",
+      stream.getTracks().map((t) => ({ id: t.id, kind: t.kind }))
+    );
+    setUserAudioStream(stream);
     setIsMicOn(true);
+
+    setModalities(prev => {
+      const newModalities = prev.includes("audio") ? prev : [...prev, "audio" as Modality];
+      logger.debug("🎤 Updated modalities for mic enable:", newModalities);
+      return newModalities;
+    });
+
+    if (connectionState === "connected") {
+      sendUpdatedParams();
+    }
+
     if (audioTransceiverRef.current) {
       const audioTrack = stream.getAudioTracks()[0];
+      logger.debug("🔄 Replacing audio sender track:", audioTrack.id);
       await audioTransceiverRef.current.sender.replaceTrack(audioTrack);
       audioTrack.enabled = true;
     }
-    logger.debug("Mic enabled");
-  }, []);
+    logger.info("✅ Microphone enabled");
+  }, [userAudioStream, connectionState, sendUpdatedParams]);
 
-  const disableMic = useCallback(async () => {
-    if (audioStream) {
-      audioStream.getTracks().forEach((track) => track.stop());
-      setAudioStream(null);
-    }
-    setIsMicOn(false);
-    if (audioTransceiverRef.current) {
-      await audioTransceiverRef.current.sender.replaceTrack(null);
-    }
-    logger.debug("Mic disabled");
-  }, [audioStream]);
+  const disableMic = useCallback(
+    async (hardDisable = false) => {
+      logger.info("🎤 Disabling microphone");
+      logger.debug("🔄 Disabling mic with hardDisable:", hardDisable);
+      if (userAudioStream) {
+        if (hardDisable) {
+          logger.debug("🛑 Hard disabling - stopping audio tracks");
+          userAudioStream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          setUserAudioStream(null);
+          if (audioTransceiverRef.current) {
+            logger.debug("🔄 Replacing audio sender with null track");
+            await audioTransceiverRef.current.sender.replaceTrack(null);
+          }
+        } else {
+          logger.debug("🔄 Soft disabling - disabling audio tracks");
+          userAudioStream.getAudioTracks().forEach((track) => (track.enabled = false));
+          // Also remove track from transceiver for soft disable
+          if (audioTransceiverRef.current) {
+            logger.debug("🔄 Replacing audio sender with null track for soft disable");
+            await audioTransceiverRef.current.sender.replaceTrack(null);
+          }
+        }
+      }
+      setIsMicOn(false);
+      setModalities(prev => {
+        const newModalities = prev.filter(modality => modality !== "audio");
+        logger.debug("🎤 Updated modalities for mic disable:", newModalities);
+        return newModalities;
+      });
+      
+      if (connectionState === "connected") {
+        sendUpdatedParams();
+      }
+
+      logger.info("✅ Microphone disabled");
+    },
+    [userAudioStream, connectionState, sendUpdatedParams]
+  );
 
   const toggleMic = useCallback(async () => {
+    logger.debug("🔄 Toggling microphone, current state:", isMicOn);
     if (isMicOn) {
-      await disableMic();
+      await disableMic(true);
     } else {
       await enableMic();
     }
-    logger.debug("Mic toggled", !isMicOn);
   }, [isMicOn, enableMic, disableMic]);
 
-  // --- Camera Controls ---
+  // Camera Controls
   const enableCamera = useCallback(async () => {
-    const config = OrgaAI.getConfig();
-    const constraints = getMediaConstraints(config);
-    logger.debug("Enabling camera with constraints:", constraints);
+    logger.info("📹 Enabling camera");
+    logger.debug("🔄 Requesting camera permissions");
     try {
-      if (videoStream) {
-        videoStream.getTracks().forEach((track) => track.stop());
-        setVideoStream(null);
+      if (userVideoStream) {
+        logger.debug("🛑 Stopping previous video stream");
+        userVideoStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setUserVideoStream(null);
       }
+
+      const sessionConfig = currentConfigRef.current;
+      const globalConfig = OrgaAI.getConfig();
+      const config = {
+        ...globalConfig,
+        ...sessionConfig, //Override global config with session config
+        facingMode: (cameraPosition === "front" ? "user" : "environment") as "user" | "environment", // Use current camera position
+      };
+      const constraints = getMediaConstraints(config);
+      logger.debug("📹 Camera constraints:", constraints);
       const stream = await mediaDevices.getUserMedia(constraints);
-      setVideoStream(stream);
+      logger.debug("✅ Camera stream obtained:", stream.getTracks().map(t => ({ id: t.id, kind: t.kind })));
+      setUserVideoStream(stream);
       setIsCameraOn(true);
+
+      setModalities(prev => {
+        // Ensure we don't add duplicate video modality
+        const newModalities = Array.from(new Set([...prev, "video" as Modality]));
+        logger.debug("📹 Updated modalities for camera enable:", newModalities);
+        return newModalities;
+      });
+
+      if (connectionState === "connected") {
+        sendUpdatedParams();
+      }
+
       if (videoTransceiverRef.current) {
         const videoTrack = stream.getVideoTracks()[0];
+        logger.debug("🔄 Replacing video sender track:", videoTrack.id);
         await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
         videoTrack.enabled = true;
       }
-      logger.debug("Camera enabled");
+      logger.info("✅ Camera enabled");
     } catch (error) {
-      logger.error("Failed to enable camera:", error);
+      logger.error("❌ Failed to enable camera:", error);
       throw error;
     }
-  }, [cameraPosition]);
+  }, [userVideoStream, connectionState, sendUpdatedParams]);
 
-  const disableCamera = useCallback(async () => {
-    if (videoStream) {
-      videoStream.getTracks().forEach((track) => track.stop());
-      setVideoStream(null);
-    }
-    setIsCameraOn(false);
-    if (videoTransceiverRef.current) {
-      await videoTransceiverRef.current.sender.replaceTrack(null);
-    }
-    logger.debug("Camera disabled");
-  }, [videoStream]);
+  const disableCamera = useCallback(
+    async (hardDisable = false) => {
+      logger.info("📹 Disabling camera");
+      logger.debug("🔄 Disabling camera with hardDisable:", hardDisable);
+      if (userVideoStream) {
+        if (hardDisable) {
+          logger.debug("🛑 Hard disabling - stopping video tracks");
+          userVideoStream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          setUserVideoStream(null);
+          if (videoTransceiverRef.current) {
+            logger.debug("🔄 Replacing video sender with null track");
+            await videoTransceiverRef.current.sender.replaceTrack(null);
+          }
+        } else {
+          logger.debug("🔄 Soft disabling - disabling video tracks");
+          userVideoStream.getVideoTracks().forEach((track) => (track.enabled = false));
+          // Also remove track from transceiver for soft disable
+          if (videoTransceiverRef.current) {
+            logger.debug("🔄 Replacing video sender with null track for soft disable");
+            await videoTransceiverRef.current.sender.replaceTrack(null);
+          }
+        }
+      }
+      setIsCameraOn(false);
+
+      setModalities(prev => {
+        const newModalities = prev.filter(modality => modality !== "video");
+        logger.debug("📹 Updated modalities for camera disable:", newModalities);
+        return newModalities;
+      });
+      
+      if (connectionState === "connected") {
+        sendUpdatedParams();
+      }
+
+      logger.info("✅ Camera disabled");
+    },
+    [userVideoStream, connectionState, sendUpdatedParams]
+  );
 
   const toggleCamera = useCallback(async () => {
+    logger.debug("🔄 Toggling camera, current state:", isCameraOn);
     if (isCameraOn) {
-      await disableCamera();
+      await disableCamera(true);
     } else {
       await enableCamera();
     }
-    logger.debug("Camera toggled", !isCameraOn);
   }, [isCameraOn, enableCamera, disableCamera]);
 
   const updateVideoStream = useCallback(
     async (newPosition: CameraPosition) => {
-      // Stop current video track
-      if (videoStream) {
-        videoStream.getVideoTracks().forEach((track) => track.stop());
-        setVideoStream(null);
+      logger.info("📹 Updating video stream with constraints:", newPosition);
+      if (userVideoStream) {
+        logger.debug("🛑 Stopping previous video stream");
+        userVideoStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        setUserVideoStream(null);
       }
-      const config = OrgaAI.getConfig();
-      // const facingMode = newPosition === "front" ? "user" : "environment";
-      const constraints = getMediaConstraints({
-        ...config,
-        facingMode: newPosition === "front" ? "user" : "environment",
-      });
-      logger.debug("Updating video stream with constraints:", constraints);
+
+      const sessionConfig = currentConfigRef.current;
+      const globalConfig = OrgaAI.getConfig();
+      const config = {
+        ...globalConfig,
+        ...sessionConfig, //Override global config with session config
+        facingMode: (newPosition === "front" ? "user" : "environment") as "user" | "environment", // Map camera position to facingMode
+      };
+      const constraints = getMediaConstraints(config);
+      logger.debug("📹 Camera constraints:", constraints);
       try {
         const newStream = await mediaDevices.getUserMedia(constraints);
+        logger.debug("✅ Camera stream obtained:", newStream.getTracks().map(t => ({ id: t.id, kind: t.kind })));
+        setUserVideoStream(newStream);
         // Replace track in peer connection
         if (videoTransceiverRef.current && newStream) {
           const videoTrack = newStream.getVideoTracks()[0];
           await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
           videoTrack.enabled = true;
         }
-        setVideoStream(newStream);
+        // setVideoStream(newStream);
       } catch (error) {
-        console.error("Error updating video stream:", error);
+        logger.error("❌ Error updating video stream:", error);
+        throw error;
       }
     },
-    [videoStream, videoTransceiverRef]
+    [userVideoStream, videoTransceiverRef]
   );
 
   const flipCamera = useCallback(async (): Promise<void> => {
-    if (!isCameraOn) return;
-    setCameraPosition((current) => {
-      const newPosition = current === "front" ? "back" : "front";
-      if (isCameraOn) {
-        updateVideoStream(newPosition);
-      }
-      logger.debug("Camera flipped (transceiver)");
-      return newPosition;
-    });
+    logger.info("🔄 Flipping camera");
+    if (!isCameraOn) {
+      logger.warn("🔄 Camera is not enabled");
+      return;
+    }
+    
+    const newPosition = cameraPosition === "front" ? "back" : "front";
+    logger.info("🔄 Flipping camera from", cameraPosition, "to", newPosition);
+    
+    try {
+      await updateVideoStream(newPosition);
+      setCameraPosition(newPosition);
+      logger.info("✅ Camera flipped to:", newPosition);
+    } catch (error) {
+      logger.error("❌ Failed to flip camera:", error);
+      throw error;
+    }
   }, [isCameraOn, cameraPosition, updateVideoStream]);
 
   // Cleanup on unmount
   useEffect(() => {
+    logger.debug("🔄 Component unmounting, calling cleanup");
     return () => {
       cleanup();
     };
@@ -764,43 +912,46 @@ export function useOrgaAI(
     flipCamera,
 
     // Manual control methods
-    requestPermissions,
-    initializeMedia,
-    connect,
-    cleanup,
+    // requestPermissions,
 
     // State
     connectionState,
-    localStream,
-    remoteStream,
-    transcriptions,
+    aiAudioStream,
+    userVideoStream,
     conversationItems,
-    cameraPosition,
     isCameraOn,
     isMicOn,
-    videoStream,
-    audioStream,
+    cameraPosition,
     conversationId,
-    dataChannel: dataChannelRef.current,
+    // localStream,
+    // remoteStream,
+    // transcriptions,
+    // videoStream,
+    // audioStream,
 
     // Utilities
-    hasPermissions,
+    // hasPermissions,
 
     // Parameter management
-    currentModel,
-    currentVoice,
-    currentTemperature,
-    currentInstructions,
-    currentModalities,
-    isAudioEnabled,
-    isVideoEnabled,
-    updateModel,
-    updateVoice,
-    updateTemperature,
-    updateInstructions,
-    updateModalities,
+    model,
+    voice,
+    temperature,
+    instructions,
+    modalities,
     updateParams,
-    initializeParams,
-    sendUpdatedParams,
+    // currentVoice,
+    // currentTemperature,
+    // currentInstructions,
+    // currentModalities,
+    // isAudioEnabled,
+    // isVideoEnabled,
+    // updateModel,
+    // updateVoice,
+    // updateTemperature,
+    // updateInstructions,
+    // updateModalities,
+
+    // initializeParams,
+    // sendUpdatedParams,
   };
 }

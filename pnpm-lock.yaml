@@ -241,55 +241,48 @@ importers:
 
   packages/sdk-react-native:
     dependencies:
-      axios:
-        specifier: ^1.10.0
-        version: 1.11.0
       react:
-        specifier: ^19.1.0
+        specifier: '>=18.0.0'
         version: 19.1.0
       react-native:
-        specifier: ^0.80.1
+        specifier: '>=0.78.0'
         version: 0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(react@19.1.0)
       react-native-incall-manager:
-        specifier: ^4.2.1
+        specifier: '>=4.2.1'
         version: 4.2.1(react-native@0.80.2)
       react-native-webrtc:
-        specifier: ^124.0.5
+        specifier: '>=124.0.5'
         version: 124.0.6(react-native@0.80.2)
     devDependencies:
       '@types/jest':
-        specifier: ^30.0.0
+        specifier: '>=30.0.0'
         version: 30.0.0
       '@types/react':
-        specifier: ^19.1.8
+        specifier: '>=18.0.0'
         version: 19.1.9
       '@types/react-native':
-        specifier: ^0.72.8
+        specifier: '>=0.72.8'
         version: 0.72.8(react-native@0.80.2)
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.37.0
+        specifier: '>=8.37.0'
         version: 8.38.0(@typescript-eslint/parser@8.38.0)(eslint@9.32.0)(typescript@5.8.3)
       '@typescript-eslint/parser':
-        specifier: ^8.37.0
+        specifier: '>=8.37.0'
         version: 8.38.0(eslint@9.32.0)(typescript@5.8.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: '>=9.31.0'
         version: 9.32.0
       jest:
-        specifier: ^29.7.0
+        specifier: '>=29.7.0'
         version: 29.7.0
       ts-jest:
-        specifier: ^29.4.0
+        specifier: '>=29.4.0'
         version: 29.4.0(@babel/core@7.28.0)(jest@29.7.0)(typescript@5.8.3)
       typescript:
-        specifier: ^5.8.3
+        specifier: '>=5.8.3'
         version: 5.8.3
 
   packages/sdk-web:
-    dependencies:
-      axios:
-        specifier: ^1.10.0
-        version: 1.11.0
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0
@@ -310,11 +303,11 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0
       react:
-        specifier: ^18.0.0
-        version: 18.3.1
+        specifier: '>=18.0.0'
+        version: 19.1.0
       react-dom:
-        specifier: ^18.0.0
-        version: 18.3.1(react@18.3.1)
+        specifier: '>=18.0.0'
+        version: 19.1.0(react@19.1.0)
       ts-jest:
         specifier: ^29.4.0
         version: 29.4.0(@babel/core@7.28.0)(jest@29.7.0)(typescript@5.8.3)
@@ -8716,16 +8709,6 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /react-dom@18.3.1(react@18.3.1):
-    resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
-    peerDependencies:
-      react: ^18.3.1
-    dependencies:
-      loose-envify: 1.4.0
-      react: 18.3.1
-      scheduler: 0.23.2
-    dev: true
-
   /react-dom@19.0.0(react@19.0.0):
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
     peerDependencies:
@@ -8742,7 +8725,6 @@ packages:
     dependencies:
       react: 19.1.0
       scheduler: 0.26.0
-    dev: false
 
   /react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
@@ -9100,13 +9082,6 @@ packages:
       tslib: 2.8.1
     dev: false
 
-  /react@18.3.1:
-    resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: true
-
   /react@19.0.0:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
     engines: {node: '>=0.10.0'}
@@ -9314,12 +9289,6 @@ packages:
   /sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
     dev: false
-
-  /scheduler@0.23.2:
-    resolution: {integrity: sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: true
 
   /scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
@@ -10606,18 +10575,15 @@ packages:
     id: file:packages/sdk-react-native
     name: '@orga-ai/sdk-react-native'
     peerDependencies:
-      react: ^19.1.0
-      react-native: ^0.80.1
-      react-native-incall-manager: ^4.2.1
-      react-native-webrtc: ^124.0.5
+      react: '>=18.0.0'
+      react-native: '>=0.78.0'
+      react-native-incall-manager: '>=4.2.1'
+      react-native-webrtc: '>=124.0.5'
     dependencies:
-      axios: 1.11.0
       react: 19.0.0
       react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
       react-native-incall-manager: 4.2.1(react-native@0.79.5)
       react-native-webrtc: 124.0.6(react-native@0.79.5)
-    transitivePeerDependencies:
-      - debug
     dev: false
 
   file:packages/sdk-web(react-dom@19.1.0)(react@19.1.0):
@@ -10631,6 +10597,4 @@ packages:
       axios: 1.11.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-    transitivePeerDependencies:
-      - debug
     dev: false

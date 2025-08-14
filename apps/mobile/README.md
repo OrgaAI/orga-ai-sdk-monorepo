@@ -1,137 +1,328 @@
 # OrgaAI Mobile SDK Playground
 
-A React Native application for testing and exploring the OrgaAI SDK capabilities. This playground demonstrates real-time AI conversations, transcription management, and SDK configuration.
+A React Native application for testing and exploring the OrgaAI SDK capabilities in a mobile environment. Built with Expo and React Native, this playground demonstrates real-time AI conversations, transcription management, and SDK configuration.
+
+---
+
+## Project Overview
+
+- **Purpose:** Demonstrate and test OrgaAI SDK features in a mobile environment
+- **Platform:** React Native with Expo
+- **Key Features:** Real-time AI conversations, video/audio streaming, transcription
+
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v18 or higher)
+- **Bun** (for package management)
+- **EAS CLI** (`npm install --global eas-cli`)
+- **Physical device** (for camera/audio testing)
+
+### Required Accounts
+
+- **OrgaAI Account** - Get your API key from the [OrgaAI Dashboard](https://platform.orga-ai.com)
+- **Expo Account** - For EAS builds and development builds
+- **NPM Account** - For testing private packages (if applicable)
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+# From the monorepo root
+cd apps/mobile
+bun install
+```
+
+### 2. Environment Setup
+
+Currently this app hits a separate backend to proxy the realtime API call. To configure clone the mobile backend and run locally. Setup ngrok to forward the traffic and copy the url provided. With the copied url add it to `services/fetch.ts`
+
+### 3. Install Development build on Device
+
+- **Physical Device:** Visit Orga AI's expo dashboard and look for the most recent build for both iOS and Android. Scan the QR to install.
+
+- **New Build:** If you need to create a new build
+```bash
+cd apps/mobile 
+eas build --platform all --profile development
+```
+Scan the QR once build has been completed.
+
+### 4. Run the App
+
+```bash
+# Start the development server with clean cache (recommended for testing)
+bunx expo -c
+```
+
+Scan the QR code to run the development build.
+
+---
+
+## SDK Development and Testing Workflow
+
+This playground is designed for testing the OrgaAI SDK during development. Here's the complete workflow for testing SDK changes:
+
+### 1. Testing Private NPM Packages
+
+If you need to test private npm packages, import the `.npmrc` file with your auth token:
+
+```bash
+# Copy the .npmrc file to your project root
+cp .npmrc apps/mobile/
+```
+
+### 2. Local SDK Development Testing
+
+When making changes to the React Native SDK and want to test them in this app:
+
+1. **Build the SDK:**
+   ```bash
+   cd packages/sdk-react-native
+   bun run build
+   ```
+
+2. **Install dependencies and clean cache:**
+   ```bash
+   cd apps/mobile
+   bunx expo install  # In case new deps were added
+   ```
+
+3. **Test your changes:**
+   ```bash
+   bunx expo -c  # Clean cache (recommended for testing)
+   ```
+
+4. **Rinse and repeat** if you need to make more changes to the SDK and test them.
+
+### 3. Publishing Test Versions
+
+Once you're ready to publish to npm:
+
+1. **Bump the package version:**
+   ```bash
+   # Option A: Use the script at project root
+   # (This will commit the changes)
+   
+   # Option B: Manually bump version in package.json
+   # (If you don't want to commit changes yet)
+   ```
+
+2. **Publish test version:**
+   ```bash
+   pnpm publish-native-test --no-git-checks
+   ```
+   This script publishes a test version and ignores any uncommitted changes.
+
+### 4. Testing Published Versions
+
+To test the published test version in any other app:
+
+1. **Set up NPM token:**
+   ```bash
+   eas env:create
+   # Set variable name: NPM_TOKEN
+   # Set the secret variable to your token
+   ```
+
+2. **Configure eas.json:**
+   ```json
+   {
+     "build": {
+       "development": {
+         "developmentClient": true,
+         "distribution": "internal",
+         "env": {
+           "NPMRC": "@orga-ai:registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=${process.env.NPM_TOKEN}"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Install expo-dev-client and build:**
+   ```bash
+   bunx expo install expo-dev-client
+   eas build --platform <ios | android> --profile development
+   ```
+
+This setup allows you to use the private package in your development builds.
+
+---
+
+## Testing Different SDK Features
+
+This playground includes several test scenarios you can explore:
+
+### 🎥 Camera and Audio Testing
+
+1. **Camera Toggle:** Test switching between front and back cameras
+2. **Microphone Toggle:** Test audio input on/off functionality
+3. **Session Management:** Test session start/stop and connection states
+4. **Video Streaming:** Verify real-time video preview
+
+### 💬 Transcription Testing
+
+1. **Real-time Transcription:** Enable transcriptions and test speech-to-text
+2. **Conversation History:** Test conversation item management
+3. **Event Callbacks:** Test transcription and response event handling
+
+### ⚙️ Configuration Testing
+
+1. **Model Selection:** Test different AI models
+2. **Voice Selection:** Test different voice options
+3. **Custom Instructions:** Test custom prompt configurations
+
+### 🔧 SDK Integration Testing
+
+1. **Hook Usage:** Test `useOrgaAI` hook functionality
+2. **Provider Setup:** Test `OrgaAIProvider` context
+3. **Error Handling:** Test various error scenarios
+
+---
+
+## Setup Requirements
+
+### 1. Development Build Required
+
+The SDK requires a development build and won't work in Expo Go due to native dependencies. Create a development build:
+
+```sh
+npx expo prebuild
+```
+
+### 2. Configure app.json
+
+Add required permissions and plugins:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      "react-native-webrtc",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
+        "UIBackgroundModes": ["audio"]
+      }
+    },
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+      ]
+    }
+  }
+}
+```
+
+---
 
 ## Features
 
 ### 🎥 Camera & Audio Controls
-- **Camera Toggle**: Enable/disable video stream
-- **Microphone Toggle**: Enable/disable audio input
-- **Camera Flip**: Switch between front and back cameras
-- **Connection Management**: Start/stop AI sessions
+- Camera toggle (front/back)
+- Microphone toggle
+- Session management
+- Real-time streaming
 
-### 💬 Conversation Management
-- **Real-time Transcription**: View live conversation items
-- **Message History**: Scrollable conversation panel
-- **Status Indicators**: Visual feedback for listening/processing states
-- **Message Metadata**: Timestamps and sender information
+### 💬 Transcription Features
+- Real-time speech-to-text transcription (when enabled via `enableTranscriptions`)
+- Conversation items for both user speech and AI responses
+- Conversation state tracking via `conversationId`
+- Event callbacks for transcription and response updates
 
-### ⚙️ SDK Configuration
-- **AI Model Selection**: Choose between available models
-- **Voice Selection**: Select AI response voice
-- **Temperature Control**: Adjust response creativity (0.0 - 1.0)
-- **Custom Instructions**: Set AI behavior instructions
-- **Real-time Updates**: Configuration changes apply immediately
+### ⚙️ Configuration
+- AI model selection
+- Voice selection
+- Temperature control
+- Custom instructions
 
-### 🎨 UI/UX Features
-- **Dark Theme**: Modern dark interface design
-- **Status Badges**: Connection and session status indicators
-- **Animated Indicators**: Pulsing animations for active states
-- **Responsive Layout**: Optimized for mobile screens
-- **Modal Settings**: Slide-up configuration panel
+---
 
-## Getting Started
+## Development Tips
 
-1. **Install Dependencies**
-   ```bash
-   cd apps/mobile
-   npm install
-   ```
+### Performance Optimization
 
-2. **Start the Development Server**
-   ```bash
-   npx expo start
-   ```
+- Use `bunx expo -c` to clear cache when testing SDK changes
+- Restart the development server after major SDK updates
+- Test on physical devices for accurate camera/audio behavior
 
-3. **Run on Device/Simulator**
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app
+### Debugging
 
-## SDK Integration
+- Enable debug logging in SDK initialization
+- Use React Native Debugger for state inspection
+- Check Expo logs for native module issues
 
-The app demonstrates key SDK features:
+### Common Development Patterns
 
-```typescript
-import { useOrgaAIContext } from "@orga-ai/sdk-react-native";
+- Test one feature at a time to isolate issues
+- Use TypeScript for better development experience
+- Leverage the monorepo structure for efficient SDK development
 
-const {
-  startSession,
-  endSession,
-  toggleCamera,
-  toggleMic,
-  conversationItems,
-  connectionState,
-  // ... more SDK features
-} = useOrgaAIContext();
-```
-
-### Session Management
-- Start AI sessions with custom callbacks
-- Handle connection state changes
-- Manage media streams (audio/video)
-
-### Real-time Features
-- Live transcription display
-- Conversation item tracking
-- Status monitoring and feedback
-
-### Configuration
-- Model and voice selection
-- Temperature adjustment
-- Custom instruction setting
-
-## Architecture
-
-### Components
-- **HomeScreen**: Main application interface
-- **OrgaControls**: Media and session controls
-- **TranscriptionPanel**: Conversation display
-- **TranscriptionStatus**: Real-time status indicators
-- **Settings Modal**: SDK configuration
-
-### State Management
-- Connection state tracking
-- Conversation item management
-- Configuration parameter updates
-- UI state synchronization
-
-## Development
-
-### Adding New Features
-1. Create new components in `components/`
-2. Update main screen in `app/index.tsx`
-3. Add configuration options in `app/(modal)/settings.tsx`
-4. Test with different SDK parameters
-
-### Styling
-- Uses consistent color palette (slate theme)
-- Responsive design patterns
-- Dark theme optimization
-- Touch-friendly interface elements
+---
 
 ## Troubleshooting
 
 ### Common Issues
-- **Camera Permissions**: Ensure camera/microphone access
-- **Connection Issues**: Check network connectivity
-- **SDK Errors**: Verify configuration parameters
-- **Performance**: Monitor device resources
 
-### Debug Features
-- Console logging for SDK events
-- Visual status indicators
-- Error handling and user feedback
-- Configuration validation
+1. **"Camera/Microphone Unavailable"**
+   - Ensure you're using a development build
+   - Check device permissions
+   - Verify physical device access
 
-## Contributing
+2. **Connection Failures**
+   - Check network connectivity
+   - Verify ephemeral token endpoint
+   - Confirm ICE server configuration
 
-1. Follow TypeScript best practices
-2. Maintain consistent styling
-3. Add proper error handling
-4. Test on both iOS and Android
-5. Update documentation for new features
+3. **Build Issues**
+   - Clear Expo cache: `bunx expo -c`
+   - Rebuild SDK: `cd packages/sdk-react-native && bun run build`
+   - Check native dependencies: `bunx expo install`
+
+4. **Permission Issues**
+   - Reset app permissions on device
+   - Check `app.json` configuration
+   - Verify development build installation
+
+### Debugging
+
+Enable debug logging:
+
+```ts
+OrgaAI.init({
+  logLevel: 'debug',
+  // ... other config
+});
+```
+
+### Getting Help
+
+- Check the [OrgaAI SDK Documentation](https://docs.orga-ai.com)
+- Review the [Expo Documentation](https://docs.expo.dev)
+- Open an issue in the SDK repository
+
+---
+
+## Support
+
+For issues, questions, or contributions, please refer to the SDK documentation or contact the OrgaAI team.
 
 ## License
 
-Part of the OrgaAI SDK monorepo - see main README for license information.
+Proprietary. All rights reserved.

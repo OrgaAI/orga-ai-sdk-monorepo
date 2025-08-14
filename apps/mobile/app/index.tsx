@@ -1,44 +1,30 @@
-import OrgaControls from "@/components/OrgaControls";
 import TranscriptionPanel from "@/components/TranscriptionPanel";
-import { OrgaAICameraView, useOrgaAI} from "@orga-ai/sdk-react-native";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  OrgaAICameraView,
+  useOrgaAI,
+  OrgaAIControls,
+} from "@orga-ai/sdk-react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
 import { useTranscription } from "@/context/TranscriptionContext";
 
 export default function HomeScreen() {
-  const { userVideoStream, connectionState, conversationItems, isMicOn, aiAudioStream } = useOrgaAI();
+  const {
+    userVideoStream,
+    connectionState,
+    conversationItems,
+    isMicOn,
+    aiAudioStream,
+    isCameraOn,
+    startSession,
+    endSession,
+    toggleCamera,
+    toggleMic,
+    flipCamera,
+    cameraPosition,
+  } = useOrgaAI();
   const { showTranscriptions, toggleTranscriptions } = useTranscription();
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [lastTranscription, setLastTranscription] = useState<string>();
-
   const isConnected = connectionState === "connected";
-
-  // Simulate listening state based on mic status and connection
-  useEffect(() => {
-    if (isConnected && isMicOn) {
-      setIsListening(true);
-      setIsProcessing(false);
-    } else {
-      setIsListening(false);
-      setIsProcessing(false);
-    }
-  }, [isConnected, isMicOn]);
-
-  // Update last transcription from conversation items
-  useEffect(() => {
-    if (conversationItems.length > 0) {
-      const lastUserMessage = conversationItems
-        .filter(item => item.sender === "user")
-        .pop();
-      
-      if (lastUserMessage) {
-        setLastTranscription(lastUserMessage.content.message);
-        setIsProcessing(false);
-      }
-    }
-  }, [conversationItems]);
 
   return (
     <View style={styles.container}>
@@ -46,22 +32,26 @@ export default function HomeScreen() {
       <View style={styles.header}>
         {/* Title */}
         <Text style={styles.title}>OrgaAI</Text>
-        
+
         {/* Connection Status */}
         <View style={styles.statusContainer}>
-          <View style={[
-            styles.statusBadge,
-            isConnected ? styles.connectedBadge : styles.disconnectedBadge
-          ]}>
-            <Ionicons 
-              name={isConnected ? "checkmark-circle" : "wifi-outline"} 
-              size={16} 
-              color={isConnected ? "#166534" : "#64748b"} 
+          <View
+            style={[
+              styles.statusBadge,
+              isConnected ? styles.connectedBadge : styles.disconnectedBadge,
+            ]}
+          >
+            <Ionicons
+              name={isConnected ? "checkmark-circle" : "wifi-outline"}
+              size={16}
+              color={isConnected ? "#166534" : "#64748b"}
             />
-            <Text style={[
-              styles.statusText,
-              isConnected ? styles.connectedText : styles.disconnectedText
-            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                isConnected ? styles.connectedText : styles.disconnectedText,
+              ]}
+            >
               {isConnected ? "Connected" : "Ready"}
             </Text>
           </View>
@@ -74,35 +64,60 @@ export default function HomeScreen() {
           streamURL={userVideoStream ? userVideoStream.toURL() : undefined}
           containerStyle={styles.cameraViewContainer}
           style={{ width: "100%", height: "100%" }}
+          cameraPosition={cameraPosition}
           placeholder={
             <View style={styles.placeholderContainer}>
               {isConnected ? (
                 <>
-                  <Ionicons name="camera" size={48} color="white" />
-                  {/* <Text style={styles.placeholderText}>Camera Preview</Text> */}
-                  <Text style={styles.placeholderSubtext}>{`Camera is ${isMicOn ? "active" : "inactive"}`}</Text>
+                  <Ionicons name="mic" size={48} color="white" />
+                  <Text
+                    style={styles.placeholderSubtext}
+                  >{`Mic is ${isMicOn ? "active" : "inactive"}`}</Text>
                 </>
               ) : (
                 <>
                   <View style={styles.disconnectedIconContainer}>
                     <Ionicons name="mic" size={32} color="#3b82f6" />
-                    <Ionicons name="add" size={16} color="#3b82f6" style={styles.plusIcon} />
+                    <Ionicons
+                      name="add"
+                      size={16}
+                      color="#3b82f6"
+                      style={styles.plusIcon}
+                    />
                   </View>
-                  <Text style={styles.placeholderText}>Start Your Conversation</Text>
+                  <Text style={styles.placeholderText}>
+                    Start Your Conversation
+                  </Text>
                   <Text style={styles.placeholderSubtext}>
                     Tap the connect button below to begin
                   </Text>
                   <View style={styles.featureList}>
                     <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                      <Text style={styles.featureText}>Real-time AI conversations</Text>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#10b981"
+                      />
+                      <Text style={styles.featureText}>
+                        Real-time AI conversations
+                      </Text>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                      <Text style={styles.featureText}>Voice and video support</Text>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#10b981"
+                      />
+                      <Text style={styles.featureText}>
+                        Voice and video support
+                      </Text>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#10b981"
+                      />
                       <Text style={styles.featureText}>Live transcription</Text>
                     </View>
                   </View>
@@ -111,13 +126,34 @@ export default function HomeScreen() {
             </View>
           }
         >
-          <OrgaControls />
+          <OrgaAIControls
+          // Required props
+            connectionState={connectionState}
+            isCameraOn={isCameraOn}
+            isMicOn={isMicOn}
+            onStartSession={startSession}
+            onEndSession={endSession}
+            onToggleCamera={toggleCamera}
+            onToggleMic={toggleMic}
+            onFlipCamera={flipCamera}
+
+            // Custom styling
+            // containerStyle={}
+
+            cameraOnIcon={<Ionicons name="camera" size={24} color="white" />}
+            cameraOffIcon={<Ionicons name="videocam-off" size={24} color="white" />}
+            micOnIcon={<Ionicons name="mic" size={24} color="white" />}
+            micOffIcon={<Ionicons name="mic-off" size={24} color="white" />}
+            flipIcon={<Ionicons name="camera-reverse" size={24} color="white" />}
+            endIcon={<Ionicons name="close" size={24} color="white" />}
+            startIcon={<Ionicons name="chatbox" size={24} color="white" />}
+          />
         </OrgaAICameraView>
       </View>
 
       {/* Transcription Panel */}
       {isConnected && showTranscriptions && (
-        <TranscriptionPanel 
+        <TranscriptionPanel
           conversationItems={conversationItems}
           onClose={toggleTranscriptions}
         />

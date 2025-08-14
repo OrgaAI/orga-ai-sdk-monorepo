@@ -25,13 +25,6 @@ export class OrgaAI {
         `Temperature must be between ${ORGAAI_TEMPERATURE_RANGE.min} and ${ORGAAI_TEMPERATURE_RANGE.max}`
       );
     }
-    // Validation for maxTokens
-    if (
-      config.maxTokens !== undefined &&
-      (config.maxTokens < 50 || config.maxTokens > 1000)
-    ) {
-      throw new ConfigurationError('maxTokens must be between 100 and 1000');
-    }
     let fetchFn;
     if (!config.ephemeralEndpoint && !config.fetchEphemeralTokenAndIceServers) {
       throw new ConfigurationError('ephemeralEndpoint or fetchEphemeralTokenAndIceServers is required');
