@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { RTCView, RTCVideoViewProps } from "react-native-webrtc";
+import { CameraPosition } from "../types";
 
 interface OrgaAICameraViewProps extends RTCVideoViewProps {
   onFlipCamera?: () => void;
@@ -14,6 +15,7 @@ interface OrgaAICameraViewProps extends RTCVideoViewProps {
   text?: string;
   containerStyle?: StyleProp<ViewStyle>;
   placeholder?: React.ReactNode;
+  cameraPosition?: CameraPosition;
 }
 
 export const OrgaAICameraView = ({
@@ -23,12 +25,16 @@ export const OrgaAICameraView = ({
   text,
   containerStyle,
   placeholder,
+  cameraPosition = "front",
   children,
   ...props
 }: OrgaAICameraViewProps & { children?: React.ReactNode }) => {
+
+  const shouldMirror = cameraPosition === "front";
+  
   return (
     <View style={containerStyle}>
-      {props.streamURL ? <RTCView {...props} /> : placeholder || null}
+      {props.streamURL ? <RTCView mirror={shouldMirror} {...props} /> : placeholder || null}
       {onFlipCamera && props.streamURL && (
         <TouchableOpacity onPress={onFlipCamera} style={flipCameraButtonStyle}>
           {icon}

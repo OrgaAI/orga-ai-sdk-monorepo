@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/sdk-web",
-  "version": "0.0.0-test.1",
+  "version": "0.0.0-test.7",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -24,13 +24,9 @@
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",
     "jest": "^29.7.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "axios": "^1.10.0",
-    "@orga-ai-sdk/shared": "workspace:*"
   }
 }

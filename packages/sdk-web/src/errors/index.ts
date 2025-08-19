@@ -1,4 +1,3 @@
-// src/errors/index.ts
 export class OrgaAIError extends Error {
     constructor(message: string, public code: string) {
       super(message);
