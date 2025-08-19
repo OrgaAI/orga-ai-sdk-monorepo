@@ -22,6 +22,7 @@ Before you can publish or install @orga-ai npm packages, you must configure auth
 
 1. **Create a `.npmrc` file in the project root (if it doesn't exist):**
    - This file tells npm (and pnpm) how to authenticate with the registry for the @orga-ai scope.
+   - Add file to .gitignore.
 
 2. **Obtain an npm access token:**
    - Generate a new token from your npm account settings, or ask for a valid token.
@@ -113,6 +114,30 @@ After pushing your changes and tags, publish the package as needed:
   pnpm run publish-web-test
   ```
 
+For testing SDK changes locally within one of the example applications (mobile or web) 
+
+- cd into the SDK that has changes and run a build:
+  ```sh
+  cd packages/sdk-web 
+  #or 
+  cd packages/sdk-react-native
+  ```
+  ```sh
+  bun run build
+  ```
+- Enter the application you wish to test in and install if any new packages then run the dev server:
+  ```sh
+  # mobile
+  cd apps/mobile
+  bunx expo install
+  bunx expo -c
+  ```
+  ```sh
+  # web
+  cd apps/web
+  bun install
+  bun run dev
+  ```
 ---
 
 ## Common Pitfalls
