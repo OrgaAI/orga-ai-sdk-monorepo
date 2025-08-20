@@ -123,10 +123,10 @@ export interface OrgaAIHookReturn {
 
   // Media controls
   enableMic: () => Promise<void>;
-  disableMic: () => Promise<void>;
+  disableMic: (hardDisable?: boolean) => Promise<void>;
   toggleMic: () => Promise<void>;
   enableCamera: () => Promise<void>;
-  disableCamera: () => Promise<void>;
+  disableCamera: (hardDisable?: boolean) => Promise<void>; //TODO: Review and add to the docs
   toggleCamera: () => Promise<void>;
 
   // State

@@ -133,50 +133,72 @@ export function useOrgaAI(
   const cleanup = useCallback(async (): Promise<void> => {
     logger.info("🧹 Cleaning up resources");
     logger.debug("🔄 Stopping all media tracks and closing connections");
+    // Best-effort cleanup: never bail early; log errors and continue
     try {
       [userVideoStream, userAudioStream, aiAudioStream].forEach((stream) => {
         if (stream) {
-          stream.getTracks().forEach((track) => {
-            logger.debug(`🛑 Stopping track: ${track.kind} (${track.id})`);
-            track.stop();
-            track.enabled = false;
-          });
+          try {
+            stream.getTracks().forEach((track) => {
+              logger.debug(`🛑 Stopping track: ${track.kind} (${track.id})`);
+              try { track.stop(); } catch {}
+              try { track.enabled = false; } catch {}
+            });
+          } catch (e) {
+            logger.warn("⚠️ Failed stopping some media tracks", e);
+          }
         }
       });
-      setUserVideoStream(null);
-      setUserAudioStream(null);
-
+    } catch (e) {
+      logger.warn("⚠️ Failed iterating streams during cleanup", e);
+    }
+    
+    try {
       if (audioTransceiverRef.current) {
         logger.debug("🔄 Detaching audio transceiver");
         await audioTransceiverRef.current.sender.replaceTrack(null);
       }
+    } catch (e) {
+      logger.warn("⚠️ Failed detaching audio transceiver", e);
+    }
+
+    try {
       if (videoTransceiverRef.current) {
         logger.debug("🔄 Detaching video transceiver");
         await videoTransceiverRef.current.sender.replaceTrack(null);
       }
+    } catch (e) {
+      logger.warn("⚠️ Failed detaching video transceiver", e);
+    }
 
+    try {
       if (peerConnectionRef.current) {
         logger.debug("🔄 Closing peer connection");
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
+    } catch (e) {
+      logger.error("❌ Error closing peer connection", e);
+      onError?.(e as Error);
+    }
 
+    try {
       if (dataChannelRef.current) {
         logger.debug("🔄 Closing data channel");
         dataChannelRef.current.close();
         dataChannelRef.current = null;
       }
-
-      setConversationId(null);
-      setAiAudioStream(null);
-      setConnectionState("closed");
-      setIsCameraOn(false);
-      setIsMicOn(false);
-      setUserVideoStream(null);
-      setUserAudioStream(null);
-    } catch (error) {
-      logger.error("❌ Error during cleanup:", error);
+    } catch (e) {
+      logger.warn("⚠️ Error closing data channel", e);
     }
+
+    // Final state reset regardless of above errors
+    setConversationId(null);
+    setAiAudioStream(null);
+    setConnectionState("closed");
+    setIsCameraOn(false);
+    setIsMicOn(false);
+    setUserVideoStream(null);
+    setUserAudioStream(null);
   }, []);
 
   // Initialize media
@@ -297,6 +319,8 @@ export function useOrgaAI(
   ): Promise<RTCIceCandidateInit[]> => {
     return new Promise((resolve) => {
       const candidates: RTCIceCandidateInit[] = [];
+      const controller = new AbortController(); //TODO: check if this is needed
+
       const onIceCandidate = (event: IceCandidateEvent) => {
         if (event.candidate) {
           logger.debug("🧊 ICE candidate gathered:", event.candidate.candidate);
@@ -308,14 +332,18 @@ export function useOrgaAI(
         } else if (pc.iceGatheringState === "complete") {
           logger.info("🧊 ICE gathering complete");
           logger.debug("🧊 Total ICE candidates gathered:", candidates.length);
+          controller.abort(); //TODO: check if this is needed
           pc.removeEventListener("icecandidate", onIceCandidate);
           resolve(candidates);
         }
       };
       pc.addEventListener("icecandidate", onIceCandidate);
       setTimeout(() => {
-        pc.removeEventListener("icecandidate", onIceCandidate);
-        resolve(candidates);
+        if (!controller.signal.aborted) { //TODO: check if this is needed
+          controller.abort();
+          pc.removeEventListener("icecandidate", onIceCandidate);
+          resolve(candidates);
+        }
       }, 5000);
     });
   };
@@ -456,6 +484,14 @@ export function useOrgaAI(
         await initializeMedia(config);
         await connect();
       } catch (error) {
+        // Re-throw specific error types as-is
+        if (error instanceof ConfigurationError || error instanceof SessionError) {
+          logger.error("❌", error.message, error);
+          setConnectionState("failed");
+          onError?.(error as Error);
+          throw error;
+        }
+
         // Improve error message for better debugging
         let errorMessage = "Failed to start session";
         if (error instanceof Error) {
