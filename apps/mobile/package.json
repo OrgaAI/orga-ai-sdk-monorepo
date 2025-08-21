@@ -1,5 +1,5 @@
 {
-  "name": "@orga-ai/sdk-test-mobile",
+  "name": "@orga-ai/mobile-sdk-test",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
