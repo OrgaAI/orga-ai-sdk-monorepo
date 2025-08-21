@@ -29,7 +29,7 @@ jobs:
       run: pnpm install
       
     - name: Build SDK packages
-      run: turbo run build --filter="@orga-ai/sdk-*"
+      run: pnpm turbo run build --filter="@orga-ai/sdk-*"
       
     - name: Run SDK tests
-      run: turbo run test --filter="@orga-ai/sdk-*"
+      run: pnpm turbo run test --filter="@orga-ai/sdk-*"
