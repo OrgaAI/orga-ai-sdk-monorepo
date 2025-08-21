@@ -42,3 +42,20 @@ jobs:
       
     - name: Run SDK tests
       run: pnpm turbo run test --filter="@orga-ai/sdk-*"
+
+    - name: Debug dependencies
+      run: |
+        echo "=== Checking @types/node ==="
+        pnpm list @types/node
+        echo "=== Checking TypeScript ==="
+        pnpm list typescript
+        echo "=== Node modules structure ==="
+        ls -la node_modules/@types/
+
+    - name: Debug Turbo build
+      run: |
+        echo "=== Current directory ==="
+        pwd
+        echo "=== Trying direct build ==="
+        cd packages/sdk-react-native
+        pnpm run build
