@@ -27,21 +27,6 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install
-      
-    - name: Debug - Check TypeScript compilation
-      run: |
-        echo "Testing TypeScript compilation directly:"
-        cd packages/sdk-react-native
-        echo "Current directory: $(pwd)"
-        echo "tsconfig.json exists: $(ls -la tsconfig.json)"
-        echo "src directory exists: $(ls -la src/)"
-        npx tsc --project tsconfig.json --listFiles
-      
-    - name: Build SDK packages
-      run: pnpm turbo run build --filter="@orga-ai/sdk-*"
-      
-    - name: Run SDK tests
-      run: pnpm turbo run test --filter="@orga-ai/sdk-*"
 
     - name: Debug dependencies
       run: |
@@ -59,3 +44,19 @@ jobs:
         echo "=== Trying direct build ==="
         cd packages/sdk-react-native
         pnpm run build
+      
+    - name: Debug - Check TypeScript compilation
+      run: |
+        echo "Testing TypeScript compilation directly:"
+        cd packages/sdk-react-native
+        echo "Current directory: $(pwd)"
+        echo "tsconfig.json exists: $(ls -la tsconfig.json)"
+        echo "src directory exists: $(ls -la src/)"
+        npx tsc --project tsconfig.json --listFiles
+      
+    - name: Build SDK packages
+      run: pnpm turbo run build --filter="@orga-ai/sdk-*"
+      
+    - name: Run SDK tests
+      run: pnpm turbo run test --filter="@orga-ai/sdk-*"
+
