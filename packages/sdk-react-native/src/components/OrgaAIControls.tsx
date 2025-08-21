@@ -7,6 +7,7 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
+  TextStyle,
 } from "react-native";
 import { ConnectionState } from "../types";
 
@@ -42,7 +43,7 @@ export interface OrgaAIControlsProps {
   // Styling customization
   controlsOverlayStyle?: StyleProp<ViewStyle>;
   controlButtonStyle?: StyleProp<ViewStyle>;
-  controlLabelStyle?: StyleProp<ViewStyle>;
+  controlLabelStyle?: StyleProp<TextStyle>; //TODO: check if this is TextStyle and not ViewStyle
   connectButtonStyle?: StyleProp<ViewStyle>;
   disconnectButtonStyle?: StyleProp<ViewStyle>;
 
