@@ -14,8 +14,9 @@
       "resolveJsonModule": true,
       "isolatedModules": true,
       "noEmit": false,
-      "jsx": "react-native"
+      "jsx": "react",
+      "types": ["jest", "node"]
     },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules", "lib", "**/*.test.ts", "**/*.test.tsx"]
+    "include": ["src/**/*", "src/jest.config.ts"],
+    "exclude": ["node_modules", "lib"]
   }
