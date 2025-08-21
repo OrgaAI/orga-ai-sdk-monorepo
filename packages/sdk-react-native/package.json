@@ -7,7 +7,7 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "npx tsc --project tsconfig.json",
+    "build": "pnpm exec tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
     "type-check": "tsc --noEmit --pretty",
     "test": "jest",
