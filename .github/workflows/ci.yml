@@ -28,15 +28,14 @@ jobs:
     - name: Install dependencies
       run: pnpm install
       
-    - name: Debug - Check what's available
+    - name: Debug - Check TypeScript compilation
       run: |
-        echo "Node version: $(node --version)"
-        echo "npm version: $(npm --version)"
-        echo "pnpm version: $(pnpm --version)"
-        echo "TypeScript available: $(npx tsc --version)"
+        echo "Testing TypeScript compilation directly:"
+        cd packages/sdk-react-native
         echo "Current directory: $(pwd)"
-        echo "Files in packages/sdk-react-native:"
-        ls -la packages/sdk-react-native/
+        echo "tsconfig.json exists: $(ls -la tsconfig.json)"
+        echo "src directory exists: $(ls -la src/)"
+        npx tsc --project tsconfig.json --listFiles
       
     - name: Build SDK packages
       run: pnpm turbo run build --filter="@orga-ai/sdk-*"
