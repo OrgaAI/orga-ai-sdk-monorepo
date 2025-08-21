@@ -7,6 +7,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "test": "cd packages/sdk-react-native && pnpm test && cd ../sdk-web && pnpm test",
     "bump-native-test": "pnpm version prerelease --preid=test --filter=@orga-ai/sdk-react-native",
     "bump-web-test": "pnpm version prerelease --preid=test --filter=@orga-ai/sdk-web",
     "bump-native-alpha": "pnpm version prerelease --preid=alpha --filter=@orga-ai/sdk-react-native",
