@@ -52,7 +52,7 @@ jobs:
       - name: Publish to npm (Private)
         run: |
           echo "Publishing to npm (private test release)..."
-        #   pnpm --filter="@orga-ai/sdk-web" publish --access private --tag test --no-git-checks
-        #   pnpm --filter="@orga-ai/sdk-react-native" publish --access private --tag test --no-git-checks
+          pnpm --filter="@orga-ai/sdk-web" publish --access private --tag test --no-git-checks
+          pnpm --filter="@orga-ai/sdk-react-native" publish --access private --tag test --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
