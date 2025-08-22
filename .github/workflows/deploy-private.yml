@@ -6,7 +6,8 @@ on:
   workflow_run:
     workflows: ["CI"] #TODO: uncomment this when we have permissions to Github Actions
     branches: [ci-cd/test]
-    types: [completed]
+    types: 
+      - completed
 
 jobs:
   deploy-private:
