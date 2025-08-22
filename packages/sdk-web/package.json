@@ -3,9 +3,9 @@
   "version": "0.0.0-test.7",
   "main": "lib/index.js",
   "scripts": {
-    "build": "npx tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
-    "type-check": "npx tsc --noEmit --pretty",
+    "type-check": "tsc --noEmit --pretty",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

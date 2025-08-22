@@ -28,8 +28,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Set PATH for node_modules/.bin
-        run: echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
+      - name: Setup PATH and verify binaries
+        run: |
+          echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
+          echo "Current PATH: $PATH"
+          echo "Checking for tsc:"
+          which tsc || echo "tsc not found in PATH"
+          echo "Checking for jest:"
+          which jest || echo "jest not found in PATH"
+          echo "Checking node_modules/.bin:"
+          ls -la node_modules/.bin/ | grep -E "(tsc|jest)" || echo "No tsc or jest found in node_modules/.bin"
+          echo "Checking pnpm store:"
+          pnpm store path
+          echo "Checking workspace packages:"
+          pnpm list --depth=0
+          echo "Checking workspace configuration:"
+          pnpm list --recursive --depth=0
+          echo "Checking if packages are accessible:"
+          pnpm --filter="@orga-ai/sdk-web" list
+          pnpm --filter="@orga-ai/sdk-react-native" list
 
       - name: Debug dependencies
         run: |
@@ -91,10 +108,26 @@ jobs:
           tsc --project tsconfig.json --listFiles || echo "TypeScript compilation failed"
         continue-on-error: true
 
-      - name: Build SDK packages
-        run: pnpm turbo run build --filter="@orga-ai/sdk-*"
+      - name: Build SDK packages (with pnpm exec)
+        run: |
+          echo "Building sdk-web with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-web" exec tsc --project packages/sdk-web/tsconfig.json
         continue-on-error: true
 
-      - name: Run SDK tests
-        run: pnpm turbo run test --filter="@orga-ai/sdk-*"
+      - name: Build SDK packages (with pnpm exec) - React Native
+        run: |
+          echo "Building sdk-react-native with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project packages/sdk-react-native/tsconfig.json
+        continue-on-error: true
+
+      - name: Run SDK tests (with pnpm exec)
+        run: |
+          echo "Testing sdk-web with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-web" exec jest
+        continue-on-error: true
+
+      - name: Run SDK tests (with pnpm exec) - React Native
+        run: |
+          echo "Testing sdk-react-native with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec jest
         continue-on-error: true
