@@ -1,10 +1,12 @@
 name: Deploy to Private npm
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    branches: [ci-cd/test]
-    types: [completed]
+    push:
+        branches: [ci-cd/test]
+#   workflow_run:
+#     workflows: ["CI"] #TODO: uncomment this when we have permissions to Github Actions
+#     branches: [ci-cd/test]
+#     types: [completed]
 
 jobs:
   deploy-private:
