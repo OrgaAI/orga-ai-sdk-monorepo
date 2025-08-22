@@ -111,13 +111,13 @@ jobs:
       - name: Build SDK packages (with pnpm exec)
         run: |
           echo "Building sdk-web with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-web" exec tsc --project packages/sdk-web/tsconfig.json
+          pnpm --filter="@orga-ai/sdk-web" exec tsc --project tsconfig.json
         continue-on-error: true
 
       - name: Build SDK packages (with pnpm exec) - React Native
         run: |
           echo "Building sdk-react-native with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project packages/sdk-react-native/tsconfig.json
+          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
         continue-on-error: true
 
       - name: Run SDK tests (with pnpm exec)
