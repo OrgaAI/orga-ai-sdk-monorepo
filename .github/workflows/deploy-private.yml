@@ -1,0 +1,56 @@
+name: Deploy to Private npm
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [ci-cd/test]
+    types: [completed]
+
+jobs:
+  deploy-private:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    # Only run if CI workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build packages
+        run: |
+          echo "Building packages for private deployment..."
+          pnpm --filter="@orga-ai/sdk-web" exec tsc --project tsconfig.json
+          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
+
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          pnpm --filter="@orga-ai/sdk-web" exec jest
+          pnpm --filter="@orga-ai/sdk-react-native" exec jest
+
+      - name: Publish to npm (Private)
+        run: |
+          echo "Publishing to npm (private test release)..."
+        #   pnpm --filter="@orga-ai/sdk-web" publish --access private --tag test --no-git-checks
+        #   pnpm --filter="@orga-ai/sdk-react-native" publish --access private --tag test --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
