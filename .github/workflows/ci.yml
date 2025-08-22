@@ -37,6 +37,13 @@ jobs:
         echo "=== Node modules structure ==="
         ls -la node_modules/@types/
 
+    - name: Debug - Check source files for sdk-web
+      run: |
+        echo "=== Checking src directory for @orga-ai/sdk-web ==="
+        ls -la packages/sdk-web/src/ || echo "src directory not found"
+        ls -la packages/sdk-web/src/index.ts packages/sdk-web/src/index.tsx || echo "index.ts or index.tsx not found"
+      continue-on-error: true
+
     - name: Debug Turbo build
       run: |
         echo "=== Current directory ==="
