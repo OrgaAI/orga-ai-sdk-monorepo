@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main, dev, feature/ci-cd, ci-cd/test]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,106 +28,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Setup PATH and verify binaries
+      - name: Build SDK packages
         run: |
-          echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
-          echo "Current PATH: $PATH"
-          echo "Checking for tsc:"
-          which tsc || echo "tsc not found in PATH"
-          echo "Checking for jest:"
-          which jest || echo "jest not found in PATH"
-          echo "Checking node_modules/.bin:"
-          ls -la node_modules/.bin/ | grep -E "(tsc|jest)" || echo "No tsc or jest found in node_modules/.bin"
-          echo "Checking pnpm store:"
-          pnpm store path
-          echo "Checking workspace packages:"
-          pnpm list --depth=0
-          echo "Checking workspace configuration:"
-          pnpm list --recursive --depth=0
-          echo "Checking if packages are accessible:"
-          pnpm --filter="@orga-ai/sdk-web" list
-          pnpm --filter="@orga-ai/sdk-react-native" list
-
-      - name: Debug dependencies
-        run: |
-          echo "=== Checking @types/node ==="
-          pnpm list @types/node
-          echo "=== Checking TypeScript ==="
-          pnpm list typescript
-          echo "=== Checking @types/react-native ==="
-          pnpm list @types/react-native
-          echo "=== Node modules structure ==="
-          ls -la node_modules/@types/
-        continue-on-error: true
-
-      - name: Debug - Check source files for sdk-web
-        run: |
-          echo "=== Checking src directory for @orga-ai/sdk-web ==="
-          ls -la packages/sdk-web/src/ || echo "src directory not found"
-          ls -la packages/sdk-web/src/index.ts packages/sdk-web/src/index.tsx || echo "index.ts or index.tsx not found"
-        continue-on-error: true
-
-      - name: Debug - Check source files for sdk-react-native
-        run: |
-          echo "=== Checking src directory for @orga-ai/sdk-react-native ==="
-          ls -la packages/sdk-react-native/src/ || echo "src directory not found"
-          ls -la packages/sdk-react-native/src/index.ts packages/sdk-react-native/src/index.tsx || echo "index.ts or index.tsx not found"
-        continue-on-error: true
-
-      - name: Debug Turbo build for sdk-web
-        run: |
-          echo "=== Trying direct build for sdk-web ==="
-          cd packages/sdk-web
-          pnpm run build || echo "Build failed"
-        continue-on-error: true
-
-      - name: Debug Turbo build for sdk-react-native
-        run: |
-          echo "=== Trying direct build for sdk-react-native ==="
-          cd packages/sdk-react-native
-          pnpm run build || echo "Build failed"
-        continue-on-error: true
-
-      - name: Debug - Check TypeScript compilation for sdk-web
-        run: |
-          echo "Testing TypeScript compilation directly for sdk-web:"
-          cd packages/sdk-web
-          echo "Current directory: $(pwd)"
-          echo "tsconfig.json exists: $(ls -la tsconfig.json)"
-          echo "src directory exists: $(ls -la src/)"
-          tsc --project tsconfig.json --listFiles || echo "TypeScript compilation failed"
-        continue-on-error: true
-
-      - name: Debug - Check TypeScript compilation for sdk-react-native
-        run: |
-          echo "Testing TypeScript compilation directly for sdk-react-native:"
-          cd packages/sdk-react-native
-          echo "Current directory: $(pwd)"
-          echo "tsconfig.json exists: $(ls -la tsconfig.json)"
-          echo "src directory exists: $(ls -la src/)"
-          tsc --project tsconfig.json --listFiles || echo "TypeScript compilation failed"
-        continue-on-error: true
-
-      - name: Build SDK packages (with pnpm exec)
-        run: |
-          echo "Building sdk-web with pnpm exec..."
+          echo "Building SDK packages..."
           pnpm --filter="@orga-ai/sdk-web" exec tsc --project tsconfig.json
-        continue-on-error: true
-
-      - name: Build SDK packages (with pnpm exec) - React Native
-        run: |
-          echo "Building sdk-react-native with pnpm exec..."
           pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
-        continue-on-error: true
 
-      - name: Run SDK tests (with pnpm exec)
+      - name: Run tests
         run: |
-          echo "Testing sdk-web with pnpm exec..."
+          echo "Running tests..."
           pnpm --filter="@orga-ai/sdk-web" exec jest
-        continue-on-error: true
-
-      - name: Run SDK tests (with pnpm exec) - React Native
-        run: |
-          echo "Testing sdk-react-native with pnpm exec..."
           pnpm --filter="@orga-ai/sdk-react-native" exec jest
-        continue-on-error: true
+
+      - name: Type checking
+        run: |
+          echo "Running type checks..."
+          pnpm run check-types
+
+      - name: Lint code
+        run: |
+          echo "Running linter..."
+          pnpm run lint
