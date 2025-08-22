@@ -2,68 +2,95 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev, feature/ci-cd, ci-cd/test ]
+    branches: [main, dev, feature/ci-cd, ci-cd/test]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 9
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'pnpm'
-        
-    - name: Install dependencies
-      run: pnpm install
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Debug dependencies
-      run: |
-        echo "=== Checking @types/node ==="
-        pnpm list @types/node
-        echo "=== Checking TypeScript ==="
-        pnpm list typescript
-        echo "=== Node modules structure ==="
-        ls -la node_modules/@types/
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
 
-    - name: Debug - Check source files for sdk-web
-      run: |
-        echo "=== Checking src directory for @orga-ai/sdk-web ==="
-        ls -la packages/sdk-web/src/ || echo "src directory not found"
-        ls -la packages/sdk-web/src/index.ts packages/sdk-web/src/index.tsx || echo "index.ts or index.tsx not found"
-      continue-on-error: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
 
-    - name: Debug Turbo build
-      run: |
-        echo "=== Current directory ==="
-        pwd
-        echo "=== Trying direct build ==="
-        cd packages/sdk-react-native
-        pnpm run build
-      
-    - name: Debug - Check TypeScript compilation
-      run: |
-        echo "Testing TypeScript compilation directly:"
-        cd packages/sdk-react-native
-        echo "Current directory: $(pwd)"
-        echo "tsconfig.json exists: $(ls -la tsconfig.json)"
-        echo "src directory exists: $(ls -la src/)"
-        npx tsc --project tsconfig.json --listFiles
-      
-    - name: Build SDK packages
-      run: pnpm turbo run build --filter="@orga-ai/sdk-*"
-      
-    - name: Run SDK tests
-      run: pnpm turbo run test --filter="@orga-ai/sdk-*"
+      - name: Install dependencies
+        run: pnpm install
 
+      - name: Set PATH for node_modules/.bin
+        run: echo "NODE_PATH=$(pwd)/node_modules" >> $GITHUB_ENV
+
+      - name: Debug dependencies
+        run: |
+          echo "=== Checking @types/node ==="
+          pnpm list @types/node
+          echo "=== Checking TypeScript ==="
+          pnpm list typescript
+          echo "=== Node modules structure ==="
+          ls -la node_modules/@types/
+        continue-on-error: true
+
+      - name: Debug - Check source files for sdk-web
+        run: |
+          echo "=== Checking src directory for @orga-ai/sdk-web ==="
+          ls -la packages/sdk-web/src/ || echo "src directory not found"
+          ls -la packages/sdk-web/src/index.ts packages/sdk-web/src/index.tsx || echo "index.ts or index.tsx not found"
+        continue-on-error: true
+
+      - name: Debug - Check source files for sdk-react-native
+        run: |
+          echo "=== Checking src directory for @orga-ai/sdk-react-native ==="
+          ls -la packages/sdk-react-native/src/ || echo "src directory not found"
+          ls -la packages/sdk-react-native/src/index.ts packages/sdk-react-native/src/index.tsx || echo "index.ts or index.tsx not found"
+        continue-on-error: true
+
+      - name: Debug Turbo build for sdk-web
+        run: |
+          echo "=== Trying direct build for sdk-web ==="
+          cd packages/sdk-web
+          pnpm run build
+        continue-on-error: true
+
+      - name: Debug Turbo build for sdk-react-native
+        run: |
+          echo "=== Trying direct build for sdk-react-native ==="
+          cd packages/sdk-react-native
+          pnpm run build
+        continue-on-error: true
+
+      - name: Debug - Check TypeScript compilation for sdk-web
+        run: |
+          echo "Testing TypeScript compilation directly for sdk-web:"
+          cd packages/sdk-web
+          echo "Current directory: $(pwd)"
+          echo "tsconfig.json exists: $(ls -la tsconfig.json)"
+          echo "src directory exists: $(ls -la src/)"
+          tsc --project tsconfig.json --listFiles || echo "TypeScript compilation failed"
+        continue-on-error: true
+
+      - name: Debug - Check TypeScript compilation for sdk-react-native
+        run: |
+          echo "Testing TypeScript compilation directly for sdk-react-native:"
+          cd packages/sdk-react-native
+          echo "Current directory: $(pwd)"
+          echo "tsconfig.json exists: $(ls -la tsconfig.json)"
+          echo "src directory exists: $(ls -la src/)"
+          tsc --project tsconfig.json --listFiles || echo "TypeScript compilation failed"
+        continue-on-error: true
+
+      - name: Build SDK packages
+        run: pnpm turbo run build --filter="@orga-ai/sdk-*"
+
+      - name: Run SDK tests
+        run: pnpm turbo run test --filter="@orga-ai/sdk-*"
