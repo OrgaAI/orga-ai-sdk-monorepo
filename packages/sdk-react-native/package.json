@@ -7,9 +7,9 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json",
+    "build": "npx tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
-    "type-check": "tsc --noEmit --pretty",
+    "type-check": "npx tsc --noEmit --pretty",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
