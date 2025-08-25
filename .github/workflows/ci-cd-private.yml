@@ -2,16 +2,16 @@ name: CI/CD - Private Deployment
 
 on:
   push:
-    branches: [main, dev, feature/ci-cd, ci-cd/test]
-#   pull_request:
-#     branches: [main]
+    branches: [ci-cd/test]
+  workflow_dispatch:  # Manual trigger option
 
 jobs:
+  # CI Phase
   ci:
     runs-on: ubuntu-latest
     outputs:
       success: ${{ steps.ci-check.outputs.success }}
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,13 +70,38 @@ jobs:
           echo "Testing sdk-react-native with pnpm exec..."
           pnpm --filter="@orga-ai/sdk-react-native" exec jest
 
+      - name: Verify build outputs
+        run: |
+          echo "=== Verifying build outputs ==="
+          echo "sdk-web lib directory:"
+          ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
+          echo "sdk-react-native lib directory:"
+          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
+          echo "sdk-web package.json:"
+          ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
+          echo "sdk-react-native package.json:"
+          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-packages
+          path: |
+            packages/sdk-web/lib/
+            packages/sdk-web/package.json
+            packages/sdk-web/README.md
+            packages/sdk-react-native/lib/
+            packages/sdk-react-native/package.json
+            packages/sdk-react-native/README.md
+          retention-days: 1
+
       - name: CI Check
         id: ci-check
         run: |
           echo "CI phase completed successfully!"
-          echo "success=true" >> $GITHUB_OUTPUT    
+          echo "success=true" >> $GITHUB_OUTPUT
 
-       # CD Phase - Only runs if CI succeeds
+  # CD Phase - Only runs if CI succeeds
   deploy:
     runs-on: ubuntu-latest
     needs: ci
@@ -95,6 +120,18 @@ jobs:
           name: built-packages
           path: .
 
+      - name: Verify artifacts
+        run: |
+          echo "=== Verifying downloaded artifacts ==="
+          echo "sdk-web lib directory:"
+          ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
+          echo "sdk-react-native lib directory:"
+          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
+          echo "sdk-web package.json:"
+          ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
+          echo "sdk-react-native package.json:"
+          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -109,12 +146,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Verify artifacts
-        run: |
-          echo "Verifying downloaded artifacts..."
-          ls -la packages/sdk-web/dist/ || ls -la packages/sdk-web/lib/ || echo "No build artifacts found for sdk-web"
-          ls -la packages/sdk-react-native/dist/ || ls -la packages/sdk-react-native/lib/ || echo "No build artifacts found for sdk-react-native"
 
       - name: Publish to npm (Private)
         run: |
