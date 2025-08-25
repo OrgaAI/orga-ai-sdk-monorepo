@@ -133,13 +133,21 @@ jobs:
           echo "sdk-react-native package.json:"
           ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
 
-      # Remove pnpm setup and install - not needed!
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Publish to npm (Private)
         run: |
           echo "Publishing to npm (private test release)..."
-          cd packages/sdk-react-native
-          npm publish --access private --tag test --no-git-checks
+          pnpm --filter="@orga-ai/sdk-react-native" publish --access private --tag test --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
