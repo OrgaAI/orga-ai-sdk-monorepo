@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/sdk-react-native",
-  "version": "0.0.0-test.17",
+  "version": "0.0.0-test.16",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

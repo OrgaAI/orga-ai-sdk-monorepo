@@ -7,7 +7,6 @@ on:
       - 'packages/sdk-react-native/**'
       - 'packages/typescript-config/**'
       - 'package.json'
-      - 'pnpm-lock.yaml'
   workflow_dispatch:  # Manual trigger option
 
 jobs:
