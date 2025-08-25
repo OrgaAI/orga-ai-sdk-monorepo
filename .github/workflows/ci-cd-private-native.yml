@@ -3,15 +3,34 @@ name: CI/CD - Private Deployment - React Native
 on:
   push:
     branches: [ci-cd/test]
-    paths:
-      - 'packages/sdk-react-native/**'
-      - 'packages/typescript-config/**'
-      - 'package.json'
-  workflow_dispatch:  # Manual trigger option
+  workflow_dispatch:
 
 jobs:
-  # CI Phase
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if relevant files changed
+        id: check
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          if echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/"; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "Native SDK changes detected"
+          else
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo "No native SDK changes"
+          fi
+
   ci:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should-run == 'true'
     runs-on: ubuntu-latest
     outputs:
       success: ${{ steps.ci-check.outputs.success }}
