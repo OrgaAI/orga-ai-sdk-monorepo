@@ -1,7 +1,12 @@
 {
   "name": "@orga-ai/sdk-react-native",
-  "version": "0.0.0-test.15",
+  "version": "0.0.0-test.16",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "README.md"
+  ],
   "description": "React Native SDK for Orga AI - AI-powered audio/video processing",
   "publishConfig": {
     "access": "restricted"
