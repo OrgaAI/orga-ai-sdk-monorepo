@@ -1,8 +1,13 @@
-name: CI/CD - Private Deployment
+name: CI/CD - Private Deployment - React Native
 
 on:
   push:
     branches: [ci-cd/test]
+    paths:
+      - 'packages/sdk-react-native/**'
+      - 'packages/typescript-config/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:  # Manual trigger option
 
 jobs:
@@ -47,23 +52,12 @@ jobs:
           echo "Checking workspace configuration:"
           pnpm list --recursive --depth=0
           echo "Checking if packages are accessible:"
-          pnpm --filter="@orga-ai/sdk-web" list
           pnpm --filter="@orga-ai/sdk-react-native" list
-
-      - name: Build SDK packages (sdk-web)
-        run: |
-          echo "Building sdk-web with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-web" exec tsc --project tsconfig.json
 
       - name: Build SDK packages (sdk-react-native)
         run: |
           echo "Building sdk-react-native with pnpm exec..."
           pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
-
-      - name: Run SDK tests (sdk-web)
-        run: |
-          echo "Testing sdk-web with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-web" exec jest
 
       - name: Run SDK tests (sdk-react-native)
         run: |
@@ -73,12 +67,8 @@ jobs:
       - name: Verify build outputs
         run: |
           echo "=== Verifying build outputs ==="
-          echo "sdk-web lib directory:"
-          ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
           echo "sdk-react-native lib directory:"
           ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
-          echo "sdk-web package.json:"
-          ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
           echo "sdk-react-native package.json:"
           ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
 
@@ -87,9 +77,6 @@ jobs:
         with:
           name: built-packages
           path: |
-            packages/sdk-web/lib/
-            packages/sdk-web/package.json
-            packages/sdk-web/README.md
             packages/sdk-react-native/lib/
             packages/sdk-react-native/package.json
             packages/sdk-react-native/README.md
@@ -123,12 +110,8 @@ jobs:
       - name: Verify artifacts
         run: |
           echo "=== Verifying downloaded artifacts ==="
-          echo "sdk-web lib directory:"
-          ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
           echo "sdk-react-native lib directory:"
           ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
-          echo "sdk-web package.json:"
-          ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
           echo "sdk-react-native package.json:"
           ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
 
@@ -150,7 +133,6 @@ jobs:
       - name: Publish to npm (Private)
         run: |
           echo "Publishing to npm (private test release)..."
-          pnpm --filter="@orga-ai/sdk-web" publish --access private --tag test --no-git-checks
           pnpm --filter="@orga-ai/sdk-react-native" publish --access private --tag test --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
