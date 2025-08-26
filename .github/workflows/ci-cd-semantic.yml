@@ -1,4 +1,4 @@
-name: CI/CD - Private Deployment - React Native
+name: CI/CD - Private Deployment Semantic Release - React Native
 
 on:
   push:
@@ -116,8 +116,22 @@ jobs:
       id-token: write
     
     steps:
+      - name: Log deploy job context
+        run: |
+          echo "=== Deploy Job Context ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Commit message: $(git log -1 --pretty=%s)"
+          echo "Native changes detected: ${{ needs.detect-changes.outputs.should-run }}"
+          echo "CI success: ${{ needs.ci.outputs.success }}"
+          echo "Job condition: github.event_name == 'push': ${{ github.event_name == 'push' }}"
+          echo "Job condition: needs.detect-changes.outputs.should-run == 'true': ${{ needs.detect-changes.outputs.should-run == 'true' }}"
+          echo "Job condition: needs.ci.outputs.success == 'true': ${{ needs.ci.outputs.success == 'true' }}"
+          echo "Job condition: !startsWith(github.event.head_commit.message, 'chore(release):'): ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}"
+
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # semantic-release needs full history
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -143,10 +157,11 @@ jobs:
         with:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
 
         #   TODO: Check this
-    #   - name: Install dependencies
-    #     run: pnpm install --no-frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
 
         # TODO: Check this
       - name: Run semantic-release
