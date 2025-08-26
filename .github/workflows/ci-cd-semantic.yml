@@ -17,6 +17,7 @@ jobs:
         id: check
         run: |
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files: $CHANGED_FILES"
           WEB_CHANGED=$(echo "$CHANGED_FILES" | grep -q "packages/sdk-web/" && echo "true" || echo "false")
           NATIVE_CHANGED=$(echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/" && echo "true" || echo "false")
           echo "web=$WEB_CHANGED" >> $GITHUB_OUTPUT
@@ -57,9 +58,9 @@ jobs:
           echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
           echo "Current PATH: $PATH"
           echo "Checking for tsc:"
-          which tsc || echo "tsc not found in PATH"
+          which tsc || { echo "tsc not found in PATH"; exit 1; }
           echo "Checking for jest:"
-          which jest || echo "jest not found in PATH"
+          which jest || { echo "jest not found in PATH"; exit 1; }
           echo "Checking node_modules/.bin:"
           ls -la node_modules/.bin/ | grep -E "(tsc|jest)" || echo "No tsc or jest found in node_modules/.bin"
           echo "Checking pnpm store:"
@@ -72,18 +73,22 @@ jobs:
           pnpm --filter="${{ matrix.package.filter }}" list
       - name: Build package
         if: matrix.package.should-run == 'true'
-        run: pnpm --filter=${{ matrix.package.filter }} exec tsc --project ${{ matrix.package.path }}/tsconfig.json
+        run: |
+          echo "Building ${{ matrix.package.name }}..."
+          pnpm --filter=${{ matrix.package.filter }} exec tsc --project ${{ matrix.package.path }}/tsconfig.json
       - name: Run tests
         if: matrix.package.should-run == 'true'
-        run: pnpm --filter=${{ matrix.package.filter }} exec jest
+        run: |
+          echo "Testing ${{ matrix.package.name }}..."
+          pnpm --filter=${{ matrix.package.filter }} exec jest
       - name: Verify build outputs
         if: matrix.package.should-run == 'true'
         run: |
-          echo "=== Verifying build outputs ==="
+          echo "=== Verifying build outputs for ${{ matrix.package.name }} ==="
           echo "${{ matrix.package.name }} lib directory:"
-          ls -la ${{ matrix.package.path }}/lib/ || echo "${{ matrix.package.name }} lib directory not found"
+          ls -la ${{ matrix.package.path }}/lib/ || { echo "${{ matrix.package.name }} lib directory not found"; exit 1; }
           echo "${{ matrix.package.name }} package.json:"
-          ls -la ${{ matrix.package.path }}/package.json || echo "${{ matrix.package.name }} package.json not found"
+          ls -la ${{ matrix.package.path }}/package.json || { echo "${{ matrix.package.name }} package.json not found"; exit 1; }
       - name: Upload build artifacts
         if: matrix.package.should-run == 'true'
         uses: actions/upload-artifact@v4
@@ -100,8 +105,8 @@ jobs:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     permissions:
-      contents: write # For semantic-release to commit version bumps
-      id-token: write # For npm authentication
+      contents: write
+      id-token: write
     strategy:
       matrix:
         package: [
@@ -114,6 +119,17 @@ jobs:
           - package: { name: "sdk-react-native", path: "packages/sdk-react-native", filter: "@orga-ai/sdk-react-native" }
             should-run: ${{ needs.detect-changes.outputs.native }}
     steps:
+      - name: Log CD job context
+        run: |
+          echo "=== CD Job Context ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Commit message: $(git log -1 --pretty=%s)"
+          echo "Web changes detected: ${{ needs.detect-changes.outputs.web }}"
+          echo "Native changes detected: ${{ needs.detect-changes.outputs.native }}"
+          echo "Job condition: github.event_name == 'push': ${{ github.event_name == 'push' }}"
+          echo "Job condition: !startsWith(github.event.head_commit.message, 'chore(release):'): ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}"
+          echo "Matrix package: ${{ matrix.package.name }}"
+          echo "Should run: ${{ matrix.package.should-run }}"
       - name: Checkout code
         uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -125,11 +141,11 @@ jobs:
       - name: Verify artifacts
         if: matrix.package.should-run == 'true'
         run: |
-          echo "=== Verifying downloaded artifacts ==="
+          echo "=== Verifying downloaded artifacts for ${{ matrix.package.name }} ==="
           echo "${{ matrix.package.name }} lib directory:"
-          ls -la ${{ matrix.package.path }}/lib/ || echo "${{ matrix.package.name }} lib directory not found"
+          ls -la ${{ matrix.package.path }}/lib/ || { echo "${{ matrix.package.name }} lib directory not found"; exit 1; }
           echo "${{ matrix.package.name }} package.json:"
-          ls -la ${{ matrix.package.path }}/package.json || echo "${{ matrix.package.name }} package.json not found"
+          ls -la ${{ matrix.package.path }}/package.json || { echo "${{ matrix.package.name }} package.json not found"; exit 1; }
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with: { version: 9 }
