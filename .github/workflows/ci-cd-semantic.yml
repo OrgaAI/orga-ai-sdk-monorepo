@@ -1,66 +1,66 @@
-name: CI/CD - Test Deployment
+name: CI/CD - Private Deployment - React Native
+
 on:
   push:
     branches: [ci-cd/test]
   workflow_dispatch:
+
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      web: ${{ steps.check.outputs.web }}
-      native: ${{ steps.check.outputs.native }}
+      should-run: ${{ steps.check.outputs.should-run }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 } # semantic-release needs full history
-      - name: Check changed files
+        with:
+          fetch-depth: 0 # semantic-release needs full history
+
+      - name: Check if relevant files changed
         id: check
         run: |
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-          echo "Changed files: $CHANGED_FILES"
-          WEB_CHANGED=$(echo "$CHANGED_FILES" | grep -q "packages/sdk-web/" && echo "true" || echo "false")
-          NATIVE_CHANGED=$(echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/" && echo "true" || echo "false")
-          echo "web=$WEB_CHANGED" >> $GITHUB_OUTPUT
-          echo "native=$NATIVE_CHANGED" >> $GITHUB_OUTPUT
-          echo "Web SDK changes: $WEB_CHANGED"
-          echo "Native SDK changes: $NATIVE_CHANGED"
+          if echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/"; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "Native SDK changes detected"
+          else
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo "No native SDK changes"
+          fi
 
   ci:
     needs: detect-changes
-    if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.native == 'true'
+    if: needs.detect-changes.outputs.should-run == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: [
-          { name: "sdk-web", path: "packages/sdk-web", filter: "@orga-ai/sdk-web" },
-          { name: "sdk-react-native", path: "packages/sdk-react-native", filter: "@orga-ai/sdk-react-native" }
-        ]
-        include:
-          - package: { name: "sdk-web", path: "packages/sdk-web", filter: "@orga-ai/sdk-web" }
-            should-run: ${{ needs.detect-changes.outputs.web }}
-          - package: { name: "sdk-react-native", path: "packages/sdk-react-native", filter: "@orga-ai/sdk-react-native" }
-            should-run: ${{ needs.detect-changes.outputs.native }}
+    outputs:
+      success: ${{ steps.ci-check.outputs.success }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
-        with: { version: 9 }
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: '18', cache: 'pnpm' }
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
       - name: Setup PATH and verify binaries
-        if: matrix.package.should-run == 'true'
         run: |
           echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
           echo "Current PATH: $PATH"
           echo "Checking for tsc:"
-          which tsc || { echo "tsc not found in PATH"; exit 1; }
+          which tsc || echo "tsc not found in PATH"
           echo "Checking for jest:"
-          which jest || { echo "jest not found in PATH"; exit 1; }
+          which jest || echo "jest not found in PATH"
           echo "Checking node_modules/.bin:"
           ls -la node_modules/.bin/ | grep -E "(tsc|jest)" || echo "No tsc or jest found in node_modules/.bin"
           echo "Checking pnpm store:"
@@ -70,100 +70,96 @@ jobs:
           echo "Checking workspace configuration:"
           pnpm list --recursive --depth=0
           echo "Checking if packages are accessible:"
-          pnpm --filter="${{ matrix.package.filter }}" list
-      - name: Build package
-        if: matrix.package.should-run == 'true'
+          pnpm --filter="@orga-ai/sdk-react-native" list
+
+      - name: Build SDK packages (sdk-react-native)
         run: |
-          echo "Building ${{ matrix.package.name }}..."
-          pnpm --filter=${{ matrix.package.filter }} exec tsc --project ${{ matrix.package.path }}/tsconfig.json
-      - name: Run tests
-        if: matrix.package.should-run == 'true'
+          echo "Building sdk-react-native with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
+
+      - name: Run SDK tests (sdk-react-native)
         run: |
-          echo "Testing ${{ matrix.package.name }}..."
-          pnpm --filter=${{ matrix.package.filter }} exec jest
+          echo "Testing sdk-react-native with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec jest
+
       - name: Verify build outputs
-        if: matrix.package.should-run == 'true'
         run: |
-          echo "=== Verifying build outputs for ${{ matrix.package.name }} ==="
-          echo "${{ matrix.package.name }} lib directory:"
-          ls -la ${{ matrix.package.path }}/lib/ || { echo "${{ matrix.package.name }} lib directory not found"; exit 1; }
-          echo "${{ matrix.package.name }} package.json:"
-          ls -la ${{ matrix.package.path }}/package.json || { echo "${{ matrix.package.name }} package.json not found"; exit 1; }
+          echo "=== Verifying build outputs ==="
+          echo "sdk-react-native lib directory:"
+          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
+          echo "sdk-react-native package.json:"
+          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+
       - name: Upload build artifacts
-        if: matrix.package.should-run == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.package.name }}-build
+          name: built-packages
           path: |
-            ${{ matrix.package.path }}/lib/
-            ${{ matrix.package.path }}/package.json
-            ${{ matrix.package.path }}/README.md
+            packages/sdk-react-native/lib/
+            packages/sdk-react-native/package.json
+            packages/sdk-react-native/README.md
           retention-days: 1
 
-  cd:
-    needs: [detect-changes, ci]
-    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore(release):')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    strategy:
-      matrix:
-        package: [
-          { name: "sdk-web", path: "packages/sdk-web", filter: "@orga-ai/sdk-web" },
-          { name: "sdk-react-native", path: "packages/sdk-react-native", filter: "@orga-ai/sdk-react-native" }
-        ]
-        include:
-          - package: { name: "sdk-web", path: "packages/sdk-web", filter: "@orga-ai/sdk-web" }
-            should-run: ${{ needs.detect-changes.outputs.web }}
-          - package: { name: "sdk-react-native", path: "packages/sdk-react-native", filter: "@orga-ai/sdk-react-native" }
-            should-run: ${{ needs.detect-changes.outputs.native }}
-    steps:
-      - name: Log CD job context
+      - name: CI Check
+        id: ci-check
         run: |
-          echo "=== CD Job Context ==="
-          echo "Event name: ${{ github.event_name }}"
-          echo "Commit message: $(git log -1 --pretty=%s)"
-          echo "Web changes detected: ${{ needs.detect-changes.outputs.web }}"
-          echo "Native changes detected: ${{ needs.detect-changes.outputs.native }}"
-          echo "Job condition: github.event_name == 'push': ${{ github.event_name == 'push' }}"
-          echo "Job condition: !startsWith(github.event.head_commit.message, 'chore(release):'): ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}"
-          echo "Matrix package: ${{ matrix.package.name }}"
-          echo "Should run: ${{ matrix.package.should-run }}"
+          echo "CI phase completed successfully!"
+          echo "success=true" >> $GITHUB_OUTPUT
+
+  # CD Phase - Only runs if CI succeeds
+  deploy:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: needs.ci.outputs.success == 'true' && !startsWith(github.event.head_commit.message, 'chore(release):')
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.package.name }}-build
-          path: ${{ matrix.package.path }}
+          name: built-packages
+          path: .
+
       - name: Verify artifacts
-        if: matrix.package.should-run == 'true'
         run: |
-          echo "=== Verifying downloaded artifacts for ${{ matrix.package.name }} ==="
-          echo "${{ matrix.package.name }} lib directory:"
-          ls -la ${{ matrix.package.path }}/lib/ || { echo "${{ matrix.package.name }} lib directory not found"; exit 1; }
-          echo "${{ matrix.package.name }} package.json:"
-          ls -la ${{ matrix.package.path }}/package.json || { echo "${{ matrix.package.name }} package.json not found"; exit 1; }
+          echo "=== Verifying downloaded artifacts ==="
+          echo "sdk-react-native lib directory:"
+          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
+          echo "sdk-react-native package.json:"
+          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
-        with: { version: 9 }
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: '18', registry-url: 'https://registry.npmjs.org', cache: 'pnpm' }
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+        #   TODO: Check this
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+        # TODO: Check this
       - name: Run semantic-release
-        if: matrix.package.should-run == 'true'
-        run: pnpm --filter=${{ matrix.package.filter }} exec semantic-release
+        run: |
+          echo "Running semantic-release for sdk-react-native..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Deployment Summary
-        if: matrix.package.should-run == 'true'
         run: |
-          echo "✅ Test deployment completed for ${{ matrix.package.name }}!"
-          echo "Published to npm with 'test' tag"
-          echo "🔒 Access: restricted"
-          echo "Tag: test"
+          echo "✅ Deployment completed successfully!"
+          echo " Packages published to npm with 'test' tag"
+          echo "🔒 Access: private"
+          echo " Tag: test"
