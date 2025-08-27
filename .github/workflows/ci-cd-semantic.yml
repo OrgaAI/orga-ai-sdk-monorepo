@@ -164,7 +164,7 @@ jobs:
           echo "Installing dependencies..."
           pnpm install --no-frozen-lockfile
           echo "Installing semantic-release explicitly..."
-          pnpm add -D semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/npm @semantic-release/git semantic-release-monorepo
+          pnpm add -D semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/npm @semantic-release/git semantic-release-monorepo -w
 
       - name: Setup PATH and verify binaries
         run: |
