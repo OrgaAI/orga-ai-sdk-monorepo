@@ -197,6 +197,16 @@ jobs:
           pnpm list @semantic-release/git || echo "@semantic-release/git not found"
           pnpm list semantic-release-monorepo || echo "semantic-release-monorepo not found"
 
+      - name: Debug npm authentication
+        run: |
+          echo "=== Debugging NPM Authentication ==="
+          echo "NPM_TOKEN is set: $([ -n "$NPM_TOKEN" ] && echo "YES" || echo "NO")"
+          echo "NPM_TOKEN length: ${#NPM_TOKEN}"
+          echo "Testing npm whoami..."
+          npm whoami --registry=https://registry.npmjs.org/ || echo "npm whoami failed"
+          echo "Testing npm config..."
+          npm config list
+
       - name: Run semantic-release for sdk-react-native
         run: |
           echo "Running semantic-release for sdk-react-native..."
