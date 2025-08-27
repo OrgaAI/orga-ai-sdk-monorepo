@@ -211,6 +211,9 @@ jobs:
         run: |
           echo "Running semantic-release for sdk-react-native..."
           cd packages/sdk-react-native
+          # Set up npm authentication for the package directory
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          echo "@orga-ai:registry=https://registry.npmjs.org/" >> .npmrc
           npx --no-install semantic-release -e semantic-release-monorepo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
