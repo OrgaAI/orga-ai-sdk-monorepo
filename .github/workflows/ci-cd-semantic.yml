@@ -159,9 +159,12 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
-        #   TODO: Check this
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          pnpm install --no-frozen-lockfile
+          echo "Installing semantic-release explicitly..."
+          pnpm add -D semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/npm @semantic-release/git semantic-release-monorepo
 
       - name: Setup PATH and verify binaries
         run: |
