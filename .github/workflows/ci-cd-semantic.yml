@@ -197,10 +197,11 @@ jobs:
           pnpm list @semantic-release/git || echo "@semantic-release/git not found"
           pnpm list semantic-release-monorepo || echo "semantic-release-monorepo not found"
 
-      - name: Run semantic-release
+      - name: Run semantic-release for sdk-react-native
         run: |
           echo "Running semantic-release for sdk-react-native..."
-          pnpm exec semantic-release
+          cd packages/sdk-react-native
+          npx --no-install semantic-release -e semantic-release-monorepo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
