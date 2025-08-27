@@ -8,7 +8,7 @@
   "plugins": [
     ["@semantic-release/commit-analyzer", { "preset": "conventionalcommits" }],
     ["@semantic-release/release-notes-generator", { "preset": "conventionalcommits" }],
-    ["@semantic-release/npm", { "npmPublish": true, "publishConfig": { "access": "restricted" } }],
+    ["@semantic-release/npm", { "npmPublish": true, "pkgRoot": ".", "publishConfig": { "access": "restricted" } }],
     ["@semantic-release/git", {
       "assets": [
         "package.json",
