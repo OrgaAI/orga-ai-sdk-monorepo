@@ -174,11 +174,17 @@ jobs:
           pnpm list semantic-release || echo "semantic-release not found in pnpm list"
           echo "NPM list semantic-release:"
           npm list semantic-release || echo "semantic-release not found in npm list"
+          echo "=== Checking semantic-release plugins ==="
+          pnpm list @semantic-release/commit-analyzer || echo "@semantic-release/commit-analyzer not found"
+          pnpm list @semantic-release/release-notes-generator || echo "@semantic-release/release-notes-generator not found"
+          pnpm list @semantic-release/npm || echo "@semantic-release/npm not found"
+          pnpm list @semantic-release/git || echo "@semantic-release/git not found"
+          pnpm list semantic-release-monorepo || echo "semantic-release-monorepo not found"
 
       - name: Run semantic-release
         run: |
           echo "Running semantic-release for sdk-react-native..."
-          npx semantic-release
+          pnpm exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
