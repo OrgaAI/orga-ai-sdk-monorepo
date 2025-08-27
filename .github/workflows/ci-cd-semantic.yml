@@ -163,7 +163,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-        # TODO: Check this
+      - name: Setup PATH and verify binaries
+        run: |
+          echo "PATH=$(pwd)/node_modules/.bin:$PATH" >> $GITHUB_ENV
+          echo "Current PATH: $PATH"
+          echo "Checking for semantic-release:"
+          which semantic-release || echo "semantic-release not found in PATH"
+          echo "Checking node_modules/.bin:"
+          ls -la node_modules/.bin/ | grep semantic-release || echo "semantic-release not found in node_modules/.bin"
+          echo "Checking pnpm store:"
+          pnpm store path
+          echo "Checking workspace packages:"
+          pnpm list --depth=0
+          echo "Checking semantic-release installation:"
+          pnpm list semantic-release || echo "semantic-release not found in pnpm list"
       - name: Debug dependencies
         run: |
           echo "=== Debugging Dependencies ==="
