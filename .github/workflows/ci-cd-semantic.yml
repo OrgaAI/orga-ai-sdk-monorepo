@@ -167,7 +167,7 @@ jobs:
       - name: Run semantic-release
         run: |
           echo "Running semantic-release for sdk-react-native..."
-          pnpm --filter="@orga-ai/sdk-react-native" exec semantic-release
+          pnpm exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
