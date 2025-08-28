@@ -1,4 +1,4 @@
-name: CI/CD - Private Deployment Semantic Release - React Native
+name: CI/CD - Private Deployment - React Native
 
 on:
   push:
@@ -72,15 +72,15 @@ jobs:
           echo "Checking if packages are accessible:"
           pnpm --filter="@orga-ai/sdk-react-native" list
 
-      - name: Build SDK packages (sdk-react-native)
-        run: |
-          echo "Building sdk-react-native with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
-
       - name: Run SDK tests (sdk-react-native)
         run: |
           echo "Testing sdk-react-native with pnpm exec..."
           pnpm --filter="@orga-ai/sdk-react-native" exec jest
+
+      - name: Build SDK packages (sdk-react-native)
+        run: |
+          echo "Building sdk-react-native with pnpm exec..."
+          pnpm --filter="@orga-ai/sdk-react-native" exec tsc --project tsconfig.json
 
       - name: Verify build outputs
         run: |
@@ -180,6 +180,7 @@ jobs:
           pnpm list --depth=0
           echo "Checking semantic-release installation:"
           pnpm list semantic-release || echo "semantic-release not found in pnpm list"
+
       - name: Debug dependencies
         run: |
           echo "=== Debugging Dependencies ==="

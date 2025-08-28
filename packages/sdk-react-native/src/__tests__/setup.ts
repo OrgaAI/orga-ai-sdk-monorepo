@@ -1,4 +1,6 @@
 // React Native specific setup - no DOM dependencies
+export {}
+
 
 // Mock React Native modules
 jest.mock('react-native', () => ({
@@ -149,7 +151,7 @@ jest.spyOn(console, 'warn').mockImplementation(mockConsole.warn);
 jest.spyOn(console, 'error').mockImplementation(mockConsole.error);
 
 // Mock fetch globally
-global.fetch = jest.fn();
+(globalThis as any).fetch = jest.fn();
 
 // Mock global OrgaAI
-global.OrgaAI = undefined;
+(globalThis as any).OrgaAI = undefined;
