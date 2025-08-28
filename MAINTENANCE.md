@@ -1,16 +1,17 @@
 # Orga SDK Monorepo – Internal Maintenance Guide
 
-This document is for the internal team. It covers best practices for versioning, publishing, and maintaining the Orga SDK monorepo.
+This document is for the internal team. It covers best practices for versioning, publishing, and maintaining the Orga SDK monorepo using semantic-release.
 
 ---
 
 ## Table of Contents
-- [Version Bumping](#version-bumping)
-- [Committing and Tagging](#committing-and-tagging)
-- [Pushing Changes](#pushing-changes)
-- [Publishing Packages](#publishing-packages)
+- [Prerequisite: Configure .npmrc for npm Access](#prerequisite-configure-npmrc-for-npm-access)
+- [Branch Strategy](#branch-strategy)
+- [Commit Message Convention](#commit-message-convention)
+- [Development Workflow](#development-workflow)
+- [Release Process](#release-process)
 - [Common Pitfalls](#common-pitfalls)
-- [Scripts Reference](#scripts-reference)
+- [Manual Publishing (Legacy)](#manual-publishing-legacy)
 
 ---
 
@@ -44,134 +45,173 @@ Before you can publish or install @orga-ai npm packages, you must configure auth
 - You can set `NPM_TOKEN` in your shell environment or CI/CD secrets for safety.
 - This setup is required for all publishing and installing of private @orga-ai packages.
 
-## Version Bumping
-
-**Always commit your work before running any version bump script.**
-
-1. **Commit all changes:**
-   ```sh
-   git add .
-   git commit -m "<your message>"
-   ```
-2. **Run the appropriate bump script:**
-   - For a test prerelease:
-     ```sh
-     pnpm run bump-native-test
-     # or
-     pnpm run bump-web-test
-     ```
-   - For an alpha prerelease:
-     ```sh
-     pnpm run bump-native-alpha
-     # or
-     pnpm run bump-web-alpha
-     ```
-   - For a release (patch):
-     ```sh
-     pnpm run bump-native-release
-     # or
-     pnpm run bump-web-release
-     ```
-
-This will update the version in the relevant `package.json`, create a commit, and create a git tag.
-
 ---
 
-## Committing and Tagging
+## Branch Strategy
 
-- The version bump script creates a commit and a tag automatically.
-- **Do not have staged or unstaged changes when running the bump script.**
-  - If you do, the script will fail (unstaged) or include staged changes in the version commit (not recommended).
+We use a three-tier branch strategy with automated semantic-release:
 
----
-
-## Pushing Changes
-
-**After every version bump, always push with tags:**
-
-```sh
-git push --follow-tags
 ```
-- This pushes both your branch and any new tags to the remote (GitHub).
-- If you just run `git push`, the tag will NOT be pushed.
-- If you want to be explicit about the branch:
-  ```sh
-  git push --follow-tags origin your-branch
-  ```
+main (production) ← dev (staging) ← feature/* (development)
+```
+
+### **Branch Purposes:**
+
+- **`main`**: Production releases with `latest` tag
+- **`dev`**: Staging releases with `beta` tag  
+- **`feature/*`**: Development branches (no releases)
+- **`ci-cd/test`**: Testing releases with `test` tag
 
 ---
 
-## Publishing Packages
+## Commit Message Convention
 
-After pushing your changes and tags, publish the package as needed:
+We use [Conventional Commits](https://www.conventionalcommits.org/) for automatic versioning:
 
-- For native test publish:
-  ```sh
-  pnpm run publish-native-test
-  ```
-- For web test publish:
-  ```sh
-  pnpm run publish-web-test
-  ```
+### **Commit Types:**
+- **`feat:`** - New features (minor version bump)
+- **`fix:`** - Bug fixes (patch version bump)
+- **`docs:`** - Documentation changes (no version bump)
+- **`style:`** - Code style changes (no version bump)
+- **`refactor:`** - Code refactoring (no version bump)
+- **`test:`** - Adding tests (no version bump)
+- **`chore:`** - Maintenance tasks (no version bump)
+- **`BREAKING CHANGE:`** - Breaking changes (major version bump) - **must be in footer**
 
-For testing SDK changes locally within one of the example applications (mobile or web) 
+### **Examples:**
+```bash
+git commit -m "feat: add user authentication component"
+git commit -m "fix: resolve login form validation bug"
+git commit -m "docs: update installation instructions"
 
-- cd into the SDK that has changes and run a build:
-  ```sh
-  cd packages/sdk-web 
-  #or 
-  cd packages/sdk-react-native
-  ```
-  ```sh
-  bun run build
-  ```
-- Enter the application you wish to test in and install if any new packages then run the dev server:
-  ```sh
-  # mobile
-  cd apps/mobile
-  bunx expo install
-  bunx expo -c
-  ```
-  ```sh
-  # web
-  cd apps/web
-  bun install
-  bun run dev
-  ```
+# Breaking changes must be in the footer (after a blank line)
+git commit -m "perf: remove deprecated API methods
+
+BREAKING CHANGE: The deprecated API methods have been removed.
+Use the new API methods instead for better performance."
+```
+
+---
+
+## Development Workflow
+
+### **1. Start Feature Development:**
+```bash
+# Always start from dev branch
+git checkout dev
+git pull origin dev
+git checkout -b feature/your-feature-name
+
+# Work on your feature...
+git commit -m "feat: add new component"
+git commit -m "fix: resolve bug in component"
+```
+
+### **2. Create Pull Request:**
+```bash
+git push origin feature/your-feature-name
+# Create PR: feature/your-feature-name → dev
+```
+
+### **3. Merge to Dev:**
+- **Automatically triggers**: Beta release with `beta` tag
+- **Example**: `1.2.0-beta.1`
+- **Available**: `npm install @orga-ai/sdk-react-native@beta`
+
+### **4. Production Release:**
+```bash
+# When ready for production
+# Create PR: dev → main
+# Merge triggers production release with `latest` tag
+# Example: 1.2.0
+```
+
+---
+
+## Release Process
+
+### **Automated Releases:**
+
+1. **Beta Releases** (dev branch):
+   - Trigger: Merge to `dev`
+   - Tag: `beta`
+   - Version: `1.2.0-beta.1`, `1.2.0-beta.2`, etc.
+
+2. **Production Releases** (main branch):
+   - Trigger: Merge `dev` to `main`
+   - Tag: `latest`
+   - Version: `1.2.0`, `1.3.0`, etc.
+
+3. **Test Releases** (ci-cd/test branch):
+   - Trigger: Push to `ci-cd/test`
+   - Tag: `test`
+   - Version: `1.2.0-test.1`, etc.
+
+### **What Happens Automatically:**
+- ✅ Version bump based on commit types
+- ✅ Changelog generation
+- ✅ Git tag creation
+- ✅ npm package publishing
+- ✅ Release commit creation
+
+### **Manual Steps:**
+- Pull changes after release: `git pull origin <branch> && git fetch --tags`
+
 ---
 
 ## Common Pitfalls
 
-- **Uncommitted changes:** The version script will fail if you have unstaged changes.
-- **Staged changes:** Any staged changes will be included in the version commit. Always commit first.
-- **Forgetting to push tags:** If you forget `--follow-tags`, your tag will not be on GitHub. Run `git push --follow-tags` to fix.
-- **Branch confusion:** If you’re on the correct branch, `git push --follow-tags` is enough. Otherwise, specify the branch.
+- **Wrong commit messages**: Use conventional commit format for automatic versioning
+- **Starting from wrong branch**: Always start feature branches from `dev`
+- **Forgetting to pull**: Always pull latest `dev` before starting new features
+- **Breaking changes**: Use `BREAKING CHANGE:` prefix for major version bumps
+- **Missing npm token**: Ensure `NPM_TOKEN` is set in GitHub secrets
 
 ---
 
-## Scripts Reference
-**test and alpha are published as private npm packages**
+## Manual Publishing (Legacy)
 
-- `bump-native-test` – Bump native SDK to next test prerelease
-- `bump-web-test` – Bump web SDK to next test prerelease
-- `bump-native-alpha` – Bump native SDK to next alpha prerelease
-- `bump-web-alpha` – Bump web SDK to next alpha prerelease
-- `bump-native-release` – Bump native SDK patch version
-- `bump-web-release` – Bump web SDK patch version
-- `publish-native-test` – Build and publish native SDK with `test` tag 
-- `publish-web-test` – Build and publish web SDK with `test` tag
-- `publish-native-alpha` – Build and publish native SDK with `alpha` tag
-- `publish-web-alpha` – Build and publish web SDK with `alpha` tag
-- `publish-native-public` – Build and publish native SDK for public use
-- `publish-web-public` – Build and publish web SDK for public use
+**Note**: These scripts are kept for manual publishing if needed, but semantic-release handles this automatically.
+
+### **Version Bumping Scripts:**
+```bash
+# Test prereleases
+pnpm run bump-native-test
+pnpm run bump-web-test
+
+# Alpha prereleases  
+pnpm run bump-native-alpha
+pnpm run bump-web-alpha
+
+# Production releases
+pnpm run bump-native-release
+pnpm run bump-web-release
+```
+
+### **Manual Publishing Scripts:**
+```bash
+# Test publishing
+pnpm run publish-native-test
+pnpm run publish-web-test
+
+# Alpha publishing
+pnpm run publish-native-alpha
+pnpm run publish-web-alpha
+
+# Production publishing
+pnpm run publish-native-public
+pnpm run publish-web-public
+```
 
 ---
 
 ## Quick Checklist
 
-1. Commit all your changes
-2. Run the version bump script
-3. Push with `git push --follow-tags`
-4. Run the publish script if needed
+1. ✅ Start feature branch from `dev`
+2. ✅ Use conventional commit messages
+3. ✅ Create PR to `dev` for beta release
+4. ✅ Test beta version
+5. ✅ Create PR `dev` → `main` for production release
+6. ✅ Pull changes and tags after release
 
 ---
