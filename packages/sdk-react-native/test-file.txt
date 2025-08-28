@@ -1,1 +1,1 @@
-Testing semantic-release!
+One more test to make sure it works
