@@ -5,7 +5,8 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "description": "React Native SDK for Orga AI - AI-powered audio/video processing",
   "publishConfig": {
@@ -19,6 +20,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
+  "homepage": "https://docs.orga-ai.com/version-11/guide/react-native-sdk/introduction",
   "keywords": [
     "react-native",
     "expo",
@@ -30,7 +32,7 @@
     "react-native-webrtc"
   ],
   "author": "Orga AI",
-  "license": "ISC",
+  "license": "Proprietary",
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-native": ">=0.78.0",

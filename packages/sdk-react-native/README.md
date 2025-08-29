@@ -1115,4 +1115,33 @@ For questions or support, please contact your Orga platform representative or su
 
 ## License
 
-Proprietary. All rights reserved. 
+**Proprietary License** - Copyright (c) 2025 Orga AI. All rights reserved.
+
+### Key Terms
+
+- **Free to Use**: The SDK is free to use for developing applications that integrate with Orga AI services
+- **API Key Required**: A valid Orga AI account and API key are required for functionality
+- **Credits Required**: Purchased credits are needed to enable SDK features
+- **Non-Transferable**: This license is non-transferable and non-sublicensable
+
+### Restrictions
+
+- **No Reverse Engineering**: You may not reverse-engineer, decompile, disassemble, or modify the SDK
+- **No Redistribution**: Redistribution, sharing, or resale is strictly prohibited without written consent
+- **Platform Use Only**: Use is limited to purposes expressly permitted by this license and platform documentation
+
+### Beta Status
+
+Beta versions are subject to change, including licensing terms and APIs. Updates will be communicated via the [documentation site](https://docs.orga-ai.com).
+
+### Data Protection
+
+Use of the SDK is subject to Orga AI's [Privacy Policy](https://orga-ai.com/en/privacy-policy), which complies with GDPR and other applicable data protection laws.
+
+### Contact
+
+For commercial use inquiries, questions about credits, or additional permissions, contact Orga AI at **licensing@orga-ai.com**.
+
+### Full License
+
+See the complete [LICENSE](LICENSE) file for detailed terms and conditions, or visit [https://docs.orga-ai.com/license](https://docs.orga-ai.com/license) for the most up-to-date license information. 
