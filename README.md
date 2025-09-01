@@ -125,7 +125,7 @@ bun add @orga-ai/sdk-web
 
 ### 1. Initialize the SDK
 
-You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndIceServers` function. This function is responsible for securely fetching an ephemeral token and ICE servers from your backend using your API key.
+You **must** initialize the SDK before use, providing a `fetchSessionConfig` function. This function is responsible for securely fetching an ephemeral token and ICE servers from your backend using your API key.
 
 **Do not expose your API key in client code.**
 
@@ -136,7 +136,7 @@ import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
 
 OrgaAI.init({
   logLevel: 'debug',
-  fetchEphemeralTokenAndIceServers: async () => {
+  fetchSessionConfig: async () => {
     // Call your backend to get ephemeralToken and iceServers
     // Never expose your API key here!
     const response = await fetch('/api/orga-ephemeral');
@@ -185,7 +185,7 @@ function MyComponent() {
 ## Configuration
 
 - **API Key:** Required for backend endpoint that provides ephemeral tokens. Never expose in client code.
-- **fetchEphemeralTokenAndIceServers:**
+- **fetchSessionConfig:**
   - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
   - Must be provided to `OrgaAI.init`.
 - **Other Config Options:** See SDK source for available options (logLevel, model, etc.).

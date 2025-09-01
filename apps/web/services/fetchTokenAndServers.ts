@@ -1,4 +1,4 @@
-export async function fetchEphemeralTokenAndIceServers(): Promise<{
+export async function fetchSessionConfig(): Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
   }> {

@@ -29,7 +29,7 @@ export interface OrgaAIConfig {
   logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
   timeout?: number;
   ephemeralEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesn't need a token or additional configuration.
-  fetchEphemeralTokenAndIceServers?: () => Promise<{
+  fetchSessionConfig?: () => Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
   }>;
@@ -77,7 +77,6 @@ export interface MediaConstraints {
     width: number;
     height: number;
     frameRate: number;
-    facingMode: "user" | "environment";
   };
 }
 

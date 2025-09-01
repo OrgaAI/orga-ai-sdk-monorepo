@@ -38,7 +38,7 @@ export const getMediaConstraints = (
  * @param ephemeralEndpoint - The URL to the developer's backend proxy endpoint.
  * Returns: { ephemeralToken: string, iceServers: RTCIceServer[] }
  */
-export const fetchEphemeralTokenAndIceServers = async (
+export const fetchSessionConfig = async (
   ephemeralEndpoint: string
 ): Promise<{
   ephemeralToken: string;

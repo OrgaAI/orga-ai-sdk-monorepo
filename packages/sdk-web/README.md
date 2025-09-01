@@ -115,7 +115,7 @@ import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
   logLevel: 'debug',
-  fetchEphemeralTokenAndIceServers: async () => {
+  fetchSessionConfig: async () => {
     const response = await fetch('/api/orga-ephemeral');
     const { ephemeralToken, iceServers } = await response.json();
     return { ephemeralToken, iceServers };
@@ -310,7 +310,7 @@ This ensures your API key never leaves your server while providing secure access
 
 ## Configuration
 
-You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndIceServers` function. This function should securely fetch an ephemeral token and ICE servers from your backend using your API key.
+You **must** initialize the SDK before use, providing a `fetchSessionConfig` function. This function should securely fetch an ephemeral token and ICE servers from your backend using your API key.
 
 **Never expose your API key in client code.**
 
@@ -318,7 +318,7 @@ You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndI
 import { OrgaAI } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
-  fetchEphemeralTokenAndIceServers: async () => {
+  fetchSessionConfig: async () => {
     // Call your backend to get ephemeralToken and iceServers
     const response = await fetch('/api/orga-ephemeral');
     const { ephemeralToken, iceServers } = await response.json();
@@ -351,14 +351,14 @@ The `OrgaAI.init(config)` method accepts the following options:
 | `logLevel`                      | `"debug" \| "info" \| "warn" \| "error" \| "disabled"` | Logging verbosity.                                    | `"disabled"`     | No        |
 | `timeout`                       | `number`  | Timeout for requests, in milliseconds.                                                      | `30000`      | No        |
 | `ephemeralEndpoint`             | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
-| `fetchEphemeralTokenAndIceServers` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
+| `fetchSessionConfig` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
 | `enableTranscriptions` | `boolean` | Whether to return transcription data in the session. | `false`           | No      |
 | `instructions`                  | `string`  | Custom instructions for the AI in this session.                                            | —            | No | 
 | `model`                         | `OrgaAIModel` | Model to use (see SDK for allowed values).                                                 | —            | No        |
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
 
-> **Note:** Either `ephemeralEndpoint` **or** `fetchEphemeralTokenAndIceServers` is required.
+> **Note:** Either `ephemeralEndpoint` **or** `fetchSessionConfig` is required.
 
 ### Example
 
@@ -366,7 +366,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 OrgaAI.init({
   logLevel: 'debug',
   timeout: 30000,
-  fetchEphemeralTokenAndIceServers: async () => {
+  fetchSessionConfig: async () => {
     // Your backend call here
     return { ephemeralToken: '...', iceServers: [] };
   },
@@ -381,7 +381,7 @@ OrgaAI.init({
 - **logLevel:** Controls the verbosity of SDK logs. Use `"debug"` for development, `"warn"` or `"error"` for production.
 - **timeout:** How long (in ms) the SDK will wait for backend responses before timing out.
 - **ephemeralEndpoint:** If provided, the SDK will call this endpoint to fetch tokens/ICE servers. Should be a backend endpoint you control.
-- **fetchEphemeralTokenAndIceServers:** If provided, the SDK will use this function to fetch tokens/ICE servers. This gives you full control.
+- **fetchSessionConfig:** If provided, the SDK will use this function to fetch tokens/ICE servers. This gives you full control.
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
@@ -643,7 +643,7 @@ This pattern ensures:
 
 ### Common Issues
 
-1. **"fetchEphemeralTokenAndIceServers is not defined"**
+1. **"fetchSessionConfig is not defined"**
    - Ensure you've called `OrgaAI.init()` with the required function
    - Check that your backend endpoint is working correctly
 
