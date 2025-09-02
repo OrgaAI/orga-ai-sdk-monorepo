@@ -4,7 +4,7 @@ import { ORGAAI_TEMPERATURE_RANGE } from '../../types';
 
 // Mock the utils module
 jest.mock('../../utils', () => ({
-  fetchEphemeralTokenAndIceServers: jest.fn(),
+  fetchSessionConfig: jest.fn(),
   logger: {
     info: jest.fn(),
     debug: jest.fn(),
@@ -44,9 +44,9 @@ describe('OrgaAI', () => {
       expect(global.OrgaAI?.config.voice).toBe('alloy');
     });
 
-    it('should initialize with valid config using fetchEphemeralTokenAndIceServers', () => {
+    it('should initialize with valid config using fetchSessionConfig', () => {
       const config = {
-        fetchEphemeralTokenAndIceServers: mockFetchFn,
+        fetchSessionConfig: mockFetchFn,
         model: 'orga-1-beta' as const,
         voice: 'alloy' as const
       };
@@ -55,7 +55,7 @@ describe('OrgaAI', () => {
 
       expect(global.OrgaAI).toBeDefined();
       expect(global.OrgaAI?.isInitialized).toBe(true);
-      expect(global.OrgaAI?.config.fetchEphemeralTokenAndIceServers).toBe(mockFetchFn);
+      expect(global.OrgaAI?.config.fetchSessionConfig).toBe(mockFetchFn);
     });
 
     it('should set default values when not provided', () => {
@@ -121,31 +121,31 @@ describe('OrgaAI', () => {
       expect(() => OrgaAI.init(config)).not.toThrow();
     });
 
-    it('should throw error when neither ephemeralEndpoint nor fetchEphemeralTokenAndIceServers is provided', () => {
+    it('should throw error when neither ephemeralEndpoint nor fetchSessionConfig is provided', () => {
       const config = {
         model: 'orga-1-beta' as const
       };
 
       expect(() => OrgaAI.init(config)).toThrow(ConfigurationError);
       expect(() => OrgaAI.init(config)).toThrow(
-        'ephemeralEndpoint or fetchEphemeralTokenAndIceServers is required'
+        'ephemeralEndpoint or fetchSessionConfig is required'
       );
     });
 
-    it('should prioritize fetchEphemeralTokenAndIceServers over ephemeralEndpoint', () => {
+    it('should prioritize fetchSessionConfig over ephemeralEndpoint', () => {
       const config = {
         ephemeralEndpoint: 'https://api.example.com/token',
-        fetchEphemeralTokenAndIceServers: mockFetchFn
+        fetchSessionConfig: mockFetchFn
       };
 
       OrgaAI.init(config);
 
-      expect(global.OrgaAI?.config.fetchEphemeralTokenAndIceServers).toBe(mockFetchFn);
+      expect(global.OrgaAI?.config.fetchSessionConfig).toBe(mockFetchFn);
       expect(global.OrgaAI?.config.ephemeralEndpoint).toBe('https://api.example.com/token');
     });
 
-    it('should create fetchFn from ephemeralEndpoint when fetchEphemeralTokenAndIceServers is not provided', () => {
-      const { fetchEphemeralTokenAndIceServers } = require('../../utils');
+    it('should create fetchFn from ephemeralEndpoint when fetchSessionConfig is not provided', () => {
+      const { fetchSessionConfig } = require('../../utils');
       
       const config = {
         ephemeralEndpoint: 'https://api.example.com/token'
@@ -153,8 +153,8 @@ describe('OrgaAI', () => {
 
       OrgaAI.init(config);
 
-      expect(global.OrgaAI?.config.fetchEphemeralTokenAndIceServers).toBeDefined();
-      expect(typeof global.OrgaAI?.config.fetchEphemeralTokenAndIceServers).toBe('function');
+      expect(global.OrgaAI?.config.fetchSessionConfig).toBeDefined();
+      expect(typeof global.OrgaAI?.config.fetchSessionConfig).toBe('function');
     });
 
     it('should log initialization message', () => {
@@ -269,26 +269,26 @@ describe('OrgaAI', () => {
 
   // NEW: Group the integration tests together
   describe('Integration & Execution', () => {
-    it('should call fetchEphemeralTokenAndIceServers when using ephemeralEndpoint', async () => {
-      const { fetchEphemeralTokenAndIceServers } = require('../../utils');
+    it('should call fetchSessionConfig when using ephemeralEndpoint', async () => {
+      const { fetchSessionConfig } = require('../../utils');
       const config = { ephemeralEndpoint: 'https://api.example.com/token' };
       
       OrgaAI.init(config);
-      const fetchFn = OrgaAI.getConfig().fetchEphemeralTokenAndIceServers;
+      const fetchFn = OrgaAI.getConfig().fetchSessionConfig;
       
       await fetchFn?.();
-      expect(fetchEphemeralTokenAndIceServers).toHaveBeenCalledWith('https://api.example.com/token');
+      expect(fetchSessionConfig).toHaveBeenCalledWith('https://api.example.com/token');
     });
 
-    it('should use custom fetchEphemeralTokenAndIceServers function when provided', () => {
+    it('should use custom fetchSessionConfig function when provided', () => {
       const customFetchFn = jest.fn().mockResolvedValue({ token: 'test', servers: [] });
       
       const config = {
-        fetchEphemeralTokenAndIceServers: customFetchFn
+        fetchSessionConfig: customFetchFn
       };
       
       OrgaAI.init(config);
-      const storedFn = OrgaAI.getConfig().fetchEphemeralTokenAndIceServers;
+      const storedFn = OrgaAI.getConfig().fetchSessionConfig;
       
       expect(storedFn).toBe(customFetchFn);
     });

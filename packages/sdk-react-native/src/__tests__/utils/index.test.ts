@@ -1,6 +1,6 @@
 import {
   getMediaConstraints,
-  fetchEphemeralTokenAndIceServers,
+  fetchSessionConfig,
   connectToRealtime,
   logger
 } from '../../utils';
@@ -102,7 +102,7 @@ describe('Utils', () => {
     });
   });
 
-  describe('fetchEphemeralTokenAndIceServers', () => {
+  describe('fetchSessionConfig', () => {
     it('should fetch and return valid data', async () => {
       const mockResponse = {
         ephemeralToken: 'test-token-123',
@@ -114,7 +114,7 @@ describe('Utils', () => {
         json: jest.fn().mockResolvedValue(mockResponse)
       });
 
-      const result = await fetchEphemeralTokenAndIceServers('https://api.example.com/token');
+      const result = await fetchSessionConfig('https://api.example.com/token');
 
       expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/token');
       expect(result).toEqual(mockResponse);
@@ -128,7 +128,7 @@ describe('Utils', () => {
       });
 
       await expect(
-        fetchEphemeralTokenAndIceServers('https://api.example.com/token')
+        fetchSessionConfig('https://api.example.com/token')
       ).rejects.toThrow('Failed to fetch ephemeral token: 500 Internal Server Error');
     });
 
@@ -143,7 +143,7 @@ describe('Utils', () => {
       });
 
       await expect(
-        fetchEphemeralTokenAndIceServers('https://api.example.com/token')
+        fetchSessionConfig('https://api.example.com/token')
       ).rejects.toThrow('Invalid response from ephemeral token endpoint');
     });
 
@@ -158,7 +158,7 @@ describe('Utils', () => {
       });
 
       await expect(
-        fetchEphemeralTokenAndIceServers('https://api.example.com/token')
+        fetchSessionConfig('https://api.example.com/token')
       ).rejects.toThrow('Invalid response from ephemeral token endpoint');
     });
 
@@ -166,7 +166,7 @@ describe('Utils', () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
       await expect(
-        fetchEphemeralTokenAndIceServers('https://api.example.com/token')
+        fetchSessionConfig('https://api.example.com/token')
       ).rejects.toThrow('Network error');
     });
   });

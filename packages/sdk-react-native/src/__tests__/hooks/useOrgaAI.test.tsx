@@ -165,7 +165,7 @@ describe('useOrgaAI', () => {
       enableTranscriptions: true,
       instructions: 'Test instructions',
       modalities: ['audio', 'video'],
-      fetchEphemeralTokenAndIceServers: jest.fn(() => Promise.resolve({
+      fetchSessionConfig: jest.fn(() => Promise.resolve({
         ephemeralToken: 'test-token',
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       })),
