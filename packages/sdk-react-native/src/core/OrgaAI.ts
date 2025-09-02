@@ -1,6 +1,6 @@
 import { OrgaAIConfig } from '../types';
 import { ConfigurationError } from '../errors';
-import { fetchEphemeralTokenAndIceServers, logger } from '../utils';
+import { fetchSessionConfig, logger } from '../utils';
 import { ORGAAI_TEMPERATURE_RANGE } from '../types';
 
 declare global {
@@ -26,20 +26,20 @@ export class OrgaAI {
       );
     }
     let fetchFn;
-    if (!config.ephemeralEndpoint && !config.fetchEphemeralTokenAndIceServers) {
-      throw new ConfigurationError('ephemeralEndpoint or fetchEphemeralTokenAndIceServers is required');
+    if (!config.ephemeralEndpoint && !config.fetchSessionConfig) {
+      throw new ConfigurationError('ephemeralEndpoint or fetchSessionConfig is required');
     }
-    if (config.fetchEphemeralTokenAndIceServers) { 
-      fetchFn = config.fetchEphemeralTokenAndIceServers;
+    if (config.fetchSessionConfig) { 
+      fetchFn = config.fetchSessionConfig;
     } else if (config.ephemeralEndpoint) { 
-      fetchFn = () => fetchEphemeralTokenAndIceServers(config?.ephemeralEndpoint || "");
+      fetchFn = () => fetchSessionConfig(config?.ephemeralEndpoint || "");
     } 
     
     const defaultConfig: OrgaAIConfig = {
       logLevel: 'warn',
       timeout: 30000,
       ...config,
-      fetchEphemeralTokenAndIceServers: fetchFn
+      fetchSessionConfig: fetchFn
     };
     
     globalThis.OrgaAI = {

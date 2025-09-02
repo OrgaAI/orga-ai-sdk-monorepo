@@ -33,7 +33,7 @@ export interface OrgaAIConfig {
   logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
   timeout?: number;
   ephemeralEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesnt need a token or additional configuration.
-  fetchEphemeralTokenAndIceServers?: () => Promise<{
+  fetchSessionConfig?: () => Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
   }>;
