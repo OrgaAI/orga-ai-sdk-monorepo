@@ -76,7 +76,6 @@ If using Expo API Routes, create a `.env` file in your Expo project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_DEV_EMAIL=your_developer_email@example.com
 ```
 
 > **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
@@ -89,7 +88,6 @@ If using a separate backend server, store your environment variables in your bac
 1. Create a `.env` file in your backend project (NOT in your React Native app):
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_DEV_EMAIL=your_developer_email@example.com
 ```
 
 2. Your React Native app should only contain the backend URL:
@@ -110,10 +108,9 @@ If you're using Expo SDK 50+ with API routes:
 // app/orga-ephemeral+api.ts
 
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL;
 
 const fetchIceServers = async (ephemeralToken: string) => {
-  const URL = `https://api.orga-ai.com/ice-config`;
+  const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
   try {
     const iceServersResponse = await fetch(URL, {
       method: "GET",
@@ -130,24 +127,24 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export async function GET(request: Request) {
-  if (!USER_EMAIL || !ORGA_API_KEY) {
+  if (!ORGA_API_KEY) {
     return Response.json({error: "Missing environment variables"}, { status: 500 });
   }
 
   try {
-    const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
-    const ephemeralResponse = await fetch(apiUrl, {
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
+    const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${ORGA_API_KEY}`
       },
     });
     
-    if (!ephemeralResponse.ok) {
-      throw new Error('Failed to fetch ephemeral token');
+    if (!clientSecrets.ok) {
+      throw new Error('Failed to fetch client secrets');
     }
 
-    const { ephemeral_token } = await ephemeralResponse.json();
+    const { ephemeral_token } = await clientSecrets.json();
     const iceServers = await fetchIceServers(ephemeral_token);
     
     return Response.json({ ephemeralToken: ephemeral_token, iceServers }, {status: 200})
@@ -171,7 +168,7 @@ import cors from 'cors';
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
 // Define types for OrgaAI API responses
-interface OrgaEphemeralTokenResponse {
+interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
 
@@ -179,7 +176,7 @@ interface OrgaIceConfigResponse {
   iceServers: RTCIceServer[];
 }
 
-interface OrgaEphemeralResponse {
+interface OrgaSecretsResponse {
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }
@@ -198,17 +195,17 @@ app.use(cors());  // Configure appropriately for production
 // Add your authentication middleware
 app.use(authMiddleware);
 
-app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) => {
+app.get('/api/orga-client-secrets', async (req: AuthenticatedRequest, res: Response) => {
   // Your user authentication/session validation here
   const userId = req.user?.id;  // Example: Get from your auth system
   
-  if (!process.env.ORGA_API_KEY || !process.env.ORGA_DEV_EMAIL) {
+  if (!process.env.ORGA_API_KEY) {
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
   try {
-    const ephemeralResponse = await fetch(
-      `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(process.env.ORGA_DEV_EMAIL)}`,
+    const clientSecrets = await fetch(
+      `https://api.orga-ai.com/v1/realtime/client-secrets`,
       {
         method: 'POST',
         headers: {
@@ -217,15 +214,15 @@ app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) 
       }
     );
 
-    if (!ephemeralResponse.ok) {
+    if (!clientSecrets.ok) {
       throw new Error('Failed to fetch ephemeral token');
     }
 
-    const ephemeralData = await ephemeralResponse.json() as OrgaEphemeralTokenResponse;
+    const ephemeralData = await clientSecrets.json() as OrgaClientSecretsResponse;
     const { ephemeral_token } = ephemeralData;
     
     // Fetch ICE servers
-    const iceResponse = await fetch('https://api.orga-ai.com/ice-config', {
+    const iceResponse = await fetch('https://api.orga-ai.com/v1/realtime/ice-config', {
       headers: { Authorization: `Bearer ${ephemeral_token}` }
     });
     
@@ -236,7 +233,7 @@ app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) 
     const iceData = await iceResponse.json() as OrgaIceConfigResponse;
     const { iceServers } = iceData;
 
-    const response: OrgaEphemeralResponse = {
+    const response: OrgaSecretsResponse = {
       ephemeralToken: ephemeral_token,
       iceServers
     };
@@ -267,7 +264,7 @@ import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-react-native';
 OrgaAI.init({
   logLevel: 'debug',
   fetchSessionConfig: async () => {
-    const response = await fetch('/api/orga-ephemeral');
+    const response = await fetch('/api/orga-client-secrets');
     const { ephemeralToken, iceServers } = await response.json();
     return { ephemeralToken, iceServers };
   },
@@ -431,7 +428,7 @@ OrgaAI.init({
 ```ts
 // In your app, call your own backend proxy endpoint
 const fetchSessionConfig = async () => {
-  const response = await fetch('https://your-backend.com/api/orga-ephemeral', {
+  const response = await fetch('https://your-backend.com/api/orga-client-secrets', {
     method: 'GET',
     // Optionally include auth headers for your backend
   });
@@ -450,7 +447,7 @@ const fetchSessionConfig = async () => {
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
 // Define types for OrgaAI API responses
-interface OrgaEphemeralTokenResponse {
+interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
 
@@ -458,16 +455,15 @@ interface OrgaIceConfigResponse {
   iceServers: RTCIceServer[];
 }
 
-interface OrgaEphemeralResponse {
+interface OrgaSecretsResponse {
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }
 
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL;
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
 
 const fetchIceServers = async (ephemeralToken: string): Promise<RTCIceServer[]> => {
-  const URL = `https://api.orga-ai.com/ice-config`;
+  const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
   try {
     const iceServersResponse = await fetch(URL, {
       method: "GET",
@@ -490,29 +486,29 @@ const fetchIceServers = async (ephemeralToken: string): Promise<RTCIceServer[]> 
 
 export const getEphemeralTokenAndIceServers = async (req: Request, res: Response) => {
   try {
-    if (!USER_EMAIL || !ORGA_API_KEY) {
+    if (!ORGA_API_KEY) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
 
-    const ephemeralResponse = await fetch(apiUrl, {
+    const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${ORGA_API_KEY}`
       },
     });
     
-    if (!ephemeralResponse.ok) {
-      throw new Error('Failed to fetch ephemeral token');
+    if (!clientSecrets.ok) {
+      throw new Error('Failed to fetch client secrets');
     }
 
-    const ephemeralData = await ephemeralResponse.json() as OrgaEphemeralTokenResponse;
+    const ephemeralData = await clientSecrets.json() as OrgaClientSecretsResponse;
     const { ephemeral_token } = ephemeralData;
     
     const iceServers = await fetchIceServers(ephemeral_token);
     
-    const response: OrgaEphemeralResponse = {
+    const response: OrgaSecretsResponse = {
       ephemeralToken: ephemeral_token,
       iceServers
     };
@@ -526,7 +522,7 @@ export const getEphemeralTokenAndIceServers = async (req: Request, res: Response
 ```
 
 **Your backend proxy should:**
-- Store the OrgaAI API key and developer email securely (never in the app).
+- Store the OrgaAI API key securely (never in the app).
 - Make the call to the OrgaAI backend.
 - Return only the ephemeral token and ICE servers to the app.
 
@@ -539,8 +535,8 @@ If using Expo SDK 50 or greater, you can use [Expo Router API routes](https://do
 ---
 
 > **Summary:**
-> - Always keep your OrgaAI API key and developer email on a secure backend.
-> - Never expose them in your app or client-side code.
+> - Always keep your OrgaAI API key on a secure backend.
+> - Never expose it in your app or client-side code.
 > - Use a backend proxy pattern for both web and mobile.
 
 ## OrgaAI.init Configuration Options
