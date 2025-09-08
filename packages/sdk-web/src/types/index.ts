@@ -28,12 +28,12 @@ export const ORGAAI_TEMPERATURE_RANGE = {
 export interface OrgaAIConfig {
   logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
   timeout?: number;
-  ephemeralEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesn't need a token or additional configuration.
+  sessionConfigEndpoint?: string; // When provided we fetch from their backend. Assumes that the backend doesn't need a token or additional configuration.
   fetchSessionConfig?: () => Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
   }>;
-  //FetchEphemeralToken is a function that fetches a token from the backend.
+  //fetchSessionConfig is a function that fetches session configuration from the backend.
   //This allows them to setup the call sending the necessary tokens and headers.
   // Optional parameters can be passed to create default values for the session config
   model?: OrgaAIModel;

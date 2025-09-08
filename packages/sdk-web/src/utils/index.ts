@@ -34,25 +34,25 @@ export const getMediaConstraints = (
 };
 
 /**
- * Fetches an ephemeral token and ICE servers from the developer's backend proxy.
- * @param ephemeralEndpoint - The URL to the developer's backend proxy endpoint.
+ * Fetches session configuration (ephemeral token and ICE servers) from the developer's backend proxy.
+ * @param sessionConfigEndpoint - The URL to the developer's backend proxy endpoint.
  * Returns: { ephemeralToken: string, iceServers: RTCIceServer[] }
  */
 export const fetchSessionConfig = async (
-  ephemeralEndpoint: string
+  sessionConfigEndpoint: string
 ): Promise<{
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }> => {
-  const response = await fetch(ephemeralEndpoint);
+  const response = await fetch(sessionConfigEndpoint);
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch ephemeral token: ${response.status} ${response.statusText}`);
+    throw new Error(`Failed to fetch session config: ${response.status} ${response.statusText}`);
   }
   
   const data = await response.json();
   if (!data?.ephemeralToken || !data?.iceServers) {
-    throw new Error("Invalid response from ephemeral token endpoint");
+    throw new Error("Invalid response from session config endpoint");
   }
   
   return {

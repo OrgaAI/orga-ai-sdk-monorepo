@@ -14,7 +14,7 @@ export declare const ORGAAI_TEMPERATURE_RANGE: {
 export interface OrgaAIConfig {
     logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
     timeout?: number;
-    ephemeralEndpoint?: string;
+    sessionConfigEndpoint?: string;
     fetchSessionConfig?: () => Promise<{
         ephemeralToken: string;
         iceServers: RTCIceServer[];

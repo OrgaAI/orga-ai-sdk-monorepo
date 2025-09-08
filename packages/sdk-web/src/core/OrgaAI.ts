@@ -26,13 +26,13 @@ export class OrgaAI {
       );
     }
     let fetchFn;
-    if (!config.ephemeralEndpoint && !config.fetchSessionConfig) {
-      throw new ConfigurationError('ephemeralEndpoint or fetchSessionConfig is required');
+    if (!config.sessionConfigEndpoint && !config.fetchSessionConfig) {
+      throw new ConfigurationError('sessionConfigEndpoint or fetchSessionConfig is required');
     }
     if (config.fetchSessionConfig) { 
       fetchFn = config.fetchSessionConfig;
-    } else if (config.ephemeralEndpoint) { 
-      fetchFn = () => fetchSessionConfig(config?.ephemeralEndpoint || "");
+    } else if (config.sessionConfigEndpoint) { 
+      fetchFn = () => fetchSessionConfig(config?.sessionConfigEndpoint || "");
     } 
     
     const defaultConfig: OrgaAIConfig = {

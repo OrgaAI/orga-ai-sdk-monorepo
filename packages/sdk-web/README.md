@@ -115,11 +115,13 @@ import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
   logLevel: 'debug',
-  fetchSessionConfig: async () => {
-    const response = await fetch('/api/orga-ephemeral');
-    const { ephemeralToken, iceServers } = await response.json();
-    return { ephemeralToken, iceServers };
-  },
+  sessionConfigEndpoint: '/api/orga-ephemeral',
+  // OR use fetchSessionConfig for custom implementation:
+  // fetchSessionConfig: async () => {
+  //   const response = await fetch('/api/orga-ephemeral');
+  //   const { ephemeralToken, iceServers } = await response.json();
+  //   return { ephemeralToken, iceServers };
+  // },
   model: 'orga-1-beta',
   voice: 'alloy',
 });
@@ -310,7 +312,7 @@ This ensures your API key never leaves your server while providing secure access
 
 ## Configuration
 
-You **must** initialize the SDK before use, providing a `fetchSessionConfig` function. This function should securely fetch an ephemeral token and ICE servers from your backend using your API key.
+You **must** initialize the SDK before use, providing either a `sessionConfigEndpoint` or a `fetchSessionConfig` function. This should securely fetch an ephemeral token and ICE servers from your backend using your API key.
 
 **Never expose your API key in client code.**
 
@@ -318,12 +320,13 @@ You **must** initialize the SDK before use, providing a `fetchSessionConfig` fun
 import { OrgaAI } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
-  fetchSessionConfig: async () => {
-    // Call your backend to get ephemeralToken and iceServers
-    const response = await fetch('/api/orga-ephemeral');
-    const { ephemeralToken, iceServers } = await response.json();
-    return { ephemeralToken, iceServers };
-  },
+  sessionConfigEndpoint: '/api/orga-ephemeral',
+  // OR use fetchSessionConfig for custom implementation:
+  // fetchSessionConfig: async () => {
+  //   const response = await fetch('/api/orga-ephemeral');
+  //   const { ephemeralToken, iceServers } = await response.json();
+  //   return { ephemeralToken, iceServers };
+  // },
 });
 ```
 
@@ -350,7 +353,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 |----------------------------------|-----------|---------------------------------------------------------------------------------------------|--------------|-----------|
 | `logLevel`                      | `"debug" \| "info" \| "warn" \| "error" \| "disabled"` | Logging verbosity.                                    | `"disabled"`     | No        |
 | `timeout`                       | `number`  | Timeout for requests, in milliseconds.                                                      | `30000`      | No        |
-| `ephemeralEndpoint`             | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
+| `sessionConfigEndpoint`         | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
 | `fetchSessionConfig` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
 | `enableTranscriptions` | `boolean` | Whether to return transcription data in the session. | `false`           | No      |
 | `instructions`                  | `string`  | Custom instructions for the AI in this session.                                            | —            | No | 
@@ -358,7 +361,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
 
-> **Note:** Either `ephemeralEndpoint` **or** `fetchSessionConfig` is required.
+> **Note:** Either `sessionConfigEndpoint` **or** `fetchSessionConfig` is required.
 
 ### Example
 
@@ -366,10 +369,13 @@ The `OrgaAI.init(config)` method accepts the following options:
 OrgaAI.init({
   logLevel: 'debug',
   timeout: 30000,
-  fetchSessionConfig: async () => {
-    // Your backend call here
-    return { ephemeralToken: '...', iceServers: [] };
-  },
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-ephemeral',
+  // OR use fetchSessionConfig for custom implementation:
+  // fetchSessionConfig: async () => {
+  //   const response = await fetch('/api/orga-ephemeral');
+  //   const { ephemeralToken, iceServers } = await response.json();
+  //   return { ephemeralToken, iceServers };
+  // },
   model: 'orga-1-beta',
   voice: 'alloy',
   temperature: 0.7,
@@ -380,11 +386,62 @@ OrgaAI.init({
 
 - **logLevel:** Controls the verbosity of SDK logs. Use `"debug"` for development, `"warn"` or `"error"` for production.
 - **timeout:** How long (in ms) the SDK will wait for backend responses before timing out.
-- **ephemeralEndpoint:** If provided, the SDK will call this endpoint to fetch tokens/ICE servers. Should be a backend endpoint you control.
-- **fetchSessionConfig:** If provided, the SDK will use this function to fetch tokens/ICE servers. This gives you full control.
+- **sessionConfigEndpoint:** If provided, the SDK will call this endpoint to fetch session configuration (ephemeral tokens and ICE servers). Should be a backend endpoint you control. This is the simpler approach when your backend doesn't require custom headers or authentication.
+- **fetchSessionConfig:** If provided, the SDK will use this function to fetch session configuration. This gives you full control over the request, including custom headers, authentication, and error handling. Use this when your backend requires specific middleware or authentication.
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
+
+---
+
+## Session Configuration Approaches
+
+The SDK provides two ways to fetch session configuration (ephemeral tokens and ICE servers) from your backend:
+
+### Approach 1: Simple Endpoint (sessionConfigEndpoint)
+
+Use this when your backend endpoint doesn't require custom headers or authentication:
+
+```ts
+OrgaAI.init({
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-ephemeral',
+  // ... other config
+});
+```
+
+**When to use:**
+- Your backend endpoint is publicly accessible
+- No authentication headers required
+- Simple GET request to your endpoint
+- Standard response format
+
+### Approach 2: Custom Function (fetchSessionConfig)
+
+Use this when you need full control over the request:
+
+```ts
+OrgaAI.init({
+  fetchSessionConfig: async () => {
+    const response = await fetch('/api/orga-ephemeral', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const { ephemeralToken, iceServers } = await response.json();
+    return { ephemeralToken, iceServers };
+  },
+  // ... other config
+});
+```
+
+**When to use:**
+- Your backend requires authentication headers
+- Custom middleware or request processing needed
+- Error handling requirements
+- Dynamic endpoint URLs
+- Request/response transformation needed
 
 ---
 
