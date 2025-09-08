@@ -129,7 +129,7 @@ describe('Utils', () => {
 
       await expect(
         fetchSessionConfig('https://api.example.com/token')
-      ).rejects.toThrow('Failed to fetch ephemeral token: 500 Internal Server Error');
+      ).rejects.toThrow('Failed to fetch session config: 500 Internal Server Error');
     });
 
     it('should throw error on missing ephemeralToken', async () => {
@@ -144,7 +144,7 @@ describe('Utils', () => {
 
       await expect(
         fetchSessionConfig('https://api.example.com/token')
-      ).rejects.toThrow('Invalid response from ephemeral token endpoint');
+      ).rejects.toThrow('Invalid response from session config endpoint');
     });
 
     it('should throw error on missing iceServers', async () => {
@@ -159,7 +159,7 @@ describe('Utils', () => {
 
       await expect(
         fetchSessionConfig('https://api.example.com/token')
-      ).rejects.toThrow('Invalid response from ephemeral token endpoint');
+      ).rejects.toThrow('Invalid response from session config endpoint');
     });
 
     it('should throw error on network failure', async () => {
