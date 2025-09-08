@@ -31,7 +31,6 @@ Create a `.env.local` file in your project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_DEV_EMAIL=your_developer_email@example.com
 ```
 
 > **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
@@ -41,14 +40,13 @@ ORGA_DEV_EMAIL=your_developer_email@example.com
 Create the backend endpoint for fetching ephemeral tokens:
 
 ```ts
-// app/api/orga-ephemeral/route.ts
+// app/api/orga-client-secrets/route.ts
 import { NextResponse } from "next/server";
 
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL;
 
 const fetchIceServers = async (ephemeralToken: string) => {
-  const URL = `https://api.orga-ai.com/ice-config`;
+  const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
   try {
     const iceServersResponse = await fetch(URL, {
       method: "GET",
@@ -81,22 +79,22 @@ export const GET = async () => {
     );
   }
 
-  const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
-  const ephemeralResponse = await fetch(apiUrl, {
+  const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
+  const clientSecrets = await fetch(apiUrl, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${ORGA_API_KEY}`,
     },
   });
     
-  if (!ephemeralResponse.ok) {
+  if (!clientSecrets.ok) {
     return NextResponse.json(
-      { error: 'Failed to fetch ephemeral token' }, 
-      { status: ephemeralResponse.status }
+      { error: 'Failed to fetch client secrets' }, 
+      { status: clientSecrets.status }
     );
   }
 
-  const data = await ephemeralResponse.json();
+  const data = await clientSecrets.json();
   const iceServers = await fetchIceServers(data.ephemeral_token);
   const returnData = {
     iceServers,
@@ -115,10 +113,10 @@ import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
   logLevel: 'debug',
-  sessionConfigEndpoint: '/api/orga-ephemeral',
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
   // OR use fetchSessionConfig for custom implementation:
   // fetchSessionConfig: async () => {
-  //   const response = await fetch('/api/orga-ephemeral');
+  //   const response = await fetch('/api/orga-client-secrets');
   //   const { ephemeralToken, iceServers } = await response.json();
   //   return { ephemeralToken, iceServers };
   // },
@@ -299,7 +297,7 @@ graph LR
 
 ### **What the Proxy Does**
 
-Your backend endpoint (`/api/orga-ephemeral`) acts as a secure bridge:
+Your backend endpoint (`/api/orga-client-secrets`) acts as a secure bridge:
 
 1. **Receives request** from your client
 2. **Uses your API key** to call OrgaAI (server-side)
@@ -320,10 +318,10 @@ You **must** initialize the SDK before use, providing either a `sessionConfigEnd
 import { OrgaAI } from '@orga-ai/sdk-web';
 
 OrgaAI.init({
-  sessionConfigEndpoint: '/api/orga-ephemeral',
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
   // OR use fetchSessionConfig for custom implementation:
   // fetchSessionConfig: async () => {
-  //   const response = await fetch('/api/orga-ephemeral');
+  //   const response = await fetch('/api/orga-client-secrets');
   //   const { ephemeralToken, iceServers } = await response.json();
   //   return { ephemeralToken, iceServers };
   // },
@@ -369,10 +367,10 @@ The `OrgaAI.init(config)` method accepts the following options:
 OrgaAI.init({
   logLevel: 'debug',
   timeout: 30000,
-  sessionConfigEndpoint: 'https://your-backend.com/api/orga-ephemeral',
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
   // OR use fetchSessionConfig for custom implementation:
   // fetchSessionConfig: async () => {
-  //   const response = await fetch('/api/orga-ephemeral');
+  //   const response = await fetch('/api/orga-client-secrets');
   //   const { ephemeralToken, iceServers } = await response.json();
   //   return { ephemeralToken, iceServers };
   // },
@@ -422,7 +420,7 @@ Use this when you need full control over the request:
 ```ts
 OrgaAI.init({
   fetchSessionConfig: async () => {
-    const response = await fetch('/api/orga-ephemeral', {
+    const response = await fetch('/api/orga-client-secrets', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${userToken}`,
