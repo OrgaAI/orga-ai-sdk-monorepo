@@ -116,7 +116,7 @@ git push origin feature/your-feature-name
 ### **3. Merge to Dev:**
 - **Automatically triggers**: Beta release with `beta` tag
 - **Example**: `1.2.0-beta.1`
-- **Available**: `npm install @orga-ai/sdk-react-native@beta`
+- **Available**: `npm install @orga-ai/react-native@beta`
 
 ### **4. Production Release:**
 ```bash

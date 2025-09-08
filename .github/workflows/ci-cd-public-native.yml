@@ -1,8 +1,8 @@
-name: CI/CD - Private Deployment - React Native
+name: CI/CD - Public Deployment - React Native
 
 on:
   push:
-    branches: [ci-cd/test]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ConversationItem } from '@orga-ai/sdk-react-native';
+import { ConversationItem } from '@orga-ai/react-native';
 
 interface TranscriptionContextType {
   conversationItems: ConversationItem[];

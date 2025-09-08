@@ -5,7 +5,7 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import { ConversationItem } from "@orga-ai/sdk-react-native";
+import { ConversationItem } from "@orga-ai/react-native";
 
 interface TranscriptionListProps {
   conversationItems: ConversationItem[];

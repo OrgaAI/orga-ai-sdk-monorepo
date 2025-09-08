@@ -3,7 +3,7 @@ import {
   ORGAAI_VOICES,
   ORGAAI_TEMPERATURE_RANGE,
   useOrgaAI,
-} from "@orga-ai/sdk-react-native";
+} from "@orga-ai/react-native";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,

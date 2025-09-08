@@ -69,7 +69,7 @@ Install the SDK from npm. Choose the appropriate package and version based on yo
 
 ### Package Selection
 - **`@orga-ai/sdk-web`** - For React web applications
-- **`@orga-ai/sdk-react-native`** - For React Native mobile applications
+- **`@orga-ai/react-native`** - For React Native mobile applications
 
 ### Version Types
 
@@ -79,7 +79,7 @@ Install the SDK from npm. Choose the appropriate package and version based on yo
 npm install @orga-ai/sdk-web
 
 # React Native SDK  
-npm install @orga-ai/sdk-react-native
+npm install @orga-ai/react-native
 ```
 
 #### Alpha/Beta Releases
@@ -88,7 +88,7 @@ npm install @orga-ai/sdk-react-native
 npm install @orga-ai/sdk-web@alpha
 
 # React Native SDK beta
-npm install @orga-ai/sdk-react-native@beta
+npm install @orga-ai/react-native@beta
 ```
 
 #### Specific Test Versions
@@ -97,7 +97,7 @@ npm install @orga-ai/sdk-react-native@beta
 npm install @orga-ai/sdk-web@0.0.0-test.1
 
 # React Native SDK test version
-npm install @orga-ai/sdk-react-native@0.0.0-test.5
+npm install @orga-ai/react-native@0.0.0-test.5
 ```
 
 #### Specific Alpha/Beta Versions
@@ -106,7 +106,7 @@ npm install @orga-ai/sdk-react-native@0.0.0-test.5
 npm install @orga-ai/sdk-web@0.0.0-alpha.2
 
 # React Native SDK specific beta version
-npm install @orga-ai/sdk-react-native@0.0.0-beta.3
+npm install @orga-ai/react-native@0.0.0-beta.3
 ```
 
 ### Package Managers
@@ -132,7 +132,7 @@ You **must** initialize the SDK before use, providing a `fetchSessionConfig` fun
 #### Example (Web or React Native)
 
 ```ts
-import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/react-native'
 
 OrgaAI.init({
   logLevel: 'debug',
@@ -149,7 +149,7 @@ OrgaAI.init({
 ### 2. Wrap Your App with the Provider
 
 ```tsx
-import { OrgaAIProvider } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { OrgaAIProvider } from '@orga-ai/sdk-web'; // or '@orga-ai/react-native'
 
 function App() {
   return (
@@ -163,7 +163,7 @@ function App() {
 ### 3. Use the Hook in Your Components
 
 ```tsx
-import { useOrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { useOrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/react-native'
 
 function MyComponent() {
   const {

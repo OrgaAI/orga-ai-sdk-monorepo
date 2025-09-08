@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { fetchEphemeralTokenAndIceServers } from "@/services/fetch";
 import { Ionicons } from "@expo/vector-icons";
-import { OrgaAIProvider, OrgaAI,useOrgaAI } from "@orga-ai/sdk-react-native";
+import { OrgaAIProvider, OrgaAI,useOrgaAI } from "@orga-ai/react-native";
 import { TouchableOpacity } from "react-native";
 import { TranscriptionProvider, useTranscription } from "@/context/TranscriptionContext";
 
