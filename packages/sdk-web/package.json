@@ -5,7 +5,8 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -16,8 +17,9 @@
     "test:coverage": "jest --coverage"
   },
   "author": "Orga AI",
-  "license": "ISC",
+  "license": "Proprietary",
   "description": "React Web SDK for Orga AI - AI-powered audio/video processing",
+  "homepage": "https://docs.orga-ai.com/version-11/guide/web-sdk/introduction",
   "keywords": [
     "react",
     "ai",
