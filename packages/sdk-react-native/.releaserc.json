@@ -12,7 +12,9 @@
     ["@semantic-release/npm", { 
       "npmPublish": true, 
       "pkgRoot": ".", 
-      "publishConfig": { "access": "restricted" }
+      "publishConfig": { 
+        "access": "${GITHUB_REF_NAME === 'main' || GITHUB_REF_NAME === 'dev' ? 'public' : 'restricted'}" 
+      } 
     }],
     ["@semantic-release/git", {
       "assets": [
