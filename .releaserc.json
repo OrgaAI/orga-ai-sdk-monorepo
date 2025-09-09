@@ -2,7 +2,8 @@
     "branches": [
       { "name": "main", "channel": "latest" },
       { "name": "dev", "channel": "beta", "prerelease": "beta" },
-      { "name": "ci-cd/test", "channel": "test", "prerelease": "test"}
+      { "name": "ci-cd/test", "channel": "test", "prerelease": "test"},
+      {"name": "sdk-test/*", "channel": "experimental", "prerelease": "experimental"}
     ],
     "plugins": [
       ["@semantic-release/commit-analyzer", { "preset": "conventionalcommits" }],
