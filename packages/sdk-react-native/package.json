@@ -8,10 +8,7 @@
     "README.md",
     "LICENSE"
   ],
-  "description": "React Native SDK for Orga AI - AI-powered audio/video processing",
-  "publishConfig": {
-    "access": "restricted"
-  },
+  "description": "React Native SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Orga AI Web SDK Demo",
-  description: "Orga AI Web SDK Demo",
+  title: "Orga AI React SDK Demo",
+  description: "Orga AI React SDK Demo",
 };
 
 export default function RootLayout({

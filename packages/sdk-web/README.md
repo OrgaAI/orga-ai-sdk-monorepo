@@ -1,13 +1,13 @@
-# Orga Web SDK
+# Orga React SDK
 
-The Orga Web SDK enables real-time AI-powered audio and video features in your React web applications using a simple context and hook-based API.
+The Orga React SDK enables real-time AI-powered audio and video features in your React web applications using a simple context and hook-based API.
 
 ---
 
 ## Project Overview
 
-- **Purpose:** Integrate Orga AI for real-time audio and video interaction in React web apps.
-- **Platform:** React Web (supports React context, works with most React-based web projects).
+- **Purpose:** Integrate Orga AI for real-time audio and video interaction in React apps.
+- **Platform:** React (supports React context, works with most React-based projects).
 
 ---
 

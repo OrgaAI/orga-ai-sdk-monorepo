@@ -18,8 +18,8 @@
   },
   "author": "Orga AI",
   "license": "Proprietary",
-  "description": "React Web SDK for Orga AI - AI-powered audio/video processing",
-  "homepage": "https://docs.orga-ai.com/version-11/guide/web-sdk/introduction",
+  "description": "React SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
+  "homepage": "https://docs.orga-ai.com/version-11/guide/react-sdk/introduction",
   "keywords": [
     "react",
     "ai",

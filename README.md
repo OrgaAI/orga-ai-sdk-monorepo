@@ -75,7 +75,7 @@ Install the SDK from npm. Choose the appropriate package and version based on yo
 
 #### Latest Stable Release
 ```sh
-# Web SDK
+# React SDK
 npm install @orga-ai/react
 
 # React Native SDK  
@@ -84,7 +84,7 @@ npm install @orga-ai/react-native
 
 #### Alpha/Beta Releases
 ```sh
-# Web SDK alpha
+# React SDK alpha
 npm install @orga-ai/react@alpha
 
 # React Native SDK beta
@@ -93,7 +93,7 @@ npm install @orga-ai/react-native@beta
 
 #### Specific Test Versions
 ```sh
-# Web SDK test version
+# React SDK test version
 npm install @orga-ai/react@0.0.0-test.1
 
 # React Native SDK test version
@@ -102,7 +102,7 @@ npm install @orga-ai/react-native@0.0.0-test.5
 
 #### Specific Alpha/Beta Versions
 ```sh
-# Web SDK specific alpha version
+# React SDK specific alpha version
 npm install @orga-ai/react@0.0.0-alpha.2
 
 # React Native SDK specific beta version
@@ -129,7 +129,7 @@ You **must** initialize the SDK before use, providing a `fetchSessionConfig` fun
 
 **Do not expose your API key in client code.**
 
-#### Example (Web or React Native)
+#### Example (React or React Native)
 
 ```ts
 import { OrgaAI } from '@orga-ai/react'; // or '@orga-ai/react-native'
@@ -258,8 +258,8 @@ Given the monorepo structure, with the example applications we are able to look 
 
 ## Support & Contact
 
-- **General/Monorepo:** Contact Austin (project lead) via Pumble or Jira
-- **Web SDK:** Contact Fran (WebSDK lead)
+- **General/Monorepo:** Contact Austin (Project and React Native lead) via Pumble or Jira
+- **Web SDK:** Contact Fran (React SDK lead)
 - Use Jira for tickets (please specify which SDK and describe the issue clearly)
 
 
