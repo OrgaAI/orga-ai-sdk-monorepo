@@ -162,7 +162,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@orga-ai/sdk-web':
+      '@orga-ai/react':
         specifier: file:../../packages/sdk-web
         version: link:../../packages/sdk-web
       '@radix-ui/react-dialog':

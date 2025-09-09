@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchSessionConfig } from "@/services/fetchTokenAndServers";
-import { OrgaAI, OrgaAIProvider } from "@orga-ai/sdk-web";
+import { OrgaAI, OrgaAIProvider } from "@orga-ai/react";
 
 OrgaAI.init({
   logLevel: "debug",

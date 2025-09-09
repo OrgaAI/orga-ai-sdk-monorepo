@@ -16,7 +16,7 @@ The Orga Web SDK enables real-time AI-powered audio and video features in your R
 Install the SDK from npm:
 
 ```sh
-npm install @orga-ai/sdk-web
+npm install @orga-ai/react
 ```
 
 ---
@@ -109,7 +109,7 @@ export const GET = async () => {
 ```tsx
 //app/providers/OrgaClientProvider.tsx (Client Component)
 'use client'
-import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-web';
+import { OrgaAI, OrgaAIProvider } from '@orga-ai/react';
 
 OrgaAI.init({
   logLevel: 'debug',
@@ -157,7 +157,7 @@ export default function RootLayout({
 ```tsx
 // app/page.tsx (Client Component)
 'use client'
-import { useOrgaAI, OrgaVideo, OrgaAudio } from '@orga-ai/sdk-web';
+import { useOrgaAI, OrgaVideo, OrgaAudio } from '@orga-ai/react';
 
 export default function Home() {
   const {
@@ -315,7 +315,7 @@ You **must** initialize the SDK before use, providing either a `sessionConfigEnd
 **Never expose your API key in client code.**
 
 ```ts
-import { OrgaAI } from '@orga-ai/sdk-web';
+import { OrgaAI } from '@orga-ai/react';
 
 OrgaAI.init({
   sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
@@ -528,7 +528,7 @@ const handleStartSession = async () => {
   - Provides Orga context to your React app. Wrap your app with this provider.
   - _Import:_
     ```tsx
-    import { OrgaAIProvider } from '@orga-ai/sdk-web';
+    import { OrgaAIProvider } from '@orga-ai/react';
     ```
   - _Usage:_
     ```tsx
@@ -541,7 +541,7 @@ const handleStartSession = async () => {
   - Convenient wrapper for displaying video streams (camera preview).
   - _Import:_
     ```tsx
-    import { OrgaVideo } from '@orga-ai/sdk-web';
+    import { OrgaVideo } from '@orga-ai/react';
     ```
   - _Props:_
     ```tsx
@@ -558,7 +558,7 @@ const handleStartSession = async () => {
   - Convenient wrapper for playing audio streams (AI responses).
   - _Import:_
     ```tsx
-    import { OrgaAudio } from '@orga-ai/sdk-web';
+    import { OrgaAudio } from '@orga-ai/react';
     ```
   - _Props:_
     ```tsx
@@ -577,7 +577,7 @@ const handleStartSession = async () => {
   - Access Orga SDK methods and state in your components.
   - _Import:_
     ```tsx
-    import { useOrgaAI } from '@orga-ai/sdk-web';
+    import { useOrgaAI } from '@orga-ai/react';
     ```
   - _Returns:_
     ```tsx

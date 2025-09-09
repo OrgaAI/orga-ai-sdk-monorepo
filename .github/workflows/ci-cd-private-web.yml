@@ -70,17 +70,17 @@ jobs:
           echo "Checking workspace configuration:"
           pnpm list --recursive --depth=0
           echo "Checking if packages are accessible:"
-          pnpm --filter="@orga-ai/sdk-web" list
+          pnpm --filter="@orga-ai/react" list
 
       - name: Run SDK tests (sdk-web)
         run: |
           echo "Testing sdk-web with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-web" exec jest
+          pnpm --filter="@orga-ai/react" exec jest
 
       - name: Build SDK packages (sdk-web)
         run: |
           echo "Building sdk-web with pnpm exec..."
-          pnpm --filter="@orga-ai/sdk-web" exec tsc --project tsconfig.json
+          pnpm --filter="@orga-ai/react" exec tsc --project tsconfig.json
 
       - name: Verify build outputs
         run: |

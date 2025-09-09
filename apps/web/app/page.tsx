@@ -9,7 +9,8 @@ import {
   OrgaAIModel,
   OrgaAIVoice,
   ConnectionState,
-} from "@orga-ai/sdk-web";
+  ConversationItem
+} from "@orga-ai/react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -32,7 +33,6 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ConversationItem } from "@orga-ai/sdk-web";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function Home() {
