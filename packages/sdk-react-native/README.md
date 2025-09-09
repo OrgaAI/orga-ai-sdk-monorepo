@@ -16,7 +16,7 @@ The Orga React Native SDK brings real-time AI-powered audio and video features t
 Install the SDK from npm:
 
 ```sh
-npm install @orga-ai/sdk-react-native
+npm install @orga-ai/react-native
 ```
 
 > **Note:** If you are using Expo this will not work with Expo Go. You must create a development build first and run on a physical device.
@@ -76,7 +76,6 @@ If using Expo API Routes, create a `.env` file in your Expo project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_DEV_EMAIL=your_developer_email@example.com
 ```
 
 > **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
@@ -89,7 +88,6 @@ If using a separate backend server, store your environment variables in your bac
 1. Create a `.env` file in your backend project (NOT in your React Native app):
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_DEV_EMAIL=your_developer_email@example.com
 ```
 
 2. Your React Native app should only contain the backend URL:
@@ -110,10 +108,9 @@ If you're using Expo SDK 50+ with API routes:
 // app/orga-ephemeral+api.ts
 
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL;
 
 const fetchIceServers = async (ephemeralToken: string) => {
-  const URL = `https://api.orga-ai.com/ice-config`;
+  const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
   try {
     const iceServersResponse = await fetch(URL, {
       method: "GET",
@@ -130,24 +127,24 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export async function GET(request: Request) {
-  if (!USER_EMAIL || !ORGA_API_KEY) {
-    return Response.json({error: "Missing environment variables"}, { status: 500 });
+  if (!ORGA_API_KEY) {
+    return Response.json({error: "Missing API key"}, { status: 500 });
   }
 
   try {
-    const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
-    const ephemeralResponse = await fetch(apiUrl, {
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
+    const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${ORGA_API_KEY}`
       },
     });
     
-    if (!ephemeralResponse.ok) {
-      throw new Error('Failed to fetch ephemeral token');
+    if (!clientSecrets.ok) {
+      throw new Error('Failed to fetch client secrets');
     }
 
-    const { ephemeral_token } = await ephemeralResponse.json();
+    const { ephemeral_token } = await clientSecrets.json();
     const iceServers = await fetchIceServers(ephemeral_token);
     
     return Response.json({ ephemeralToken: ephemeral_token, iceServers }, {status: 200})
@@ -171,7 +168,7 @@ import cors from 'cors';
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
 // Define types for OrgaAI API responses
-interface OrgaEphemeralTokenResponse {
+interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
 
@@ -179,7 +176,7 @@ interface OrgaIceConfigResponse {
   iceServers: RTCIceServer[];
 }
 
-interface OrgaEphemeralResponse {
+interface OrgaSecretsResponse {
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }
@@ -198,17 +195,17 @@ app.use(cors());  // Configure appropriately for production
 // Add your authentication middleware
 app.use(authMiddleware);
 
-app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) => {
+app.get('/api/orga-client-secrets', async (req: AuthenticatedRequest, res: Response) => {
   // Your user authentication/session validation here
   const userId = req.user?.id;  // Example: Get from your auth system
   
-  if (!process.env.ORGA_API_KEY || !process.env.ORGA_DEV_EMAIL) {
+  if (!process.env.ORGA_API_KEY) {
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
   try {
-    const ephemeralResponse = await fetch(
-      `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(process.env.ORGA_DEV_EMAIL)}`,
+    const clientSecrets = await fetch(
+      `https://api.orga-ai.com/v1/realtime/client-secrets`,
       {
         method: 'POST',
         headers: {
@@ -217,15 +214,15 @@ app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) 
       }
     );
 
-    if (!ephemeralResponse.ok) {
-      throw new Error('Failed to fetch ephemeral token');
+    if (!clientSecrets.ok) {
+      throw new Error('Failed to fetch client secrets');
     }
 
-    const ephemeralData = await ephemeralResponse.json() as OrgaEphemeralTokenResponse;
+    const ephemeralData = await clientSecrets.json() as OrgaClientSecretsResponse;
     const { ephemeral_token } = ephemeralData;
     
     // Fetch ICE servers
-    const iceResponse = await fetch('https://api.orga-ai.com/ice-config', {
+    const iceResponse = await fetch('https://api.orga-ai.com/v1/realtime/ice-config', {
       headers: { Authorization: `Bearer ${ephemeral_token}` }
     });
     
@@ -236,7 +233,7 @@ app.get('/api/orga-ephemeral', async (req: AuthenticatedRequest, res: Response) 
     const iceData = await iceResponse.json() as OrgaIceConfigResponse;
     const { iceServers } = iceData;
 
-    const response: OrgaEphemeralResponse = {
+    const response: OrgaSecretsResponse = {
       ephemeralToken: ephemeral_token,
       iceServers
     };
@@ -262,12 +259,12 @@ app.listen(5000, () => console.log('Server running on port 5000'));
 
 ```tsx
 // app/_layout.tsx
-import { OrgaAI, OrgaAIProvider } from '@orga-ai/sdk-react-native';
+import { OrgaAI, OrgaAIProvider } from '@orga-ai/react-native';
 
 OrgaAI.init({
   logLevel: 'debug',
-  fetchEphemeralTokenAndIceServers: async () => {
-    const response = await fetch('/api/orga-ephemeral');
+  fetchSessionConfig: async () => {
+    const response = await fetch('/api/orga-client-secrets');
     const { ephemeralToken, iceServers } = await response.json();
     return { ephemeralToken, iceServers };
   },
@@ -293,7 +290,7 @@ import {
   OrgaAICameraView,
   OrgaAIControls,
   useOrgaAI
-} from "@orga-ai/sdk-react-native";
+} from "@orga-ai/react-native";
 
 export default function HomeScreen() {
   const {
@@ -415,7 +412,7 @@ OrgaAI.init({
 ## Configuration
 
 - **API Key:** Required for your backend endpoint that provides ephemeral tokens. Never expose in client code.
-- **fetchEphemeralTokenAndIceServers:**
+- **fetchSessionConfig:**
   - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
   - Must be provided to `OrgaAI.init`.
 - **Other Config Options:** See SDK documentation for available options (logLevel, model, etc.).
@@ -430,8 +427,8 @@ OrgaAI.init({
 
 ```ts
 // In your app, call your own backend proxy endpoint
-const fetchEphemeralTokenAndIceServers = async () => {
-  const response = await fetch('https://your-backend.com/api/orga-ephemeral', {
+const fetchSessionConfig = async () => {
+  const response = await fetch('https://your-backend.com/api/orga-client-secrets', {
     method: 'GET',
     // Optionally include auth headers for your backend
   });
@@ -450,7 +447,7 @@ const fetchEphemeralTokenAndIceServers = async () => {
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
 // Define types for OrgaAI API responses
-interface OrgaEphemeralTokenResponse {
+interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
 
@@ -458,16 +455,15 @@ interface OrgaIceConfigResponse {
   iceServers: RTCIceServer[];
 }
 
-interface OrgaEphemeralResponse {
+interface OrgaSecretsResponse {
   ephemeralToken: string;
   iceServers: RTCIceServer[];
 }
 
-const USER_EMAIL = process.env.ORGA_DEV_EMAIL;
 const ORGA_API_KEY = process.env.ORGA_API_KEY;
 
 const fetchIceServers = async (ephemeralToken: string): Promise<RTCIceServer[]> => {
-  const URL = `https://api.orga-ai.com/ice-config`;
+  const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
   try {
     const iceServersResponse = await fetch(URL, {
       method: "GET",
@@ -490,29 +486,29 @@ const fetchIceServers = async (ephemeralToken: string): Promise<RTCIceServer[]> 
 
 export const getEphemeralTokenAndIceServers = async (req: Request, res: Response) => {
   try {
-    if (!USER_EMAIL || !ORGA_API_KEY) {
+    if (!ORGA_API_KEY) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const apiUrl = `https://api.orga-ai.com/ephemeral-token?email=${encodeURIComponent(USER_EMAIL)}`;
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
 
-    const ephemeralResponse = await fetch(apiUrl, {
+    const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${ORGA_API_KEY}`
       },
     });
     
-    if (!ephemeralResponse.ok) {
-      throw new Error('Failed to fetch ephemeral token');
+    if (!clientSecrets.ok) {
+      throw new Error('Failed to fetch client secrets');
     }
 
-    const ephemeralData = await ephemeralResponse.json() as OrgaEphemeralTokenResponse;
+    const ephemeralData = await clientSecrets.json() as OrgaClientSecretsResponse;
     const { ephemeral_token } = ephemeralData;
     
     const iceServers = await fetchIceServers(ephemeral_token);
     
-    const response: OrgaEphemeralResponse = {
+    const response: OrgaSecretsResponse = {
       ephemeralToken: ephemeral_token,
       iceServers
     };
@@ -526,7 +522,7 @@ export const getEphemeralTokenAndIceServers = async (req: Request, res: Response
 ```
 
 **Your backend proxy should:**
-- Store the OrgaAI API key and developer email securely (never in the app).
+- Store the OrgaAI API key securely (never in the app).
 - Make the call to the OrgaAI backend.
 - Return only the ephemeral token and ICE servers to the app.
 
@@ -539,8 +535,8 @@ If using Expo SDK 50 or greater, you can use [Expo Router API routes](https://do
 ---
 
 > **Summary:**
-> - Always keep your OrgaAI API key and developer email on a secure backend.
-> - Never expose them in your app or client-side code.
+> - Always keep your OrgaAI API key on a secure backend.
+> - Never expose it in your app or client-side code.
 > - Use a backend proxy pattern for both web and mobile.
 
 ## OrgaAI.init Configuration Options
@@ -551,14 +547,14 @@ The `OrgaAI.init(config)` method accepts the following options:
 |----------------------------------|-----------|---------------------------------------------------------------------------------------------|--------------|-----------|
 | `logLevel`                      | `"debug" \| "info" \| "warn" \| "error" \| "none"` | Logging verbosity.                                    | `"warn"`     | No        |
 | `timeout`                       | `number`  | Timeout for requests, in milliseconds.                                                      | `30000`      | No        |
-| `ephemeralEndpoint`             | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
-| `fetchEphemeralTokenAndIceServers` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
+| `sessionConfigEndpoint`         | `string`  | URL to your backend endpoint for fetching ephemeral tokens and ICE servers.                 | —            | Yes*      |
+| `fetchSessionConfig` | `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>` | Custom function to fetch ephemeral token and ICE servers. | —            | Yes*      |
 | `model`                         | `OrgaAIModel` | Model to use (see SDK for allowed values).                                                 | —            | No        |
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
 | `maxTokens`                     | `number`  | Maximum tokens for responses. Must be between 100 and 1000.                                 | —            | No        |
 
-> **Note:** Either `ephemeralEndpoint` **or** `fetchEphemeralTokenAndIceServers` is required.
+> **Note:** Either `sessionConfigEndpoint` **or** `fetchSessionConfig` is required.
 
 ### Example
 
@@ -566,12 +562,15 @@ The `OrgaAI.init(config)` method accepts the following options:
 OrgaAI.init({
   logLevel: 'debug',
   timeout: 30000,
-  fetchEphemeralTokenAndIceServers: async () => {
-    // Your backend call here
-    return { ephemeralToken: '...', iceServers: [] };
-  },
-  model: 'Orga (1) beta',
-  voice: 'default',
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
+  // OR use fetchSessionConfig for custom implementation:
+  // fetchSessionConfig: async () => {
+  //   const response = await fetch('/api/orga-client-secrets');
+  //   const { ephemeralToken, iceServers } = await response.json();
+  //   return { ephemeralToken, iceServers };
+  // },
+  model: 'orga-1-beta',
+  voice: 'alloy',
   temperature: 0.7,
   maxTokens: 500,
 });
@@ -581,12 +580,63 @@ OrgaAI.init({
 
 - **logLevel:** Controls the verbosity of SDK logs. Use `"debug"` for development, `"warn"` or `"error"` for production.
 - **timeout:** How long (in ms) the SDK will wait for backend responses before timing out.
-- **ephemeralEndpoint:** If provided, the SDK will call this endpoint to fetch tokens/ICE servers. Should be a backend endpoint you control.
-- **fetchEphemeralTokenAndIceServers:** If provided, the SDK will use this function to fetch tokens/ICE servers. This gives you full control.
+- **sessionConfigEndpoint:** If provided, the SDK will call this endpoint to fetch session configuration (ephemeral tokens and ICE servers). Should be a backend endpoint you control. This is the simpler approach when your backend doesn't require custom headers or authentication.
+- **fetchSessionConfig:** If provided, the SDK will use this function to fetch session configuration. This gives you full control over the request, including custom headers, authentication, and error handling. Use this when your backend requires specific middleware or authentication.
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
 - **maxTokens:** Maximum number of tokens in responses. Must be between 100 and 1000.
+
+---
+
+## Session Configuration Approaches
+
+The SDK provides two ways to fetch session configuration (ephemeral tokens and ICE servers) from your backend:
+
+### Approach 1: Simple Endpoint (sessionConfigEndpoint)
+
+Use this when your backend endpoint doesn't require custom headers or authentication:
+
+```ts
+OrgaAI.init({
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
+  // ... other config
+});
+```
+
+**When to use:**
+- Your backend endpoint is publicly accessible
+- No authentication headers required
+- Simple GET request to your endpoint
+- Standard response format
+
+### Approach 2: Custom Function (fetchSessionConfig)
+
+Use this when you need full control over the request:
+
+```ts
+OrgaAI.init({
+  fetchSessionConfig: async () => {
+    const response = await fetch('/api/orga-client-secrets', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const { ephemeralToken, iceServers } = await response.json();
+    return { ephemeralToken, iceServers };
+  },
+  // ... other config
+});
+```
+
+**When to use:**
+- Your backend requires authentication headers
+- Custom middleware or request processing needed
+- Error handling requirements
+- Dynamic endpoint URLs
+- Request/response transformation needed
 
 ---
 
@@ -607,7 +657,7 @@ OrgaAI.init({
   - Provides Orga context to your React Native app. Wrap your app with this provider.
   - _Import:_
     ```tsx
-    import { OrgaAIProvider } from '@orga-ai/sdk-react-native';
+    import { OrgaAIProvider } from '@orga-ai/react-native';
     ```
   - _Usage:_
     ```tsx
@@ -620,7 +670,7 @@ OrgaAI.init({
   - Displays the user's camera feed with optional flip camera functionality and placeholder support.
   - _Import:_
     ```tsx
-    import { OrgaAICameraView } from '@orga-ai/sdk-react-native';
+    import { OrgaAICameraView } from '@orga-ai/react-native';
     ```
   - _Usage:_
     ```tsx
@@ -637,7 +687,7 @@ OrgaAI.init({
   - Provides a complete UI for controlling camera, microphone, and session management.
   - _Import:_
     ```tsx
-    import { OrgaAIControls } from '@orga-ai/sdk-react-native';
+    import { OrgaAIControls } from '@orga-ai/react-native';
     ```
   - _Usage:_
     ```tsx
@@ -659,7 +709,7 @@ OrgaAI.init({
   - Access Orga SDK methods and state in your components.
   - _Import:_
     ```tsx
-    import { useOrgaAI } from '@orga-ai/sdk-react-native';
+    import { useOrgaAI } from '@orga-ai/react-native';
     ```
   - _Returns:_
     - `startSession`, `endSession`, `enableMic`, `disableMic`, `toggleMic`, `enableCamera`, `disableCamera`, `toggleCamera`, `requestPermissions`, `initializeMedia`, `connect`, `cleanup`
@@ -675,12 +725,12 @@ OrgaAI.init({
   - Static class for SDK initialization and configuration.
   - _Import:_
     ```ts
-    import { OrgaAI } from '@orga-ai/sdk-react-native';
+    import { OrgaAI } from '@orga-ai/react-native';
     ```
   - _Usage:_
     ```ts
     OrgaAI.init({
-      fetchEphemeralTokenAndIceServers: async () => { /* ... */ },
+      fetchSessionConfig: async () => { /* ... */ },
       // ...other config
     });
     ```
@@ -691,7 +741,7 @@ OrgaAI.init({
   - TypeScript types for configuration and state.
   - _Import:_
     ```ts
-    import type { SessionConfig, Transcription } from '@orga-ai/sdk-react-native';
+    import type { SessionConfig, Transcription } from '@orga-ai/react-native';
     ```
 
 ---
@@ -705,7 +755,7 @@ OrgaAI.init({
   - List of allowed model names for the `model` config option.
   - _Import:_
     ```ts
-    import { ORGAAI_MODELS } from '@orga-ai/sdk-react-native';
+    import { ORGAAI_MODELS } from '@orga-ai/react-native';
     ```
   - _Usage:_
     ```ts
@@ -717,7 +767,7 @@ OrgaAI.init({
   - List of allowed voice names for the `voice` config option.
   - _Import:_
     ```ts
-    import { ORGAAI_VOICES } from '@orga-ai/sdk-react-native';
+    import { ORGAAI_VOICES } from '@orga-ai/react-native';
     ```
 
 - **ORGAAI_TEMPERATURE_RANGE**
@@ -725,7 +775,7 @@ OrgaAI.init({
   - Allowed range for the `temperature` config option.
   - _Import:_
     ```ts
-    import { ORGAAI_TEMPERATURE_RANGE } from '@orga-ai/sdk-react-native';
+    import { ORGAAI_TEMPERATURE_RANGE } from '@orga-ai/react-native';
     ```
 
 ### Types & Interfaces
@@ -734,14 +784,14 @@ OrgaAI.init({
   - Configuration object for `OrgaAI.init`.
   - _Import:_
     ```ts
-    import type { SessionConfig } from '@orga-ai/sdk-react-native';
+    import type { SessionConfig } from '@orga-ai/react-native';
     ```
 
 - **Transcription, ConnectionState, CameraPosition, ...**
   - Types for SDK state and events.
   - _Import:_
     ```ts
-    import type { Transcription, ConnectionState, CameraPosition } from '@orga-ai/sdk-react-native';
+    import type { Transcription, ConnectionState, CameraPosition } from '@orga-ai/react-native';
     ```
 
 ---
@@ -759,7 +809,7 @@ OrgaAI.init({
 | `OrgaAIControls`              | `component`      | Complete UI controls for camera, mic, and session        |
 | `useOrgaAI`                   | `hook`           | Hook to access SDK methods and state                      |
 | `useOrgaAIContext`            | `hook`           | Alias for `useOrgaAI` (if both are exported)              |
-| `OrgaAIConfig`                | `type`           | Config for `OrgaAI.init`                                  |
+| `OrgaAIConfig`                | `type`           | Config for `OrgaAI.init` (includes `sessionConfigEndpoint`) |
 | `OrgaAIModel`, `OrgaAIVoice`  | `type`           | Allowed values for model/voice                            |
 | `SessionConfig`               | `type`           | Session configuration                                     |
 | `OrgaAIHookCallbacks`         | `type`           | Callbacks for the hook                                    |
@@ -784,7 +834,14 @@ import {
   ORGAAI_MODELS, 
   OrgaAIConfig, 
   ConnectionError 
-} from '@orga-ai/sdk-react-native';
+} from '@orga-ai/react-native';
+
+// Example usage with sessionConfigEndpoint
+OrgaAI.init({
+  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
+  model: 'orga-1-beta',
+  voice: 'alloy',
+});
 ```
 
 > **Note:** The available exports may change in future releases. Always reference the SDK for the latest values.
@@ -822,7 +879,7 @@ The `OrgaAICameraView` component displays the user's camera feed with optional f
 #### Example Usage
 
 ```tsx
-import { OrgaAICameraView } from '@orga-ai/sdk-react-native';
+import { OrgaAICameraView } from '@orga-ai/react-native';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function CameraScreen() {
@@ -978,7 +1035,7 @@ The `OrgaAIControls` component provides a complete UI for controlling camera, mi
 #### Example Usage
 
 ```tsx
-import { OrgaAIControls } from '@orga-ai/sdk-react-native';
+import { OrgaAIControls } from '@orga-ai/react-native';
 import { View, StyleSheet } from 'react-native';
 
 export default function ControlsScreen() {
@@ -1115,4 +1172,33 @@ For questions or support, please contact your Orga platform representative or su
 
 ## License
 
-Proprietary. All rights reserved. 
+**Proprietary License** - Copyright (c) 2025 Orga AI. All rights reserved.
+
+### Key Terms
+
+- **Free to Use**: The SDK is free to use for developing applications that integrate with Orga AI services
+- **API Key Required**: A valid Orga AI account and API key are required for functionality
+- **Credits Required**: Purchased credits are needed to enable SDK features
+- **Non-Transferable**: This license is non-transferable and non-sublicensable
+
+### Restrictions
+
+- **No Reverse Engineering**: You may not reverse-engineer, decompile, disassemble, or modify the SDK
+- **No Redistribution**: Redistribution, sharing, or resale is strictly prohibited without written consent
+- **Platform Use Only**: Use is limited to purposes expressly permitted by this license and platform documentation
+
+### Beta Status
+
+Beta versions are subject to change, including licensing terms and APIs. Updates will be communicated via the [documentation site](https://docs.orga-ai.com).
+
+### Data Protection
+
+Use of the SDK is subject to Orga AI's [Privacy Policy](https://orga-ai.com/en/privacy-policy), which complies with GDPR and other applicable data protection laws.
+
+### Contact
+
+For commercial use inquiries, questions about credits, or additional permissions, contact Orga AI at **licensing@orga-ai.com**.
+
+### Full License
+
+See the complete [LICENSE](LICENSE) file for detailed terms and conditions, or visit [https://docs.orga-ai.com/license](https://docs.orga-ai.com/license) for the most up-to-date license information. 

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useOrgaAI } from "@orga-ai/sdk-react-native";
+import { useOrgaAI } from "@orga-ai/react-native";
 import React from "react";
 import {
   ActivityIndicator,

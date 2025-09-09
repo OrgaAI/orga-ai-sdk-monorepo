@@ -1,7 +1,13 @@
 {
-  "name": "@orga-ai/sdk-web",
-  "version": "0.0.0-test.7",
+  "name": "@orga-ai/react",
+  "version": "1.0.0-test.2",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
@@ -10,9 +16,18 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Orga AI",
+  "license": "Proprietary",
+  "description": "React SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
+  "homepage": "https://docs.orga-ai.com/version-11/guide/react-sdk/introduction",
+  "keywords": [
+    "react",
+    "ai",
+    "audio",
+    "video",
+    "webrtc",
+    "orga-ai"
+  ],
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
@@ -22,6 +37,7 @@
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.9",
     "@types/react": "^19.1.8",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
@@ -32,8 +48,5 @@
     "react-dom": ">=18.0.0",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "ts-node": "^10.9.2"
   }
 }

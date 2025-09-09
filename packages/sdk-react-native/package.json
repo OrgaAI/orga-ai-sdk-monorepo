@@ -1,11 +1,14 @@
 {
-  "name": "@orga-ai/sdk-react-native",
-  "version": "0.0.0-test.15",
+  "name": "@orga-ai/react-native",
+  "version": "1.0.0-test.2",
   "main": "lib/index.js",
-  "description": "React Native SDK for Orga AI - AI-powered audio/video processing",
-  "publishConfig": {
-    "access": "restricted"
-  },
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "description": "React Native SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
@@ -14,6 +17,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
+  "homepage": "https://docs.orga-ai.com/version-11/guide/react-native-sdk/introduction",
   "keywords": [
     "react-native",
     "expo",
@@ -25,7 +29,7 @@
     "react-native-webrtc"
   ],
   "author": "Orga AI",
-  "license": "ISC",
+  "license": "Proprietary",
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-native": ">=0.78.0",
@@ -35,6 +39,7 @@
   "devDependencies": {
     "@testing-library/react-native": "^13.3.1",
     "@types/jest": ">=30.0.0",
+    "@types/node": "^20",
     "@types/react": ">=18.0.0",
     "@types/react-native": ">=0.72.8",
     "@typescript-eslint/eslint-plugin": ">=8.37.0",

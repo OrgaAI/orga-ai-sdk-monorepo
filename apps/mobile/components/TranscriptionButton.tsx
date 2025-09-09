@@ -6,7 +6,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ConversationItem } from "@orga-ai/sdk-react-native";
+import { ConversationItem } from "@orga-ai/react-native";
 
 interface TranscriptionButtonProps {
   conversationItems: ConversationItem[];

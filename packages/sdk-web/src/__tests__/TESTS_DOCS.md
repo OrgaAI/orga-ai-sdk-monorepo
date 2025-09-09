@@ -1,6 +1,6 @@
 # SDK Web Tests Documentation
 
-This document tracks all test coverage for the `@orga-ai/sdk-web` package.
+This document tracks all test coverage for the `@orga-ai/react` package.
 
 ## Test Files
 

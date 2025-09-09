@@ -1,6 +1,6 @@
 # SDK React Native Tests Documentation
 
-This document tracks all test coverage for the `@orga-ai/sdk-react-native` package.
+This document tracks all test coverage for the `@orga-ai/react-native` package.
 
 ## Test Files
 

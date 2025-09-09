@@ -1,12 +1,12 @@
 "use client";
 
-import { fetchEphemeralTokenAndIceServers } from "@/services/fetchTokenAndServers";
-import { OrgaAI, OrgaAIProvider } from "@orga-ai/sdk-web";
+import { fetchSessionConfig } from "@/services/fetchTokenAndServers";
+import { OrgaAI, OrgaAIProvider } from "@orga-ai/react";
 
 OrgaAI.init({
   logLevel: "debug",
   enableTranscriptions: true,
-  fetchEphemeralTokenAndIceServers: fetchEphemeralTokenAndIceServers,
+  fetchSessionConfig: fetchSessionConfig,
   voice: "fable",
 });
 

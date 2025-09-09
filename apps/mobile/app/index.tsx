@@ -3,7 +3,7 @@ import {
   OrgaAICameraView,
   useOrgaAI,
   OrgaAIControls,
-} from "@orga-ai/sdk-react-native";
+} from "@orga-ai/react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranscription } from "@/context/TranscriptionContext";

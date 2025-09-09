@@ -468,9 +468,9 @@ export function useOrgaAI(
     logger.info("🌐 Connecting to OrgaAI backend...");
     try {
       const config = OrgaAI.getConfig();
-      const fetchFn = config.fetchEphemeralTokenAndIceServers;
+      const fetchFn = config.fetchSessionConfig;
       if (!fetchFn) {
-        throw new Error("fetchEphemeralTokenAndIceServers is not defined");
+        throw new Error("fetchSessionConfig is not defined");
       }
       logger.debug("🔑 Fetching ephemeral token and ICE servers");
       const { ephemeralToken, iceServers } = await fetchFn();

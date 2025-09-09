@@ -68,53 +68,53 @@ Before installing or publishing, configure your `.npmrc` in the project root:
 Install the SDK from npm. Choose the appropriate package and version based on your needs:
 
 ### Package Selection
-- **`@orga-ai/sdk-web`** - For React web applications
-- **`@orga-ai/sdk-react-native`** - For React Native mobile applications
+- **`@orga-ai/react`** - For React web applications
+- **`@orga-ai/react-native`** - For React Native mobile applications
 
 ### Version Types
 
 #### Latest Stable Release
 ```sh
-# Web SDK
-npm install @orga-ai/sdk-web
+# React SDK
+npm install @orga-ai/react
 
 # React Native SDK  
-npm install @orga-ai/sdk-react-native
+npm install @orga-ai/react-native
 ```
 
 #### Alpha/Beta Releases
 ```sh
-# Web SDK alpha
-npm install @orga-ai/sdk-web@alpha
+# React SDK alpha
+npm install @orga-ai/react@alpha
 
 # React Native SDK beta
-npm install @orga-ai/sdk-react-native@beta
+npm install @orga-ai/react-native@beta
 ```
 
 #### Specific Test Versions
 ```sh
-# Web SDK test version
-npm install @orga-ai/sdk-web@0.0.0-test.1
+# React SDK test version
+npm install @orga-ai/react@0.0.0-test.1
 
 # React Native SDK test version
-npm install @orga-ai/sdk-react-native@0.0.0-test.5
+npm install @orga-ai/react-native@0.0.0-test.5
 ```
 
 #### Specific Alpha/Beta Versions
 ```sh
-# Web SDK specific alpha version
-npm install @orga-ai/sdk-web@0.0.0-alpha.2
+# React SDK specific alpha version
+npm install @orga-ai/react@0.0.0-alpha.2
 
 # React Native SDK specific beta version
-npm install @orga-ai/sdk-react-native@0.0.0-beta.3
+npm install @orga-ai/react-native@0.0.0-beta.3
 ```
 
 ### Package Managers
 You can use `npm`, `pnpm`, or `bun` to install the SDK:
 ```sh
-npm install @orga-ai/sdk-web
-pnpm add @orga-ai/sdk-web
-bun add @orga-ai/sdk-web
+npm install @orga-ai/react
+pnpm add @orga-ai/react
+bun add @orga-ai/react
 ```
 
 > **Note:** Make sure your `.npmrc` is configured for private package access if using test/alpha versions.
@@ -125,18 +125,18 @@ bun add @orga-ai/sdk-web
 
 ### 1. Initialize the SDK
 
-You **must** initialize the SDK before use, providing a `fetchEphemeralTokenAndIceServers` function. This function is responsible for securely fetching an ephemeral token and ICE servers from your backend using your API key.
+You **must** initialize the SDK before use, providing a `fetchSessionConfig` function. This function is responsible for securely fetching an ephemeral token and ICE servers from your backend using your API key.
 
 **Do not expose your API key in client code.**
 
-#### Example (Web or React Native)
+#### Example (React or React Native)
 
 ```ts
-import { OrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { OrgaAI } from '@orga-ai/react'; // or '@orga-ai/react-native'
 
 OrgaAI.init({
   logLevel: 'debug',
-  fetchEphemeralTokenAndIceServers: async () => {
+  fetchSessionConfig: async () => {
     // Call your backend to get ephemeralToken and iceServers
     // Never expose your API key here!
     const response = await fetch('/api/orga-ephemeral');
@@ -149,7 +149,7 @@ OrgaAI.init({
 ### 2. Wrap Your App with the Provider
 
 ```tsx
-import { OrgaAIProvider } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { OrgaAIProvider } from '@orga-ai/react'; // or '@orga-ai/react-native'
 
 function App() {
   return (
@@ -163,7 +163,7 @@ function App() {
 ### 3. Use the Hook in Your Components
 
 ```tsx
-import { useOrgaAI } from '@orga-ai/sdk-web'; // or '@orga-ai/sdk-react-native'
+import { useOrgaAI } from '@orga-ai/react'; // or '@orga-ai/react-native'
 
 function MyComponent() {
   const {
@@ -185,7 +185,7 @@ function MyComponent() {
 ## Configuration
 
 - **API Key:** Required for backend endpoint that provides ephemeral tokens. Never expose in client code.
-- **fetchEphemeralTokenAndIceServers:**
+- **fetchSessionConfig:**
   - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
   - Must be provided to `OrgaAI.init`.
 - **Other Config Options:** See SDK source for available options (logLevel, model, etc.).
@@ -258,8 +258,8 @@ Given the monorepo structure, with the example applications we are able to look 
 
 ## Support & Contact
 
-- **General/Monorepo:** Contact Austin (project lead) via Pumble or Jira
-- **Web SDK:** Contact Fran (WebSDK lead)
+- **General/Monorepo:** Contact Austin (Project and React Native lead) via Pumble or Jira
+- **Web SDK:** Contact Fran (React SDK lead)
 - Use Jira for tickets (please specify which SDK and describe the issue clearly)
 
 
