@@ -65,6 +65,7 @@ export function useOrgaAI(
   // const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   // const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const currentConfigRef = useRef<SessionConfig>({});
@@ -207,6 +208,7 @@ export function useOrgaAI(
         logger.debug("🔄 Closing peer connection");
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
+        setPeerConnection(null);
       }
 
       if (dataChannelRef.current) {
@@ -477,6 +479,7 @@ export function useOrgaAI(
 
       const pc = await buildPeerConnection(iceServers);
       peerConnectionRef.current = pc;
+      setPeerConnection(pc);
 
       logger.debug("📝 Creating offer");
       const offer = await pc.createOffer({
@@ -937,6 +940,7 @@ export function useOrgaAI(
     // requestPermissions,
 
     // State
+    peerConnection,
     connectionState,
     aiAudioStream,
     userVideoStream,

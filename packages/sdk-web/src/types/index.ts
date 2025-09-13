@@ -129,6 +129,7 @@ export interface OrgaAIHookReturn {
   toggleCamera: () => Promise<void>;
 
   // State
+  peerConnection: RTCPeerConnection | null; // for custom datachannel creations and advanced use cases
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
   userVideoStream: MediaStream | null;
