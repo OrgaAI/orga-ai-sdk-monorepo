@@ -92,6 +92,7 @@ export interface OrgaAIHookReturn {
     enableCamera: () => Promise<void>;
     disableCamera: (hardDisable?: boolean) => Promise<void>;
     toggleCamera: () => Promise<void>;
+    peerConnection: RTCPeerConnection | null;
     connectionState: ConnectionState;
     aiAudioStream: MediaStream | null;
     userVideoStream: MediaStream | null;

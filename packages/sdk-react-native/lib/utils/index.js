@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logger = exports.connectToRealtime = exports.fetchEphemeralTokenAndIceServers = exports.getMediaConstraints = exports.MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = void 0;
+exports.logger = exports.connectToRealtime = exports.fetchSessionConfig = exports.getMediaConstraints = exports.MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = void 0;
 // import RTCIceCandidateInit from "react-native-webrtc/lib/typescript/RTCIceCandidate"; //TODO: Remove init
 const OrgaAI_1 = require("../core/OrgaAI");
 exports.MIN_MAX_IDEAL_VIDEO_CONSTRAINTS = {
@@ -34,25 +34,25 @@ const getMediaConstraints = (config = {}) => {
 };
 exports.getMediaConstraints = getMediaConstraints;
 /**
- * Fetches an ephemeral token and ICE servers from the developer's backend proxy.
- * @param ephemeralEndpoint - The URL to the developer's backend proxy endpoint.
+ * Fetches session configuration (ephemeral token and ICE servers) from the developer's backend proxy.
+ * @param sessionConfigEndpoint - The URL to the developer's backend proxy endpoint.
  * Returns: { ephemeralToken: string, iceServers: RTCIceServer[] }
  */
-const fetchEphemeralTokenAndIceServers = async (ephemeralEndpoint) => {
-    const response = await fetch(ephemeralEndpoint);
+const fetchSessionConfig = async (sessionConfigEndpoint) => {
+    const response = await fetch(sessionConfigEndpoint);
     if (!response.ok) {
-        throw new Error(`Failed to fetch ephemeral token: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch session config: ${response.status} ${response.statusText}`);
     }
     const data = await response.json();
     if (!data?.ephemeralToken || !data?.iceServers) {
-        throw new Error("Invalid response from ephemeral token endpoint");
+        throw new Error("Invalid response from session config endpoint");
     }
     return {
         ephemeralToken: data.ephemeralToken,
         iceServers: data.iceServers,
     };
 };
-exports.fetchEphemeralTokenAndIceServers = fetchEphemeralTokenAndIceServers;
+exports.fetchSessionConfig = fetchSessionConfig;
 /**
  * Sends the offer and ICE candidates to the backend and receives the answer.
  * Returns: { conversation_id, answer }
