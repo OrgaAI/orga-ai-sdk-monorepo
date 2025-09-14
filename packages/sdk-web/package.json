@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/react",
-  "version": "1.0.0-test.4",
+  "version": "1.0.0-test.5",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
