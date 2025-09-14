@@ -138,6 +138,7 @@ export interface OrgaAIHookReturn {
   // requestPermissions: () => Promise<void>; //TODO: Review this
 
   // State
+  peerConnection: RTCPeerConnection | null; // for custom datachannel creations and advanced use cases
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
   userVideoStream: MediaStream | null;
