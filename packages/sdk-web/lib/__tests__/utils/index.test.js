@@ -83,7 +83,7 @@ describe('Utils', () => {
                 status: 500,
                 statusText: 'Internal Server Error'
             });
-            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Failed to fetch ephemeral token: 500 Internal Server Error');
+            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Failed to fetch session config: 500 Internal Server Error');
         });
         it('should throw error on missing ephemeralToken', async () => {
             const mockResponse = {
@@ -93,7 +93,7 @@ describe('Utils', () => {
                 ok: true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
-            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Invalid response from ephemeral token endpoint');
+            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Invalid response from session config endpoint');
         });
         it('should throw error on missing iceServers', async () => {
             const mockResponse = {
@@ -103,7 +103,7 @@ describe('Utils', () => {
                 ok: true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
-            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Invalid response from ephemeral token endpoint');
+            await expect((0, utils_1.fetchSessionConfig)('https://api.example.com/token')).rejects.toThrow('Invalid response from session config endpoint');
         });
         it('should throw error on network failure', async () => {
             global.fetch.mockRejectedValueOnce(new Error('Network error'));

@@ -66,11 +66,11 @@ export type RTCIceServer = {
     credential?: string;
 };
 /**
- * Fetches an ephemeral token and ICE servers from the developer's backend proxy.
- * @param ephemeralEndpoint - The URL to the developer's backend proxy endpoint.
+ * Fetches session configuration (ephemeral token and ICE servers) from the developer's backend proxy.
+ * @param sessionConfigEndpoint - The URL to the developer's backend proxy endpoint.
  * Returns: { ephemeralToken: string, iceServers: RTCIceServer[] }
  */
-export declare const fetchEphemeralTokenAndIceServers: (ephemeralEndpoint: string) => Promise<{
+export declare const fetchSessionConfig: (sessionConfigEndpoint: string) => Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
 }>;

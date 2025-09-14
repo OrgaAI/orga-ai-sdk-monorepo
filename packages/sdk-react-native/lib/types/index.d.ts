@@ -17,8 +17,8 @@ export declare const ORGAAI_TEMPERATURE_RANGE: {
 export interface OrgaAIConfig {
     logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
     timeout?: number;
-    ephemeralEndpoint?: string;
-    fetchEphemeralTokenAndIceServers?: () => Promise<{
+    sessionConfigEndpoint?: string;
+    fetchSessionConfig?: () => Promise<{
         ephemeralToken: string;
         iceServers: RTCIceServer[];
     }>;
@@ -99,6 +99,7 @@ export interface OrgaAIHookReturn {
     disableCamera: () => Promise<void>;
     toggleCamera: () => Promise<void>;
     flipCamera: () => Promise<void>;
+    peerConnection: RTCPeerConnection | null;
     connectionState: ConnectionState;
     aiAudioStream: MediaStream | null;
     userVideoStream: MediaStream | null;

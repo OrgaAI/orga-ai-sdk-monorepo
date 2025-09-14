@@ -13,20 +13,20 @@ class OrgaAI {
             throw new errors_1.ConfigurationError(`Temperature must be between ${types_1.ORGAAI_TEMPERATURE_RANGE.min} and ${types_1.ORGAAI_TEMPERATURE_RANGE.max}`);
         }
         let fetchFn;
-        if (!config.ephemeralEndpoint && !config.fetchEphemeralTokenAndIceServers) {
-            throw new errors_1.ConfigurationError('ephemeralEndpoint or fetchEphemeralTokenAndIceServers is required');
+        if (!config.sessionConfigEndpoint && !config.fetchSessionConfig) {
+            throw new errors_1.ConfigurationError('sessionConfigEndpoint or fetchSessionConfig is required');
         }
-        if (config.fetchEphemeralTokenAndIceServers) {
-            fetchFn = config.fetchEphemeralTokenAndIceServers;
+        if (config.fetchSessionConfig) {
+            fetchFn = config.fetchSessionConfig;
         }
-        else if (config.ephemeralEndpoint) {
-            fetchFn = () => (0, utils_1.fetchEphemeralTokenAndIceServers)(config?.ephemeralEndpoint || "");
+        else if (config.sessionConfigEndpoint) {
+            fetchFn = () => (0, utils_1.fetchSessionConfig)(config?.sessionConfigEndpoint || "");
         }
         const defaultConfig = {
             logLevel: 'warn',
             timeout: 30000,
             ...config,
-            fetchEphemeralTokenAndIceServers: fetchFn
+            fetchSessionConfig: fetchFn
         };
         globalThis.OrgaAI = {
             config: defaultConfig,
