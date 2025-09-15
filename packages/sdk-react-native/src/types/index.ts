@@ -168,4 +168,7 @@ export interface OrgaAIHookReturn {
   
   // Utilities
   // hasPermissions: () => Promise<boolean>; //TODO: Review this
+
+  // Utils
+  sendOrgaAgentResult: (message: string) => void;
 }

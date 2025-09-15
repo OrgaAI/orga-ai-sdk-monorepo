@@ -1006,5 +1006,8 @@ export function useOrgaAI(
 
     // initializeParams,
     // sendUpdatedParams,
+
+    // utils
+    sendOrgaAgentResult
   };
 }

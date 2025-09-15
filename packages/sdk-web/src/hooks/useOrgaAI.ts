@@ -814,5 +814,8 @@ export function useOrgaAI(
     instructions,
     modalities,
     updateParams,
+
+    // utils
+    sendOrgaAgentResult
   };
 }

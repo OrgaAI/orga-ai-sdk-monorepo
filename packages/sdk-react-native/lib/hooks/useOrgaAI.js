@@ -828,5 +828,7 @@ function useOrgaAI(callbacks = {
         // updateModalities,
         // initializeParams,
         // sendUpdatedParams,
+        // utils
+        sendOrgaAgentResult
     };
 }

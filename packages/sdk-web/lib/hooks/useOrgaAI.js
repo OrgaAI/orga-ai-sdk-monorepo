@@ -702,5 +702,7 @@ function useOrgaAI(callbacks = {
         instructions,
         modalities,
         updateParams,
+        // utils
+        sendOrgaAgentResult
     };
 }

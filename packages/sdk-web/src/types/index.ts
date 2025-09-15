@@ -155,4 +155,7 @@ export interface OrgaAIHookReturn {
     instructions?: string;
     modalities?: Modality[];
   }) => void;
+
+  // Utils
+  sendOrgaAgentResult: (message: string) => void;
 }
