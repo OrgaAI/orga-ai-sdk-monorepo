@@ -181,7 +181,7 @@ describe('Utils', () => {
             expect(requestBody.params.model).toBe('orga-1-beta');
             expect(requestBody.params.temperature).toBe(0.5);
             expect(requestBody.params.return_transcription).toBe(false);
-            expect(requestBody.params.instructions).toBe(null);
+            expect(requestBody.params.instructions).toBe("");
             expect(requestBody.params.modalities).toEqual(['audio', 'video']);
         });
         it('should throw error on non-ok response', async () => {
