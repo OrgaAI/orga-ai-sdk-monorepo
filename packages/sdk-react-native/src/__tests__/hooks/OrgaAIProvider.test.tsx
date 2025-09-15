@@ -490,6 +490,7 @@ describe("OrgaAIProvider", () => {
         onSessionStart: jest.fn(),
         onSessionEnd: jest.fn(),
         onError: jest.fn(),
+        onOrgaAgentMessage: jest.fn()
       };
 
       render(

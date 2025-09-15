@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useOrgaAI = useOrgaAI;
 const react_1 = require("react");
+// import { PermissionsAndroid, Platform } from "react-native";
 const react_native_webrtc_1 = require("react-native-webrtc");
 // import RTCIceCandidateInit from "react-native-webrtc/lib/typescript/RTCIceCandidate";
 const react_native_incall_manager_1 = __importDefault(require("react-native-incall-manager"));
@@ -13,7 +14,11 @@ const errors_1 = require("../errors");
 const OrgaAI_1 = require("../core/OrgaAI");
 const utils_1 = require("../utils");
 // Rename the original hook for internal use
-function useOrgaAI(callbacks = {}) {
+function useOrgaAI(callbacks = {
+    onOrgaAgentMessage: (data, sendResult) => {
+        utils_1.logger.warn("onOrgaAgentMessage callback is not implemented", data);
+    },
+}) {
     const [userVideoStream, setUserVideoStream] = (0, react_1.useState)(null);
     const [userAudioStream, setUserAudioStream] = (0, react_1.useState)(null);
     const [aiAudioStream, setAiAudioStream] = (0, react_1.useState)(null);
@@ -37,7 +42,7 @@ function useOrgaAI(callbacks = {}) {
     const [temperature, setTemperature] = (0, react_1.useState)(null);
     const [instructions, setInstructions] = (0, react_1.useState)(null);
     const [modalities, setModalities] = (0, react_1.useState)([]);
-    const { onSessionStart, onSessionEnd, onError, onConnectionStateChange, onSessionConnected, onConversationMessageCreated, } = callbacks;
+    const { onSessionStart, onSessionEnd, onError, onConnectionStateChange, onSessionConnected, onConversationMessageCreated, onOrgaAgentMessage, } = callbacks;
     // Function to send updated parameters to the session
     const sendUpdatedParams = (0, react_1.useCallback)(() => {
         const dataChannel = dataChannelRef.current;
@@ -81,6 +86,21 @@ function useOrgaAI(callbacks = {}) {
             sendUpdatedParams();
         }
     }, [connectionState, sendUpdatedParams]);
+    const sendOrgaAgentResult = (0, react_1.useCallback)((message) => {
+        const dataChannel = dataChannelRef.current;
+        if (!dataChannel || dataChannel.readyState !== "open") {
+            utils_1.logger.warn("⚠️ Cannot send Orga agent result: data channel not open");
+            return;
+        }
+        const payload = {
+            event: types_1.DataChannelEventTypes.AGENT_RESULT,
+            data: {
+                msg: message
+            },
+        };
+        utils_1.logger.debug("📤 Sending agent result via data channel:", payload);
+        dataChannel.send(JSON.stringify(payload));
+    }, []);
     // Initialize parameters from config when session starts
     const initializeParams = (0, react_1.useCallback)((config) => {
         utils_1.logger.debug("🔧 Initializing parameters from config:", config);
@@ -246,9 +266,11 @@ function useOrgaAI(callbacks = {}) {
         });
         dc.addEventListener("message", (event) => {
             try {
-                const dataChannelEvent = JSON.parse(event.data);
-                utils_1.logger.debug("📨 Data channel message received:", dataChannelEvent.event);
-                if (dataChannelEvent.event ===
+                const raw = event.data;
+                const msg = JSON.parse(raw);
+                const normalized = msg && typeof msg === 'object' ? ('type' in msg ? msg : 'event' in msg ? { type: msg.event, ...msg } : msg) : { type: 'unknown', raw: msg };
+                utils_1.logger.debug("📨 Data channel message received:", normalized);
+                if (normalized.type ===
                     types_1.DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION) {
                     const currentConversationId = conversationIdRef.current || conversationId;
                     utils_1.logger.debug("🎤 Processing user speech transcription");
@@ -258,7 +280,7 @@ function useOrgaAI(callbacks = {}) {
                             sender: "user",
                             content: {
                                 type: "text",
-                                message: dataChannelEvent.message || "",
+                                message: JSON.stringify(normalized),
                             },
                             modelVersion: model,
                         };
@@ -267,7 +289,7 @@ function useOrgaAI(callbacks = {}) {
                         onConversationMessageCreated?.(conversationItem);
                     }
                 }
-                if (dataChannelEvent.event ===
+                if (normalized.type ===
                     types_1.DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE) {
                     const currentConversationId = conversationIdRef.current || conversationId;
                     utils_1.logger.debug("🤖 Processing assistant response");
@@ -277,7 +299,7 @@ function useOrgaAI(callbacks = {}) {
                             sender: "assistant",
                             content: {
                                 type: "text",
-                                message: dataChannelEvent.message || "",
+                                message: JSON.stringify(normalized),
                             },
                             voiceType: voice,
                             modelVersion: model,
@@ -287,6 +309,13 @@ function useOrgaAI(callbacks = {}) {
                         setConversationItems((prev) => [...prev, conversationItem]);
                         onConversationMessageCreated?.(conversationItem);
                     }
+                }
+                if (normalized.type === types_1.DataChannelEventTypes.AGENT_REQUEST) {
+                    const callbackdata = {
+                        tool: normalized.data.tool || "unknown",
+                        parameters: normalized.data.parameters || {}
+                    };
+                    onOrgaAgentMessage(callbackdata, sendOrgaAgentResult);
                 }
             }
             catch (error) {
@@ -764,7 +793,6 @@ function useOrgaAI(callbacks = {}) {
         // Manual control methods
         // requestPermissions,
         // State
-        peerConnection,
         connectionState,
         aiAudioStream,
         userVideoStream,

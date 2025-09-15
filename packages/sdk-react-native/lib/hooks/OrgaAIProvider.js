@@ -45,7 +45,11 @@ const DEFAULT_MODEL = "orga-1-beta";
 const DEFAULT_VOICE = "alloy";
 const DEFAULT_TEMPERATURE = 0.5;
 const OrgaAIContext = (0, react_1.createContext)(undefined);
-const OrgaAIProvider = ({ children, callbacks, }) => {
+const OrgaAIProvider = ({ children, callbacks = {
+    onOrgaAgentMessage: (data, sendResult) => {
+        utils_1.logger.warn("onOrgaAgentMessage callback is not implemented", data);
+    }
+}, }) => {
     const config = OrgaAI_1.OrgaAI.getConfig();
     const [model, _setModel] = (0, react_1.useState)(config.model ?? DEFAULT_MODEL);
     const [voice, _setVoice] = (0, react_1.useState)(config.voice ?? DEFAULT_VOICE);

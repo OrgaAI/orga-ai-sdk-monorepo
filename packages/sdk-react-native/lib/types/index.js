@@ -28,4 +28,6 @@ var DataChannelEventTypes;
     DataChannelEventTypes["USER_SPEECH_TRANSCRIPTION"] = "conversation.item.input_audio_transcription.completed";
     DataChannelEventTypes["ASSISTANT_RESPONSE_COMPLETE"] = "response.output_item.done";
     DataChannelEventTypes["SESSION_UPDATE"] = "session.update";
+    DataChannelEventTypes["AGENT_REQUEST"] = "orga_agent.request";
+    DataChannelEventTypes["AGENT_RESULT"] = "orga_agent.result";
 })(DataChannelEventTypes || (exports.DataChannelEventTypes = DataChannelEventTypes = {}));

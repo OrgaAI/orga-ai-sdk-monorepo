@@ -61,14 +61,15 @@ export interface MediaConstraints {
 }
 export type ConnectionState = RTCPeerConnection["connectionState"];
 export interface DataChannelEvent {
-    event: string;
-    message?: string;
+    type: string;
     [key: string]: any;
 }
 export declare enum DataChannelEventTypes {
     USER_SPEECH_TRANSCRIPTION = "conversation.item.input_audio_transcription.completed",
     ASSISTANT_RESPONSE_COMPLETE = "response.output_item.done",
-    SESSION_UPDATE = "session.update"
+    SESSION_UPDATE = "session.update",
+    AGENT_REQUEST = "orga_agent.request",
+    AGENT_RESULT = "orga_agent.result"
 }
 export interface ConversationItem {
     conversationId: string;
@@ -88,6 +89,12 @@ export interface OrgaAIHookCallbacks {
     onError?: (error: Error) => void;
     onConnectionStateChange?: (state: ConnectionState) => void;
     onConversationMessageCreated?: (item: ConversationItem) => void;
+    onOrgaAgentMessage: (data: {
+        tool: string;
+        parameters: {
+            [key: string]: string;
+        };
+    }, sendResult: (message: string) => void) => void;
 }
 export interface OrgaAIHookReturn {
     startSession: (config?: SessionConfig) => Promise<void>;
@@ -99,7 +106,6 @@ export interface OrgaAIHookReturn {
     disableCamera: () => Promise<void>;
     toggleCamera: () => Promise<void>;
     flipCamera: () => Promise<void>;
-    peerConnection: RTCPeerConnection | null;
     connectionState: ConnectionState;
     aiAudioStream: MediaStream | null;
     userVideoStream: MediaStream | null;

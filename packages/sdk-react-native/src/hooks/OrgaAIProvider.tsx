@@ -27,7 +27,11 @@ const OrgaAIContext = createContext<OrgaAIContextValue | undefined>(undefined);
 
 export const OrgaAIProvider = ({
   children,
-  callbacks,
+  callbacks={
+    onOrgaAgentMessage: (data, sendResult) => {
+      logger.warn("onOrgaAgentMessage callback is not implemented", data);
+    }
+  },
 }: OrgaAIProviderProps) => {
   const config = OrgaAI.getConfig();
   const [model, _setModel] = useState<OrgaAIModel>(config.model ?? DEFAULT_MODEL);

@@ -275,6 +275,7 @@ describe('OrgaAIProvider', () => {
                 onSessionStart: jest.fn(),
                 onSessionEnd: jest.fn(),
                 onError: jest.fn(),
+                onOrgaAgentMessage: jest.fn()
             };
             (0, react_2.render)(react_1.default.createElement(OrgaAIProvider_1.OrgaAIProvider, { callbacks: mockCallbacks },
                 react_1.default.createElement(TestComponent, null)));

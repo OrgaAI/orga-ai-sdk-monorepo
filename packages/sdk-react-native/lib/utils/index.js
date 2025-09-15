@@ -79,9 +79,9 @@ const connectToRealtime = async ({ ephemeralToken, peerConnection, gathered, }) 
             model: model || "orga-1-beta",
             temperature: temperature || 0.5,
             return_transcription: enableTranscriptions || false,
-            instructions: instructions || null,
-            modalities: modalities || ["audio", "video"],
-            // history: history || false,
+            instructions: instructions || "",
+            modalities: modalities || ['audio', 'video'],
+            history: false,
         },
     };
     const controller = new AbortController();

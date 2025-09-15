@@ -138,6 +138,7 @@ describe('useOrgaAI', () => {
     onError: jest.fn(),
     onConnectionStateChange: jest.fn(),
     onConversationMessageCreated: jest.fn(),
+    onOrgaAgentMessage: jest.fn()
   };
 
   beforeEach(() => {
