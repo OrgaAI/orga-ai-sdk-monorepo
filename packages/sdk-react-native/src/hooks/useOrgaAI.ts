@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PermissionsAndroid, Platform } from "react-native";
+// import { PermissionsAndroid, Platform } from "react-native";
 import {
   RTCPeerConnection,
   RTCSessionDescription,
@@ -45,7 +45,11 @@ interface RTCIceCandidateInit {
 
 // Rename the original hook for internal use
 export function useOrgaAI(
-  callbacks: OrgaAIHookCallbacks = {}
+  callbacks: OrgaAIHookCallbacks = {
+    onOrgaAgentMessage: (data, sendResult) => {
+      logger.warn("onOrgaAgentMessage callback is not implemented", data);
+    },
+  }
 ): OrgaAIHookReturn {
   const [userVideoStream, setUserVideoStream] = useState<MediaStream | null>(
     null
@@ -90,6 +94,7 @@ export function useOrgaAI(
     onConnectionStateChange,
     onSessionConnected,
     onConversationMessageCreated,
+    onOrgaAgentMessage,
   } = callbacks;
 
   // Function to send updated parameters to the session
@@ -145,6 +150,24 @@ export function useOrgaAI(
     },
     [connectionState, sendUpdatedParams]
   );
+  
+  const sendOrgaAgentResult = useCallback((message: string) => {
+    const dataChannel = dataChannelRef.current;
+    if (!dataChannel || dataChannel.readyState !== "open") {
+      logger.warn("⚠️ Cannot send Orga agent result: data channel not open");
+      return;
+    }
+
+    const payload = {
+      event: DataChannelEventTypes.AGENT_RESULT,
+      data: {
+        msg: message
+      },
+    };
+
+    logger.debug("📤 Sending agent result via data channel:", payload);
+    dataChannel.send(JSON.stringify(payload));
+  }, []);
 
   // Initialize parameters from config when session starts
   const initializeParams = useCallback((config: SessionConfig) => {
@@ -335,16 +358,13 @@ export function useOrgaAI(
 
       dc.addEventListener("message", (event) => {
         try {
-          const dataChannelEvent = JSON.parse(
-            event.data as string
-          ) as DataChannelEvent;
-          logger.debug(
-            "📨 Data channel message received:",
-            dataChannelEvent.event
-          );
+          const raw = event.data as string;
+          const msg = JSON.parse(raw);
+          const normalized: DataChannelEvent = msg && typeof msg === 'object' ? ('type' in msg ? msg : 'event' in msg ? { type: (msg as any).event, ...msg } : msg) : { type: 'unknown', raw: msg };
+          logger.debug("📨 Data channel message received:", normalized);
 
           if (
-            dataChannelEvent.event ===
+            normalized.type ===
             DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION
           ) {
             const currentConversationId =
@@ -356,7 +376,7 @@ export function useOrgaAI(
                 sender: "user",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: JSON.stringify(normalized),
                 },
                 modelVersion: model,
               };
@@ -370,7 +390,7 @@ export function useOrgaAI(
           }
 
           if (
-            dataChannelEvent.event ===
+            normalized.type ===
             DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE
           ) {
             const currentConversationId =
@@ -382,7 +402,7 @@ export function useOrgaAI(
                 sender: "assistant",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: JSON.stringify(normalized),
                 },
                 voiceType: voice,
                 modelVersion: model,
@@ -395,6 +415,14 @@ export function useOrgaAI(
               setConversationItems((prev) => [...prev, conversationItem]);
               onConversationMessageCreated?.(conversationItem);
             }
+          }
+
+          if (normalized.type === DataChannelEventTypes.AGENT_REQUEST) {
+            const callbackdata={
+              tool: normalized.data.tool || "unknown",
+              parameters: normalized.data.parameters || {}
+            }
+            onOrgaAgentMessage(callbackdata,sendOrgaAgentResult)
           }
         } catch (error) {
           logger.error("❌ Error parsing data channel message:", error);
@@ -940,7 +968,6 @@ export function useOrgaAI(
     // requestPermissions,
 
     // State
-    peerConnection,
     connectionState,
     aiAudioStream,
     userVideoStream,
