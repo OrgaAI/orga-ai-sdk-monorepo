@@ -35,7 +35,6 @@ export function useOrgaAI(
   const conversationIdRef = useRef<string | null>(null);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const currentConfigRef = useRef<SessionConfig>({});
 
@@ -198,7 +197,6 @@ export function useOrgaAI(
         logger.debug("🔄 Closing peer connection");
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
-        setPeerConnection(null);
       }
     } catch (e) {
       logger.error("❌ Error closing peer connection", e);
@@ -396,7 +394,6 @@ export function useOrgaAI(
 
       const pc = await buildPeerConnection(iceServers);
       peerConnectionRef.current = pc;
-      setPeerConnection(pc);
 
       logger.debug("📝 Creating offer");
       const offer = await pc.createOffer({

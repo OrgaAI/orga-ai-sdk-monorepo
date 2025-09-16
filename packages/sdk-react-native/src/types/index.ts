@@ -46,6 +46,7 @@ export interface OrgaAIConfig {
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
+  history?: boolean;
 }
 
 export type CameraPosition = "front" | "back";

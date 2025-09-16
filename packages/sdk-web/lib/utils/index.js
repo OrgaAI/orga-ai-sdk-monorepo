@@ -56,9 +56,7 @@ exports.fetchSessionConfig = fetchSessionConfig;
  */
 const connectToRealtime = async ({ ephemeralToken, peerConnection, gathered, }) => {
     const config = OrgaAI_1.OrgaAI.getConfig();
-    const { voice, model, temperature, enableTranscriptions, instructions, modalities,
-    // history,
-     } = config;
+    const { voice, model, temperature, enableTranscriptions, instructions, modalities, history, } = config;
     const realtimeUrl = "https://staging.orga-ai.com/realtime";
     exports.logger.debug(`[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`);
     exports.logger.debug(`[OrgaAI] Voice: ${voice}`);
@@ -81,7 +79,7 @@ const connectToRealtime = async ({ ephemeralToken, peerConnection, gathered, }) 
             return_transcription: enableTranscriptions || false,
             instructions: instructions || "",
             modalities: modalities || ['audio', 'video'],
-            history: false,
+            history: history || false,
         },
     };
     const controller = new AbortController();

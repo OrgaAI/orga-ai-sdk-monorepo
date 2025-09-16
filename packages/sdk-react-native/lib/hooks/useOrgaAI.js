@@ -28,7 +28,6 @@ function useOrgaAI(callbacks = {
     const conversationIdRef = (0, react_1.useRef)(null);
     // const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     // const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [peerConnection, setPeerConnection] = (0, react_1.useState)(null);
     const peerConnectionRef = (0, react_1.useRef)(null);
     const dataChannelRef = (0, react_1.useRef)(null);
     const currentConfigRef = (0, react_1.useRef)({});
@@ -154,7 +153,6 @@ function useOrgaAI(callbacks = {
                 utils_1.logger.debug("🔄 Closing peer connection");
                 peerConnectionRef.current.close();
                 peerConnectionRef.current = null;
-                setPeerConnection(null);
             }
             if (dataChannelRef.current) {
                 utils_1.logger.debug("🔄 Closing data channel");
@@ -391,7 +389,6 @@ function useOrgaAI(callbacks = {
             const { ephemeralToken, iceServers } = await fetchFn();
             const pc = await buildPeerConnection(iceServers);
             peerConnectionRef.current = pc;
-            setPeerConnection(pc);
             utils_1.logger.debug("📝 Creating offer");
             const offer = await pc.createOffer({
                 offerToReceiveAudio: true,

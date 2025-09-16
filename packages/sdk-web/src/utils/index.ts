@@ -85,7 +85,7 @@ export const connectToRealtime = async ({
     enableTranscriptions,
     instructions,
     modalities,
-    // history,
+    history,
   } = config;
   const realtimeUrl = "https://staging.orga-ai.com/realtime";
   
@@ -113,7 +113,7 @@ export const connectToRealtime = async ({
       return_transcription: enableTranscriptions || false,
       instructions: instructions || "",
       modalities: modalities || ['audio', 'video'],
-      history: false,
+      history: history || false,
     },
   };
 

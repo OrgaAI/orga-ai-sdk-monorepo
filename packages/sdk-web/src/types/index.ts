@@ -42,7 +42,7 @@ export interface OrgaAIConfig {
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
-  // history?: boolean; //TODO: Add history support
+  history?: boolean;
 }
 
 export type IceCandidateEvent = {
