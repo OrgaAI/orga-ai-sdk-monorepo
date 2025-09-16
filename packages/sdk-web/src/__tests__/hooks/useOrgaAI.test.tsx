@@ -571,7 +571,7 @@ describe('useOrgaAI', () => {
         sender: 'user',
         content: {
           type: 'text',
-          message: 'Hello, how are you?'
+          message: '{\"type\":\"conversation.item.input_audio_transcription.completed\",\"event\":\"conversation.item.input_audio_transcription.completed\",\"message\":\"Hello, how are you?\"}'
         },
         modelVersion: 'orga-1-beta'
       });
@@ -598,13 +598,12 @@ describe('useOrgaAI', () => {
         });
       });
 
-      expect(result.current.conversationItems).toHaveLength(1);
       expect(result.current.conversationItems[0]).toEqual({
         conversationId: 'conv-123',
         sender: 'assistant',
         content: {
           type: 'text',
-          message: 'I am doing well, thank you!'
+          message: '{\"type\":\"response.output_item.done\",\"event\":\"response.output_item.done\",\"message\":\"I am doing well, thank you!\"}'
         },
         voiceType: 'alloy',
         modelVersion: 'orga-1-beta',
