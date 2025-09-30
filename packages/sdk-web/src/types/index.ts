@@ -42,7 +42,7 @@ export interface OrgaAIConfig {
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
-  // history?: boolean; //TODO: Add history support
+  history?: boolean; 
 }
 
 export type IceCandidateEvent = {
@@ -83,7 +83,9 @@ export interface MediaConstraints {
 export type ConnectionState = RTCPeerConnection["connectionState"];
 
 export interface DataChannelEvent {
-  event: string;
+  type: string;
+  transcript?: string;
+  text?: string;
   message?: string;
   [key: string]: any;
 }
@@ -129,7 +131,6 @@ export interface OrgaAIHookReturn {
   toggleCamera: () => Promise<void>;
 
   // State
-  peerConnection: RTCPeerConnection | null; // for custom datachannel creations and advanced use cases
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
   userVideoStream: MediaStream | null;
