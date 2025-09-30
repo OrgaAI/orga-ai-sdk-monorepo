@@ -554,8 +554,8 @@ describe('useOrgaAI', () => {
 
       // Simulate data channel message
       const transcriptionEvent = {
-        event: DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION,
-        message: 'Hello, how are you?'
+        type: DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION,
+        transcript: 'Hello, how are you?'
       };
 
       await act(async () => {
@@ -587,8 +587,8 @@ describe('useOrgaAI', () => {
 
       // Simulate data channel message
       const responseEvent = {
-        event: DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE,
-        message: 'I am doing well, thank you!'
+        type: DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE,
+        text: 'I am doing well, thank you!'
       };
 
       await act(async () => {

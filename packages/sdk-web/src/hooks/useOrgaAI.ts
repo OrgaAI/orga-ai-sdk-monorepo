@@ -32,7 +32,6 @@ export function useOrgaAI(
   const conversationIdRef = useRef<string | null>(null);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const currentConfigRef = useRef<SessionConfig>({});
 
@@ -176,7 +175,6 @@ export function useOrgaAI(
         logger.debug("🔄 Closing peer connection");
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
-        setPeerConnection(null);
       }
     } catch (e) {
       logger.error("❌ Error closing peer connection", e);
@@ -246,9 +244,9 @@ export function useOrgaAI(
       dc.addEventListener("message", (event) => {
         try {
           const dataChannelEvent = JSON.parse(event.data as string) as DataChannelEvent;
-          logger.debug("📨 Data channel message received:", dataChannelEvent.event);
+          logger.debug("📨 Data channel message received:", dataChannelEvent.type);
           
-          if (dataChannelEvent.event === DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION) {
+          if (dataChannelEvent.type === DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION) {
             const currentConversationId = conversationIdRef.current || conversationId;
             logger.debug("🎤 Processing user speech transcription");
             if (currentConversationId) {
@@ -257,7 +255,7 @@ export function useOrgaAI(
                 sender: "user",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: dataChannelEvent.transcript || dataChannelEvent.text || dataChannelEvent.message || "",
                 },
                 modelVersion: model,
               };
@@ -267,7 +265,7 @@ export function useOrgaAI(
             }
           }
 
-          if (dataChannelEvent.event === DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE) {
+          if (dataChannelEvent.type === DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE) {
             const currentConversationId = conversationIdRef.current || conversationId;
             logger.debug("🤖 Processing assistant response");
             if (currentConversationId) {
@@ -276,7 +274,7 @@ export function useOrgaAI(
                 sender: "assistant",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: dataChannelEvent.text || dataChannelEvent.message || "",
                 },
                 voiceType: voice,
                 modelVersion: model,
@@ -364,7 +362,6 @@ export function useOrgaAI(
 
       const pc = await buildPeerConnection(iceServers);
       peerConnectionRef.current = pc;
-      setPeerConnection(pc);
 
       logger.debug("📝 Creating offer");
       const offer = await pc.createOffer({
@@ -767,7 +764,6 @@ export function useOrgaAI(
     toggleCamera,
 
     // State
-    peerConnection,
     connectionState,
     aiAudioStream,
     userVideoStream,

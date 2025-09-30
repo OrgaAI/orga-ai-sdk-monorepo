@@ -46,6 +46,7 @@ export interface OrgaAIConfig {
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
+  history?: boolean;
 }
 
 export type CameraPosition = "front" | "back";
@@ -138,7 +139,6 @@ export interface OrgaAIHookReturn {
   // requestPermissions: () => Promise<void>; //TODO: Review this
 
   // State
-  peerConnection: RTCPeerConnection | null; // for custom datachannel creations and advanced use cases
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
   userVideoStream: MediaStream | null;
