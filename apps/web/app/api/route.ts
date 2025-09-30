@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 const REALTIME_USER_TOKEN = process.env.REALTIME_USER_TOKEN;
 
 const fetchIceServers = async (ephemeralToken: string) => {
-    const URL = `https://staging.orga-ai.com/ice-config`;
+    const URL = `https://api.orga-ai.com/v1/realtime/ice-config`;
     try {
       const iceServersResponse = await fetch(URL, {
         method: "GET",
@@ -23,7 +23,7 @@ const fetchIceServers = async (ephemeralToken: string) => {
   };
 
 export const GET = async () => {
-    const apiUrl = `https://staging.orga-ai.com/ephemeral-token?email=${encodeURIComponent("austin@orga-ai.com")}`;
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent("austin@orga-ai.com")}`;
     const ephemeralResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {

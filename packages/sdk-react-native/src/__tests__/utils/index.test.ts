@@ -185,7 +185,8 @@ describe('Utils', () => {
       temperature: 0.7,
       enableTranscriptions: true,
       instructions: 'Test instructions',
-      modalities: ['audio', 'video'] as Modality[]
+      modalities: ['audio', 'video'] as Modality[],
+      history: true
     };
 
     beforeEach(() => {
@@ -214,7 +215,7 @@ describe('Utils', () => {
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        'https://staging.orga-ai.com/realtime',
+        'https://api.orga-ai.com/v1/realtime/calls',
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -259,6 +260,7 @@ describe('Utils', () => {
       expect(requestBody.params.return_transcription).toBe(false);
       expect(requestBody.params.instructions).toBe(null);
       expect(requestBody.params.modalities).toEqual(['audio', 'video']);
+      expect(requestBody.params.history).toBe(true);
     });
 
     it('should throw error on non-ok response', async () => {
