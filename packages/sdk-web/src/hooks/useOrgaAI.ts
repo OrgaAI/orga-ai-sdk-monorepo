@@ -47,14 +47,8 @@ export function useOrgaAI(
   const [instructions, setInstructions] = useState<string | null>(null);
   const [modalities, setModalities] = useState<Modality[]>([]);
 
-  const {
-    onSessionStart,
-    onSessionEnd,
-    onSessionConnected,
-    onError,
-    onConnectionStateChange,
-    onConversationMessageCreated,
-  } = callbacks;
+  // Use a ref to store current callbacks so they can be updated
+  const callbacksRef = useRef(callbacks);
 
   // Function to send updated parameters to the session
   const sendUpdatedParams = useCallback(() => {
@@ -178,7 +172,7 @@ export function useOrgaAI(
       }
     } catch (e) {
       logger.error("❌ Error closing peer connection", e);
-      onError?.(e as Error);
+      callbacksRef.current.onError?.(e as Error);
     }
 
     try {
@@ -245,6 +239,16 @@ export function useOrgaAI(
         try {
           const dataChannelEvent = JSON.parse(event.data as string) as DataChannelEvent;
           logger.debug("📨 Data channel message received:", dataChannelEvent.type);
+
+          if (dataChannelEvent.type === DataChannelEventTypes.SESSION_CREATED) {
+            logger.debug("🆔 Session created");
+            callbacksRef.current.onSessionCreated?.(dataChannelEvent as any);
+          }
+
+          if (dataChannelEvent.type === DataChannelEventTypes.CONVERSATION_CREATED) {
+            logger.debug("💬 Conversation created");
+            callbacksRef.current.onConversationCreated?.(dataChannelEvent as any);
+          }
           
           if (dataChannelEvent.type === DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION) {
             const currentConversationId = conversationIdRef.current || conversationId;
@@ -261,7 +265,7 @@ export function useOrgaAI(
               };
               logger.debug("💬 Creating user conversation item:", conversationItem);
               setConversationItems((prev) => [...prev, conversationItem]);
-              onConversationMessageCreated?.(conversationItem);
+              callbacksRef.current.onConversationMessageCreated?.(conversationItem);
             }
           }
 
@@ -282,12 +286,12 @@ export function useOrgaAI(
               };
               logger.debug("💬 Creating assistant conversation item:", conversationItem);
               setConversationItems((prev) => [...prev, conversationItem]);
-              onConversationMessageCreated?.(conversationItem);
+              callbacksRef.current.onConversationMessageCreated?.(conversationItem);
             }
           }
         } catch (error) {
           logger.error("❌ Error parsing data channel message:", error);
-          onError?.(new Error(`Failed to parse data channel message: ${error}`));
+          callbacksRef.current.onError?.(new Error(`Failed to parse data channel message: ${error}`));
         }
       });
       
@@ -406,12 +410,12 @@ export function useOrgaAI(
         setConnectionState(newState);
         
         if (newState === "connected") {
-          onSessionConnected?.();
+          callbacksRef.current.onSessionConnected?.();
         } else if (newState === "failed" || newState === "disconnected") {
           logger.warn("⚠️ Connection lost, cleaning up...");
           cleanup();
         }
-        onConnectionStateChange?.(newState);
+        callbacksRef.current.onConnectionStateChange?.(newState);
       });
       
       pc.addEventListener("iceconnectionstatechange", () => {
@@ -422,7 +426,7 @@ export function useOrgaAI(
         }
       });
       
-      onSessionStart?.();
+      callbacksRef.current.onSessionStart?.();
     } catch (error) {
       // Improve error message for better debugging
       let errorMessage = "Failed to connect";
@@ -438,10 +442,10 @@ export function useOrgaAI(
       logger.error("❌", errorMessage, error);
       setConnectionState("failed");
       setConversationId(null);
-      onError?.(error as Error);
+      callbacksRef.current.onError?.(error as Error);
       throw error;
     }
-  }, [buildPeerConnection, onSessionStart, onError]);
+  }, [buildPeerConnection]);
 
   // Start session
   const startSession = useCallback(
@@ -461,19 +465,23 @@ export function useOrgaAI(
         }
 
         const sessionCallbacks = {
-          onSessionStart: config.onSessionStart || callbacks.onSessionStart,
-          onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
-          onError: config.onError || callbacks.onError,
+          onSessionStart: config.onSessionStart || callbacksRef.current.onSessionStart,
+          onSessionEnd: config.onSessionEnd || callbacksRef.current.onSessionEnd,
+          onError: config.onError || callbacksRef.current.onError,
           onConnectionStateChange:
-            config.onConnectionStateChange || callbacks.onConnectionStateChange,
+            config.onConnectionStateChange || callbacksRef.current.onConnectionStateChange,
           onSessionConnected:
-            config.onSessionConnected || callbacks.onSessionConnected,
+            config.onSessionConnected || callbacksRef.current.onSessionConnected,
           onConversationMessageCreated:
             config.onConversationMessageCreated ||
-            callbacks.onConversationMessageCreated,
+            callbacksRef.current.onConversationMessageCreated,
+          onSessionCreated: config.onSessionCreated || callbacksRef.current.onSessionCreated,
+          onConversationCreated: config.onConversationCreated || callbacksRef.current.onConversationCreated,
         };
 
-        Object.assign(callbacks, sessionCallbacks);
+        // Update the callbacks ref with session-specific callbacks
+        callbacksRef.current = { ...callbacksRef.current, ...sessionCallbacks };
+        
 
         currentConfigRef.current = config;
         setConnectionState("connecting");
@@ -488,7 +496,7 @@ export function useOrgaAI(
         if (error instanceof ConfigurationError || error instanceof SessionError) {
           logger.error("❌", error.message, error);
           setConnectionState("failed");
-          onError?.(error as Error);
+          callbacksRef.current.onError?.(error as Error);
           throw error;
         }
 
@@ -505,7 +513,7 @@ export function useOrgaAI(
         }
         logger.error("❌", errorMessage, error);
         setConnectionState("failed");
-        onError?.(error as Error);
+        callbacksRef.current.onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
       }
     },
@@ -513,8 +521,6 @@ export function useOrgaAI(
       connectionState,
       initializeMedia,
       connect,
-      onError,
-      callbacks,
     ]
   );
 
@@ -554,12 +560,12 @@ export function useOrgaAI(
 
       await cleanup();
       setConnectionState("closed");
-      onSessionEnd?.();
+      callbacksRef.current.onSessionEnd?.();
     } catch (error) {
       logger.error("❌ Error ending session:", error);
-      onError?.(error as Error);
+      callbacksRef.current.onError?.(error as Error);
     }
-  }, [userVideoStream, userAudioStream, cleanup, onSessionEnd, onError]);
+  }, [userVideoStream, userAudioStream, cleanup]);
 
   // Mic Controls
   const enableMic = useCallback(async () => {

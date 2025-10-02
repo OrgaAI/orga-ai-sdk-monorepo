@@ -9,7 +9,9 @@ import {
   OrgaAIModel,
   OrgaAIVoice,
   ConnectionState,
-  ConversationItem
+  ConversationItem,
+  SessionCreatedEvent,
+  ConversationCreatedEvent
 } from "@orga-ai/react";
 import { Label } from "@/components/ui/label";
 import {
@@ -456,6 +458,12 @@ export default function Home() {
                       },
                       onConnectionStateChange: (state: ConnectionState) => {
                         console.log("Connection state changed:", state);
+                      },
+                      onSessionCreated: (event: SessionCreatedEvent) => {
+                        console.log("Session created:", event);
+                      },
+                      onConversationCreated: (event: ConversationCreatedEvent) => {
+                        console.log("Conversation created:", event);
                       },
                     })
               }
