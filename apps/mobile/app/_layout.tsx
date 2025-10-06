@@ -12,7 +12,7 @@ import { TouchableOpacity } from "react-native";
 import { TranscriptionProvider, useTranscription } from "@/context/TranscriptionContext";
 
 OrgaAI.init({
-  fetchEphemeralTokenAndIceServers,
+  fetchSessionConfig: fetchEphemeralTokenAndIceServers,
   logLevel: "debug",
   enableTranscriptions: true,
   model: "orga-1-beta",

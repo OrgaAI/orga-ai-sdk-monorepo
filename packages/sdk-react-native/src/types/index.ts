@@ -46,6 +46,7 @@ export interface OrgaAIConfig {
   enableTranscriptions?: boolean;
   instructions?: string;
   modalities?: Modality[];
+  history?: boolean;
 }
 
 export type CameraPosition = "front" | "back";
@@ -73,6 +74,8 @@ export interface SessionConfig {
     state: RTCPeerConnection["connectionState"]
   ) => void;
   onSessionConnected?: () => void;
+  onSessionCreated?: (event: SessionCreatedEvent) => void;
+  onConversationCreated?: (event: ConversationCreatedEvent) => void;
   onConversationMessageCreated?: (item: ConversationItem) => void;
 }
 
@@ -93,11 +96,33 @@ export interface DataChannelEvent {
   message?: string;
   [key: string]: any;
 }
+export interface SessionCreatedEvent {
+  type: "session.created";
+  session: {
+    id: string;
+    instructions: string | null;
+    modalities: Modality[];
+    model: OrgaAIModel;
+    object: "realtime.session";
+    return_transcription: boolean;
+    temperature: number;
+    voice: OrgaAIVoice;
+  };
+}
+
+export interface ConversationCreatedEvent {
+  type: "conversation.created";
+  conversation: {
+    id: string;
+  };
+}
 
 export enum DataChannelEventTypes {
   USER_SPEECH_TRANSCRIPTION = "conversation.item.input_audio_transcription.completed",
   ASSISTANT_RESPONSE_COMPLETE = "response.output_item.done",
   SESSION_UPDATE = "session.update",
+  SESSION_CREATED = "session.created",
+  CONVERSATION_CREATED = "conversation.created",
 }
 
 export interface ConversationItem {
@@ -119,6 +144,8 @@ export interface OrgaAIHookCallbacks {
   onError?: (error: Error) => void;
   onConnectionStateChange?: (state: ConnectionState) => void;
   onConversationMessageCreated?: (item: ConversationItem) => void;
+  onSessionCreated?: (event: SessionCreatedEvent) => void;
+  onConversationCreated?: (event: ConversationCreatedEvent) => void;
 }
 
 export interface OrgaAIHookReturn {
@@ -140,6 +167,7 @@ export interface OrgaAIHookReturn {
   // State
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
+  userAudioStream: MediaStream | null; // User's microphone audio stream for visualization and analysis
   userVideoStream: MediaStream | null;
   conversationItems: ConversationItem[];
   isCameraOn: boolean;

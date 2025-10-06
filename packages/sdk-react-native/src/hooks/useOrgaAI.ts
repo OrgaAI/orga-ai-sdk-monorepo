@@ -82,14 +82,8 @@ export function useOrgaAI(
   const [instructions, setInstructions] = useState<string | null>(null);
   const [modalities, setModalities] = useState<Modality[]>([]);
 
-  const {
-    onSessionStart,
-    onSessionEnd,
-    onError,
-    onConnectionStateChange,
-    onSessionConnected,
-    onConversationMessageCreated,
-  } = callbacks;
+  // Use a ref to store current callbacks so they can be updated
+  const callbacksRef = useRef(callbacks);
 
   // Function to send updated parameters to the session
   const sendUpdatedParams = useCallback(() => {
@@ -338,11 +332,11 @@ export function useOrgaAI(
           ) as DataChannelEvent;
           logger.debug(
             "📨 Data channel message received:",
-            dataChannelEvent.event
+            dataChannelEvent.type
           );
 
           if (
-            dataChannelEvent.event ===
+            dataChannelEvent.type ===
             DataChannelEventTypes.USER_SPEECH_TRANSCRIPTION
           ) {
             const currentConversationId =
@@ -354,7 +348,7 @@ export function useOrgaAI(
                 sender: "user",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: dataChannelEvent.transcript || dataChannelEvent.text || dataChannelEvent.message || "",
                 },
                 modelVersion: model,
               };
@@ -363,12 +357,12 @@ export function useOrgaAI(
                 conversationItem
               );
               setConversationItems((prev) => [...prev, conversationItem]);
-              onConversationMessageCreated?.(conversationItem);
+              callbacksRef.current.onConversationMessageCreated?.(conversationItem);
             }
           }
 
           if (
-            dataChannelEvent.event ===
+            dataChannelEvent.type ===
             DataChannelEventTypes.ASSISTANT_RESPONSE_COMPLETE
           ) {
             const currentConversationId =
@@ -380,7 +374,7 @@ export function useOrgaAI(
                 sender: "assistant",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.message || "",
+                  message: dataChannelEvent.text || dataChannelEvent.message || "",
                 },
                 voiceType: voice,
                 modelVersion: model,
@@ -391,12 +385,22 @@ export function useOrgaAI(
                 conversationItem
               );
               setConversationItems((prev) => [...prev, conversationItem]);
-              onConversationMessageCreated?.(conversationItem);
+              callbacksRef.current.onConversationMessageCreated?.(conversationItem);
             }
+          }
+
+          if (dataChannelEvent.type === DataChannelEventTypes.SESSION_CREATED) {
+            logger.debug("🆔 Session created");
+            callbacksRef.current.onSessionCreated?.(dataChannelEvent as any);
+          }
+
+          if (dataChannelEvent.type === DataChannelEventTypes.CONVERSATION_CREATED) {
+            logger.debug("💬 Conversation created");
+            callbacksRef.current.onConversationCreated?.(dataChannelEvent as any);
           }
         } catch (error) {
           logger.error("❌ Error parsing data channel message:", error);
-          onError?.(
+          callbacksRef.current.onError?.(
             new Error(`Failed to parse data channel message: ${error}`)
           );
         }
@@ -519,12 +523,12 @@ export function useOrgaAI(
         setConnectionState(newState);
 
         if (newState === "connected") {
-          onSessionConnected?.();
+          callbacksRef.current.onSessionConnected?.();
         } else if (newState === "failed" || newState === "disconnected") {
           logger.warn("⚠️ Connection lost, cleaning up...");
           cleanup();
         }
-        onConnectionStateChange?.(newState);
+        callbacksRef.current.onConnectionStateChange?.(newState);
       });
 
       pc.addEventListener("iceconnectionstatechange", () => {
@@ -535,7 +539,7 @@ export function useOrgaAI(
         }
       });
 
-      onSessionStart?.();
+      callbacksRef.current.onSessionStart?.();
       InCallManager.start({ media: "video" });
     } catch (error) {
       // Improve error message for better debugging
@@ -552,10 +556,10 @@ export function useOrgaAI(
       logger.error("❌", errorMessage, error);
       setConnectionState("failed");
       setConversationId(null);
-      onError?.(error as Error);
+      callbacksRef.current.onError?.(error as Error);
       throw error;
     }
-  }, [buildPeerConnection, onSessionStart, onError]);
+  }, [buildPeerConnection]);
 
   // Start session
   const startSession = useCallback(
@@ -576,19 +580,22 @@ export function useOrgaAI(
 
         // Extract callbacks from config and merge with existing callbacks
         const sessionCallbacks = {
-          onSessionStart: config.onSessionStart || callbacks.onSessionStart,
-          onSessionEnd: config.onSessionEnd || callbacks.onSessionEnd,
-          onError: config.onError || callbacks.onError,
+          onSessionStart: config.onSessionStart || callbacksRef.current.onSessionStart,
+          onSessionEnd: config.onSessionEnd || callbacksRef.current.onSessionEnd,
+          onError: config.onError || callbacksRef.current.onError,
           onConnectionStateChange:
-            config.onConnectionStateChange || callbacks.onConnectionStateChange,
+            config.onConnectionStateChange || callbacksRef.current.onConnectionStateChange,
           onSessionConnected:
-            config.onSessionConnected || callbacks.onSessionConnected,
+            config.onSessionConnected || callbacksRef.current.onSessionConnected,
           onConversationMessageCreated:
             config.onConversationMessageCreated ||
-            callbacks.onConversationMessageCreated,
+            callbacksRef.current.onConversationMessageCreated,
+          onSessionCreated: config.onSessionCreated || callbacksRef.current.onSessionCreated,
+          onConversationCreated: config.onConversationCreated || callbacksRef.current.onConversationCreated,
         };
 
-        Object.assign(callbacks, sessionCallbacks);
+        // Update the callbacks ref with session-specific callbacks
+        callbacksRef.current = { ...callbacksRef.current, ...sessionCallbacks };
 
         currentConfigRef.current = config;
         setConnectionState("connecting");
@@ -613,16 +620,14 @@ export function useOrgaAI(
         }
         logger.error("❌", errorMessage, error);
         setConnectionState("failed");
-        onError?.(error as Error);
+        callbacksRef.current.onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
       }
     },
     [
       connectionState,
       connect,
-      onError,
-      callbacks,
-      initializeParams, //Needed ?
+      initializeParams,
       // requestPermissions,
     ]
   );
@@ -650,12 +655,12 @@ export function useOrgaAI(
 
       await cleanup();
       setConnectionState("closed");
-      onSessionEnd?.();
+      callbacksRef.current.onSessionEnd?.();
     } catch (error) {
       logger.error("❌ Error ending session:", error);
-      onError?.(error as Error);
+      callbacksRef.current.onError?.(error as Error);
     }
-  }, [userVideoStream, userAudioStream, cleanup, onSessionEnd, onError]);
+  }, [userVideoStream, userAudioStream, cleanup]);
 
   // Mic Controls
   const enableMic = useCallback(async () => {
@@ -939,6 +944,7 @@ export function useOrgaAI(
     // State
     connectionState,
     aiAudioStream,
+    userAudioStream,
     userVideoStream,
     conversationItems,
     isCameraOn,

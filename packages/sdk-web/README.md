@@ -31,6 +31,7 @@ Create a `.env.local` file in your project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
+USER_EMAIL=john@example.com
 ```
 
 > **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
@@ -79,7 +80,7 @@ export const GET = async () => {
     );
   }
 
-  const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
+  const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent(USER_EMAIL)}`;
   const clientSecrets = await fetch(apiUrl, {
     method: "POST",
     headers: {
@@ -113,13 +114,13 @@ import { OrgaAI, OrgaAIProvider } from '@orga-ai/react';
 
 OrgaAI.init({
   logLevel: 'debug',
-  sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
-  // OR use fetchSessionConfig for custom implementation:
-  // fetchSessionConfig: async () => {
-  //   const response = await fetch('/api/orga-client-secrets');
-  //   const { ephemeralToken, iceServers } = await response.json();
-  //   return { ephemeralToken, iceServers };
-  // },
+  // OR use sessionConfigEndpoint for external backend endpoint:
+  // sessionConfigEndpoint: 'https://your-backend.com/api/orga-client-secrets',
+  fetchSessionConfig: async () => {
+    const response = await fetch('/api/orga-client-secrets');
+    const { ephemeralToken, iceServers } = await response.json();
+    return { ephemeralToken, iceServers };
+  },
   model: 'orga-1-beta',
   voice: 'alloy',
 });
@@ -164,6 +165,7 @@ export default function Home() {
     startSession,
     endSession,
     userVideoStream,
+    userAudioStream,
     aiAudioStream,
     connectionState,
     isCameraOn,
@@ -358,6 +360,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 | `model`                         | `OrgaAIModel` | Model to use (see SDK for allowed values).                                                 | —            | No        |
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
+| `history`                       | `boolean` | Whether to include conversation history for context. Defaults to `true`.                    | `true`       | No        |
 
 > **Note:** Either `sessionConfigEndpoint` **or** `fetchSessionConfig` is required.
 
@@ -377,6 +380,7 @@ OrgaAI.init({
   model: 'orga-1-beta',
   voice: 'alloy',
   temperature: 0.7,
+  history: true,
 });
 ```
 
@@ -389,6 +393,7 @@ OrgaAI.init({
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
+- **history:** Whether to include conversation history for context. When `true`, the backend includes previous interactions in the conversation context.
 
 ---
 
@@ -469,6 +474,8 @@ You can also pass callbacks to handle session events:
 | `onSessionStart`                | `() => void` | Called when the session starts successfully.                                           |
 | `onSessionEnd`                  | `() => void` | Called when the session ends (either manually or due to error).                      |
 | `onSessionConnected`            | `() => void` | Called when the WebRTC connection is established.                                     |
+| `onSessionCreated`              | `(event: SessionCreatedEvent) => void` | Called when a new session is created on the backend. |
+| `onConversationCreated`         | `(event: ConversationCreatedEvent) => void` | Called when a new conversation is created on the backend. |
 | `onError`                       | `(error: Error) => void` | Called when an error occurs during the session.                                    |
 | `onConnectionStateChange`       | `(state: ConnectionState) => void` | Called when the connection state changes (connecting, connected, failed, etc.). |
 | `onConversationMessageCreated`  | `(item: ConversationItem) => void` | Called when a new conversation message is created (user speech or AI response). |
@@ -502,6 +509,12 @@ const handleStartSession = async () => {
     },
     onConversationMessageCreated: (item) => {
       console.log('New message:', item);
+    },
+    onSessionCreated: (event) => {
+      console.log('Session created:', event.session.id);
+    },
+    onConversationCreated: (event) => {
+      console.log('Conversation created:', event.conversation.id);
     },
   });
 };
@@ -597,6 +610,7 @@ const handleStartSession = async () => {
       // State
       connectionState: ConnectionState;
       aiAudioStream: MediaStream | null; // AI audio response
+      userAudioStream: MediaStream | null; // User's microphone audio stream
       userVideoStream: MediaStream | null; // Camera preview
       conversationItems: ConversationItem[];
       isCameraOn: boolean;

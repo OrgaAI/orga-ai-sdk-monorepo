@@ -108,8 +108,9 @@ export const connectToRealtime = async ({
     enableTranscriptions,
     instructions,
     modalities,
+    history,
   } = config;
-  const realtimeUrl = "https://staging.orga-ai.com/realtime";
+  const realtimeUrl = "https://api.orga-ai.com/v1/realtime/calls";
   logger.debug(
     `[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`
   );
@@ -119,7 +120,7 @@ export const connectToRealtime = async ({
   logger.debug(`[OrgaAI] Enable Transcriptions: ${enableTranscriptions}`);
   logger.debug(`[OrgaAI] Instructions: ${instructions}`);
   logger.debug(`[OrgaAI] Modalities: ${modalities}`);
-
+  logger.debug(`[OrgaAI] History: ${history}`);
   const requestBody = {
     offer: {
       sdp: peerConnection.localDescription?.sdp,
@@ -133,7 +134,7 @@ export const connectToRealtime = async ({
       return_transcription: enableTranscriptions || false,
       instructions: instructions || null,
       modalities: modalities || ["audio", "video"],
-      // history: history || false,
+      history: history || true,
     },
   };
 
@@ -154,6 +155,7 @@ export const connectToRealtime = async ({
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      logger.debug("ERROR CONNECTING TO REALTIME", response);
       throw new Error(`Failed to connect to realtime: ${response.status} ${response.statusText}`);
     }
 

@@ -3,6 +3,8 @@ import {
   OrgaAICameraView,
   useOrgaAI,
   OrgaAIControls,
+  ConversationCreatedEvent,
+  SessionCreatedEvent,
 } from "@orga-ai/react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -131,7 +133,14 @@ export default function HomeScreen() {
             connectionState={connectionState}
             isCameraOn={isCameraOn}
             isMicOn={isMicOn}
-            onStartSession={startSession}
+            onStartSession={() => startSession({
+              onSessionCreated: (event: SessionCreatedEvent) => {
+                console.log("Session created:", event);
+              },
+              onConversationCreated: (event: ConversationCreatedEvent) => {
+                console.log("Conversation created:", event);
+              },
+            })}
             onEndSession={endSession}
             onToggleCamera={toggleCamera}
             onToggleMic={toggleMic}
