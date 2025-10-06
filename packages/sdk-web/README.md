@@ -165,6 +165,7 @@ export default function Home() {
     startSession,
     endSession,
     userVideoStream,
+    userAudioStream,
     aiAudioStream,
     connectionState,
     isCameraOn,
@@ -609,6 +610,7 @@ const handleStartSession = async () => {
       // State
       connectionState: ConnectionState;
       aiAudioStream: MediaStream | null; // AI audio response
+      userAudioStream: MediaStream | null; // User's microphone audio stream
       userVideoStream: MediaStream | null; // Camera preview
       conversationItems: ConversationItem[];
       isCameraOn: boolean;

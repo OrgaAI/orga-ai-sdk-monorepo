@@ -160,6 +160,7 @@ export interface OrgaAIHookReturn {
   // State
   connectionState: ConnectionState;
   aiAudioStream: MediaStream | null;
+  userAudioStream: MediaStream | null; // User's microphone audio stream for visualization and analysis
   userVideoStream: MediaStream | null;
   conversationItems: ConversationItem[];
   isCameraOn: boolean;

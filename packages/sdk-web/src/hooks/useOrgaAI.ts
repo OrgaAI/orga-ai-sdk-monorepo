@@ -772,6 +772,7 @@ export function useOrgaAI(
     // State
     connectionState,
     aiAudioStream,
+    userAudioStream,
     userVideoStream,
     conversationItems,
     isCameraOn,

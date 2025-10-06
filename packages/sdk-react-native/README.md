@@ -299,6 +299,8 @@ import {
 export default function HomeScreen() {
   const {
     userVideoStream,
+    userAudioStream,
+    aiAudioStream,
     connectionState,
     isMicOn,
     isCameraOn,
@@ -794,7 +796,7 @@ const handleStartSession = async () => {
     ```
   - _Returns:_
     - `startSession`, `endSession`, `enableMic`, `disableMic`, `toggleMic`, `enableCamera`, `disableCamera`, `toggleCamera`, `requestPermissions`, `initializeMedia`, `connect`, `cleanup`
-    - State: `connectionState`, `localStream`, `remoteStream`, `transcriptions`, `cameraPosition`, `isCameraOn`, `isMicOn`, `videoStream`, `audioStream`, `conversationId`, `hasPermissions`
+    - State: `connectionState`, `userVideoStream`, `userAudioStream`, `aiAudioStream`, `transcriptions`, `cameraPosition`, `isCameraOn`, `isMicOn`, `conversationId`, `hasPermissions`
   - _Usage:_
     ```tsx
     const { startSession, endSession, videoStream } = useOrgaAI();
