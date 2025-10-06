@@ -76,6 +76,7 @@ If using Expo API Routes, create a `.env` file in your Expo project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
+USER_EMAIL=john@example.com
 ```
 
 > **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
@@ -127,12 +128,15 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export async function GET(request: Request) {
+  if (!USER_EMAIL) {
+    return Response.json({error: "Missing Email"}, { status: 500 });
+  }
   if (!ORGA_API_KEY) {
     return Response.json({error: "Missing API key"}, { status: 500 });
   }
 
   try {
-    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent(USER_EMAIL)}`
     const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -295,6 +299,8 @@ import {
 export default function HomeScreen() {
   const {
     userVideoStream,
+    userAudioStream,
+    aiAudioStream,
     connectionState,
     isMicOn,
     isCameraOn,
@@ -552,6 +558,7 @@ The `OrgaAI.init(config)` method accepts the following options:
 | `model`                         | `OrgaAIModel` | Model to use (see SDK for allowed values).                                                 | —            | No        |
 | `voice`                         | `OrgaAIVoice` | Voice to use (see SDK for allowed values).                                                 | —            | No        |
 | `temperature`                   | `number`  | Sampling temperature (randomness). Must be between allowed min/max.                         | —            | No        |
+| `history`                       | `boolean` | Whether to include conversation history for context. Defaults to `true`.                    | `true`       | No        |
 | `maxTokens`                     | `number`  | Maximum tokens for responses. Must be between 100 and 1000.                                 | —            | No        |
 
 > **Note:** Either `sessionConfigEndpoint` **or** `fetchSessionConfig` is required.
@@ -572,6 +579,7 @@ OrgaAI.init({
   model: 'orga-1-beta',
   voice: 'alloy',
   temperature: 0.7,
+  history: true,
   maxTokens: 500,
 });
 ```
@@ -585,6 +593,7 @@ OrgaAI.init({
 - **model:** The AI model to use. See SDK for allowed values.
 - **voice:** The voice to use for audio output. See SDK for allowed values.
 - **temperature:** Controls randomness in AI responses. Must be within allowed range.
+- **history:** Whether to include conversation history for context. When `true`, the backend includes previous interactions in the conversation context.
 - **maxTokens:** Maximum number of tokens in responses. Must be between 100 and 1000.
 
 ---
@@ -637,6 +646,80 @@ OrgaAI.init({
 - Error handling requirements
 - Dynamic endpoint URLs
 - Request/response transformation needed
+
+---
+
+## Session Configuration
+
+When calling `startSession(config)`, you can pass configuration options that will override the global settings from `OrgaAI.init()`. This allows you to customize each session independently.
+
+### Session Configuration Options
+
+| Option                          | Type      | Description                                                                                 | Default      |
+|----------------------------------|-----------|---------------------------------------------------------------------------------------------|--------------|
+| `enableTranscriptions`          | `boolean` | Whether to return transcription data in the session.                                        | `false`      |
+| `videoQuality`                  | `"low" \| "medium" \| "high"` | Video quality for camera stream.                                                      | `"medium"`   |
+| `timeout`                       | `number`  | Session-specific timeout (overrides global timeout).                                        | Global timeout|
+| `model`                         | `OrgaAIModel` | AI model to use for this session (overrides global model).                           | Global model  |
+| `voice`                         | `OrgaAIVoice` | Voice to use for this session (overrides global voice).                               | Global voice  |
+| `temperature`                   | `number`  | Temperature for this session (overrides global temperature).                               | Global temp   |
+| `instructions`                  | `string`  | Custom instructions for the AI in this session.                                            | —            |
+| `modalities`                    | `Modality[]` | Audio/video modalities for this session (overrides global).                        | Global modalities|
+
+### Session Callbacks
+
+You can also pass callbacks to handle session events:
+
+| Callback                        | Type      | Description                                                                                 |
+|----------------------------------|-----------|---------------------------------------------------------------------------------------------|
+| `onSessionStart`                | `() => void` | Called when the session starts successfully.                                           |
+| `onSessionEnd`                  | `() => void` | Called when the session ends (either manually or due to error).                      |
+| `onSessionConnected`            | `() => void` | Called when the WebRTC connection is established.                                     |
+| `onSessionCreated`              | `(event: SessionCreatedEvent) => void` | Called when a new session is created on the backend. |
+| `onConversationCreated`         | `(event: ConversationCreatedEvent) => void` | Called when a new conversation is created on the backend. |
+| `onError`                       | `(error: Error) => void` | Called when an error occurs during the session.                                    |
+| `onConnectionStateChange`       | `(state: ConnectionState) => void` | Called when the connection state changes (connecting, connected, failed, etc.). |
+| `onConversationMessageCreated`  | `(item: ConversationItem) => void` | Called when a new conversation message is created (user speech or AI response). |
+
+### Example Session Configuration
+
+```tsx
+const { startSession } = useOrgaAI();
+
+const handleStartSession = async () => {
+  await startSession({
+    // Override global settings
+    model: 'orga-1-beta',
+    voice: 'alloy',
+    temperature: 0.8,
+    videoQuality: 'high',
+    enableTranscriptions: true,
+    
+    // Session-specific instructions
+    instructions: 'You are a helpful assistant. Speak clearly and concisely.',
+    
+    // Event callbacks
+    onSessionStart: () => {
+      console.log('Session started!');
+    },
+    onSessionConnected: () => {
+      console.log('Connected to OrgaAI!');
+    },
+    onError: (error) => {
+      console.error('Session error:', error);
+    },
+    onConversationMessageCreated: (item) => {
+      console.log('New message:', item);
+    },
+    onSessionCreated: (event) => {
+      console.log('Session created:', event.session.id);
+    },
+    onConversationCreated: (event) => {
+      console.log('Conversation created:', event.conversation.id);
+    },
+  });
+};
+```
 
 ---
 
@@ -713,7 +796,7 @@ OrgaAI.init({
     ```
   - _Returns:_
     - `startSession`, `endSession`, `enableMic`, `disableMic`, `toggleMic`, `enableCamera`, `disableCamera`, `toggleCamera`, `requestPermissions`, `initializeMedia`, `connect`, `cleanup`
-    - State: `connectionState`, `localStream`, `remoteStream`, `transcriptions`, `cameraPosition`, `isCameraOn`, `isMicOn`, `videoStream`, `audioStream`, `conversationId`, `hasPermissions`
+    - State: `connectionState`, `userVideoStream`, `userAudioStream`, `aiAudioStream`, `transcriptions`, `cameraPosition`, `isCameraOn`, `isMicOn`, `conversationId`, `hasPermissions`
   - _Usage:_
     ```tsx
     const { startSession, endSession, videoStream } = useOrgaAI();
