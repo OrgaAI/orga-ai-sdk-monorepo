@@ -11,16 +11,24 @@ jobs:
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
     steps:
+      - name: Generate token from GitHub App
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # semantic-release needs full history
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Check if relevant files changed
         id: check
         run: |
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-          if echo "$CHANGED_FILES" | grep -q "packages/sdk-react/"; then
+          if echo "$CHANGED_FILES" | grep -q "packages/sdk-web/"; then
             echo "should-run=true" >> $GITHUB_OUTPUT
             echo "React SDK changes detected"
           else
@@ -116,6 +124,13 @@ jobs:
       id-token: write
     
     steps:
+      - name: Generate token from GitHub App
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Log deploy job context
         run: |
           echo "=== Deploy Job Context ==="
@@ -217,7 +232,7 @@ jobs:
           echo "@orga-ai:registry=https://registry.npmjs.org/" >> .npmrc
           npx --no-install semantic-release -e semantic-release-monorepo
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Deployment Summary
