@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@orga-ai/react": "file:../../packages/sdk-web",
+    "@orga-ai/react-test": "file:../../packages/react",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.5",
