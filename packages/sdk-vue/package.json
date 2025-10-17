@@ -1,0 +1,64 @@
+{
+  "name": "@orga-ai/vue",
+  "version": "1.0.0",
+  "description": "Vue SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./lib/index.es.js",
+      "require": "./lib/index.cjs.js",
+      "types": "./lib/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --project tsconfig.json --declaration --emitDeclarationOnly --outDir lib",
+    "clean": "rm -rf dist lib build *.tsbuildinfo",
+    "type-check": "tsc --noEmit --pretty",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "author": "Orga AI",
+  "license": "Proprietary",
+  "homepage": "https://docs.orga-ai.com/version-11/guide/vue-sdk/introduction",
+  "keywords": [
+    "vue",
+    "vue3",
+    "ai",
+    "audio",
+    "video",
+    "webrtc",
+    "orga-ai",
+    "realtime",
+    "multimodal"
+  ],
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "dependencies": {
+    "@orga-ai/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/vue": "^8.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.9",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "eslint": "^9.31.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.1.7",
+    "vue": "^3.0.0"
+  }
+}
