@@ -1,0 +1,18 @@
+# FastAPI and server dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# CORS support
+fastapi-cors==0.0.6
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Our local SDK (we'll install it in development mode)
+-e ../../packages/server/python
+
+# Development dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2

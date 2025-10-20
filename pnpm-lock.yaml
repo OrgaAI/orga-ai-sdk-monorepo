@@ -164,7 +164,7 @@ importers:
     dependencies:
       '@orga-ai/node':
         specifier: file:../../packages/server/node
-        version: link:../../packages/server/node
+        version: file:packages/server/node(node@25.0.0)
       '@orga-ai/react':
         specifier: file:../../packages/sdk-web
         version: link:../../packages/sdk-web
@@ -455,34 +455,6 @@ importers:
         version: 29.4.4(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.4))(esbuild@0.25.10)(jest-util@30.2.0)(jest@29.7.0(@types/node@20.19.18)(ts-node@10.9.2(@types/node@20.19.18)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: ^5.8.3
-        version: 5.8.3
-
-  packages/server/node:
-    dependencies:
-      node:
-        specifier: '>=18.0.0'
-        version: 25.0.0
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.0.0
-        version: 29.5.14
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.18
-      cross-fetch:
-        specifier: ^4.0.0
-        version: 4.1.0
-      jest:
-        specifier: ^29.0.0
-        version: 29.7.0(@types/node@20.19.18)(ts-node@10.9.2(@types/node@20.19.18)(typescript@5.8.3))
-      nock:
-        specifier: ^13.0.0
-        version: 13.5.6
-      ts-jest:
-        specifier: ^29.0.0
-        version: 29.4.4(@babel/core@7.28.4)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.4))(esbuild@0.25.10)(jest-util@30.2.0)(jest@29.7.0(@types/node@20.19.18)(ts-node@10.9.2(@types/node@20.19.18)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript:
-        specifier: ^5.0.0
         version: 5.8.3
 
   packages/typescript-config: {}
@@ -1791,6 +1763,11 @@ packages:
   '@octokit/types@15.0.0':
     resolution: {integrity: sha512-8o6yDfmoGJUIeR9OfYU0/TUJTnMPG2r68+1yEdUeG2Fdqpj8Qetg0ziKIgcBm0RW/j29H41WP37CYCEhp6GoHQ==}
 
+  '@orga-ai/node@file:packages/server/node':
+    resolution: {directory: packages/server/node, type: directory}
+    peerDependencies:
+      node: '>=18.0.0'
+
   '@orga-ai/react-native@file:packages/sdk-react-native':
     resolution: {directory: packages/sdk-react-native, type: directory}
     peerDependencies:
@@ -2616,9 +2593,6 @@ packages:
 
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
-
-  '@types/jest@29.5.14':
-    resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
 
   '@types/jest@30.0.0':
     resolution: {integrity: sha512-XTYugzhuwqWjws0CVz8QpM36+T+Dz5mTEBKhNs/esGLnCIlGdRy+Dq78NRjd7ls7r8BC8ZRMOrKlkO1hU0JOwA==}
@@ -3457,9 +3431,6 @@ packages:
 
   cross-fetch@3.2.0:
     resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
-
-  cross-fetch@4.1.0:
-    resolution: {integrity: sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -5088,9 +5059,6 @@ packages:
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
-  json-stringify-safe@5.0.1:
-    resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
-
   json5@1.0.2:
     resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}
     hasBin: true
@@ -5624,10 +5592,6 @@ packages:
       sass:
         optional: true
 
-  nock@13.5.6:
-    resolution: {integrity: sha512-o2zOYiCpzRqSzPj0Zt/dQ/DqZeYoaQ7TUonc/xUPjCGl9WeHpNbxgVvOquXYAaJzI0M9BXV3HTzG0p8IUAbBTQ==}
-    engines: {node: '>= 10.13'}
-
   node-bin-setup@1.1.4:
     resolution: {integrity: sha512-vWNHOne0ZUavArqPP5LJta50+S8R261Fr5SvGul37HbEDcowvLjwdvd0ZeSr0r2lTSrPxl6okq9QUw8BFGiAxA==}
 
@@ -6154,10 +6118,6 @@ packages:
 
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
-
-  propagate@2.0.1:
-    resolution: {integrity: sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==}
-    engines: {node: '>= 8'}
 
   proto-list@1.2.4:
     resolution: {integrity: sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==}
@@ -9181,6 +9141,10 @@ snapshots:
     dependencies:
       '@octokit/openapi-types': 26.0.0
 
+  '@orga-ai/node@file:packages/server/node(node@25.0.0)':
+    dependencies:
+      node: 25.0.0
+
   '@orga-ai/react-native@file:packages/sdk-react-native(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webrtc@124.0.6(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       react: 19.0.0
@@ -10098,11 +10062,6 @@ snapshots:
   '@types/istanbul-reports@3.0.4':
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
-
-  '@types/jest@29.5.14':
-    dependencies:
-      expect: 29.7.0
-      pretty-format: 29.7.0
 
   '@types/jest@30.0.0':
     dependencies:
@@ -11041,12 +11000,6 @@ snapshots:
   create-require@1.1.1: {}
 
   cross-fetch@3.2.0:
-    dependencies:
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
-
-  cross-fetch@4.1.0:
     dependencies:
       node-fetch: 2.7.0
     transitivePeerDependencies:
@@ -13140,8 +13093,6 @@ snapshots:
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
-  json-stringify-safe@5.0.1: {}
-
   json5@1.0.2:
     dependencies:
       minimist: 1.2.8
@@ -13693,14 +13644,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  nock@13.5.6:
-    dependencies:
-      debug: 4.4.3
-      json-stringify-safe: 5.0.1
-      propagate: 2.0.1
-    transitivePeerDependencies:
-      - supports-color
-
   node-bin-setup@1.1.4: {}
 
   node-emoji@2.2.0:
@@ -14128,8 +14071,6 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-
-  propagate@2.0.1: {}
 
   proto-list@1.2.4: {}
 
