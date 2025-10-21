@@ -589,7 +589,7 @@ export function useOrgaAI(
       setUserAudioStream(null);
     }
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
+      audio: {echoCancellation: true, noiseSuppression: true, autoGainControl: true}, //TODO: Ensure this works as expected
       video: false,
     });
     logger.debug("✅ Microphone stream obtained:", stream.getTracks().map(t => ({ id: t.id, kind: t.kind })));

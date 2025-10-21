@@ -19,6 +19,31 @@ Install the SDK from npm:
 npm install @orga-ai/react
 ```
 
+> **Note:** This package automatically includes `@orga-ai/core` as a dependency, so you don't need to install it separately. The React SDK re-exports all core functionality, giving you access to both React-specific features and the underlying core API.
+
+### Optional: Direct Core Access
+
+If you need to use `@orga-ai/core` directly or require a specific version, you can install it separately:
+
+```sh
+npm install @orga-ai/core
+```
+
+This is typically only needed for advanced use cases or when you need to use core functionality outside of React components.
+
+### Package Architecture
+
+The Orga React SDK is built on top of `@orga-ai/core`, which provides the framework-agnostic foundation:
+
+- **`@orga-ai/core`**: Framework-agnostic core with configuration management, API communication, and platform abstractions
+- **`@orga-ai/react`**: React-specific hooks, components, and context providers
+
+This layered architecture means you get:
+- ✅ **React features**: Hooks, components, and context management
+- ✅ **Core features**: Direct access to the underlying API when needed
+- ✅ **Type safety**: Full TypeScript support across both layers
+- ✅ **Automatic updates**: Core improvements benefit React users automatically
+
 ---
 
 ## Quick Start
@@ -534,6 +559,13 @@ const handleStartSession = async () => {
 ---
 
 ## API Reference
+
+> **Note:** This SDK re-exports all functionality from `@orga-ai/core`, so you can import both React-specific features and core functionality from the same package:
+> 
+> ```tsx
+> import { useOrgaAI, OrgaAIProvider } from '@orga-ai/react';  // React features
+> import { OrgaAI, logger } from '@orga-ai/react';            // Core features (re-exported)
+> ```
 
 ### Components
 
