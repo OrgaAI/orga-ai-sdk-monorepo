@@ -31,11 +31,11 @@ jobs:
             echo "No SDK changes"
           fi
           
-          if echo "$CHANGED_FILES" | grep -q "packages/sdk-web/"; then
-            echo "web-changed=true" >> $GITHUB_OUTPUT
-            echo "Web SDK changes detected"
+          if echo "$CHANGED_FILES" | grep -q "packages/react/"; then
+            echo "react-changed=true" >> $GITHUB_OUTPUT
+            echo "React SDK changes detected"
           else
-            echo "web-changed=false" >> $GITHUB_OUTPUT
+            echo "react-changed=false" >> $GITHUB_OUTPUT
           fi
           
           if echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/"; then
@@ -89,38 +89,38 @@ jobs:
           echo "Checking if packages are accessible:"
           pnpm --filter="@orga-ai/react" list
 
-      - name: Run SDK tests (sdk-web)
+      - name: Run SDK tests (react)
         run: |
-          echo "Testing sdk-web with pnpm exec..."
+          echo "Testing react with pnpm exec..."
           pnpm --filter="@orga-ai/react" exec jest
 
-      - name: Build SDK packages (sdk-web)
+      - name: Build SDK packages (react)
         run: |
-          echo "Building sdk-web with pnpm exec..."
+          echo "Building react with pnpm exec..."
           pnpm --filter="@orga-ai/react" exec tsc --project tsconfig.json
 
       - name: Verify build outputs
         run: |
           echo "=== Verifying build outputs ==="
-          echo "sdk-web lib directory:"
-          ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
-          echo "sdk-web package.json:"
-          ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
+          echo "react lib directory:"
+          ls -la packages/react/lib/ || echo "react lib directory not found"
+          echo "react package.json:"
+          ls -la packages/react/package.json || echo "react package.json not found"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: built-packages-web
           path: |
-            packages/sdk-web/lib/
-            packages/sdk-web/package.json
-            packages/sdk-web/README.md
+            packages/react/lib/
+            packages/react/package.json
+            packages/react/README.md
           retention-days: 1
 
       - name: CI Check
         id: ci-check
         run: |
-          echo "CI phase completed successfully for Web SDK!"
+          echo "CI phase completed successfully for React SDK!"
           echo "success=true" >> $GITHUB_OUTPUT
 
   ci-native:
@@ -250,10 +250,10 @@ jobs:
         run: |
           echo "=== Verifying downloaded artifacts ==="
           if [ "${{ needs.detect-changes.outputs.web-changed }}" == "true" ]; then
-            echo "sdk-web lib directory:"
-            ls -la packages/sdk-web/lib/ || echo "sdk-web lib directory not found"
-            echo "sdk-web package.json:"
-            ls -la packages/sdk-web/package.json || echo "sdk-web package.json not found"
+            echo "react lib directory:"
+            ls -la packages/react/lib/ || echo "react lib directory not found"
+            echo "react package.json:"
+            ls -la packages/react/package.json || echo "react package.json not found"
           fi
           if [ "${{ needs.detect-changes.outputs.native-changed }}" == "true" ]; then
             echo "sdk-react-native lib directory:"
@@ -323,11 +323,11 @@ jobs:
           echo "Testing npm config..."
           npm config list
 
-      - name: Run semantic-release for sdk-web
+      - name: Run semantic-release for react
         if: needs.detect-changes.outputs.web-changed == 'true'
         run: |
-          echo "Running semantic-release for sdk-web..."
-          cd packages/sdk-web
+          echo "Running semantic-release for react..."
+          cd packages/react
           # Set up npm authentication for the package directory
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           echo "@orga-ai:registry=https://registry.npmjs.org/" >> .npmrc

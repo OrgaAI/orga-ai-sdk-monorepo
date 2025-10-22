@@ -9,8 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@orga-ai/react": "file:../../packages/sdk-web",
-    "@orga-ai/react-test": "file:../../packages/react",
+    "@orga-ai/react": "file:../../packages/react",
     "@orga-ai/node": "file:../../packages/server/node",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
