@@ -10,7 +10,7 @@ This monorepo contains the complete Orga SDK ecosystem:
 
 ### 📦 Packages (`packages/`)
 - **`react/`** - React web SDK for browser-based applications
-- **`sdk-react-native/`** - React Native SDK for mobile applications  
+- **`react-native/`** - React Native SDK for mobile applications  
 - **`eslint-config/`** - Shared ESLint configurations
 - **`typescript-config/`** - Shared TypeScript configurations
 
@@ -200,7 +200,7 @@ The monorepo structure allows for efficient SDK development and testing:
 
 1. **SDK Development:**
    ```bash
-   cd packages/react          # or sdk-react-native
+   cd packages/react          # or react-native
    bun run build               # Build the SDK
    ```
 
@@ -227,7 +227,7 @@ The monorepo structure allows for efficient SDK development and testing:
 
 - **Install from npm** for normal usage and integration.
 - **Internal SDK development:** Use the mobile or web example applications to easily test SDK changes.
-1. `cd packages/react` or `cd packages/sdk-react-native`
+1. `cd packages/react` or `cd packages/react-native`
 2. After making changes: `bun run build`  
 3. `cd apps/web` or `cd apps/mobile`
 4. `bun install` incase of any added packages.
