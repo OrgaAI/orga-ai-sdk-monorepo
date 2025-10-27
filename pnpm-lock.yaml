@@ -57,8 +57,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0(expo-font@13.3.2(expo@53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@orga-ai/react-native':
-        specifier: file:../../packages/sdk-react-native
-        version: file:packages/sdk-react-native(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webrtc@124.0.6(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        specifier: file:../../packages/react-native
+        version: file:packages/react-native(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webrtc@124.0.6(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-navigation/bottom-tabs':
         specifier: ^7.3.10
         version: 7.4.7(@react-navigation/native@7.1.17(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-screens@4.11.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -354,8 +354,11 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  packages/sdk-react-native:
+  packages/react-native:
     dependencies:
+      '@orga-ai/core':
+        specifier: workspace:^1.0.0
+        version: link:../core
       react-native-incall-manager:
         specifier: '>=4.2.1'
         version: 4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.16)(react@19.1.1))
@@ -1717,8 +1720,8 @@ packages:
     peerDependencies:
       node: '>=18.0.0'
 
-  '@orga-ai/react-native@file:packages/sdk-react-native':
-    resolution: {directory: packages/sdk-react-native, type: directory}
+  '@orga-ai/react-native@file:packages/react-native':
+    resolution: {directory: packages/react-native, type: directory}
     peerDependencies:
       react: '>=18.0.0'
       react-native: '>=0.78.0'
@@ -9094,8 +9097,9 @@ snapshots:
     dependencies:
       node: 25.0.0
 
-  '@orga-ai/react-native@file:packages/sdk-react-native(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webrtc@124.0.6(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+  '@orga-ai/react-native@file:packages/react-native(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native-webrtc@124.0.6(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
+      '@orga-ai/core': link:packages/core
       react: 19.0.0
       react-native: 0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0)
       react-native-incall-manager: 4.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.0.14)(react@19.0.0))

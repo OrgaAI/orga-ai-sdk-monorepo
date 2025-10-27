@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.austinxorga.orga-sdk-test",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow Orga to access your camera so you can show things to Orga",
-        "NSMicrophoneUsageDescription": "Allow Orga to access your microphone so you can talk to Orga"
+        "NSMicrophoneUsageDescription": "Allow Orga to access your microphone so you can talk to Orga",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
