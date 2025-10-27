@@ -82,7 +82,7 @@ When making changes to the React Native SDK and want to test them in this app:
 
 1. **Build the SDK:**
    ```bash
-   cd packages/sdk-react-native
+   cd packages/react-native
    bun run build
    ```
 
@@ -292,7 +292,7 @@ Add required permissions and plugins:
 
 3. **Build Issues**
    - Clear Expo cache: `bunx expo -c`
-   - Rebuild SDK: `cd packages/sdk-react-native && bun run build`
+   - Rebuild SDK: `cd packages/react-native && bun run build`
    - Check native dependencies: `bunx expo install`
 
 4. **Permission Issues**

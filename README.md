@@ -9,14 +9,17 @@ The Orga SDK enables seamless integration of real-time AI-powered audio and vide
 This monorepo contains the complete Orga SDK ecosystem:
 
 ### 📦 Packages (`packages/`)
-- **`sdk-web/`** - React web SDK for browser-based applications
-- **`sdk-react-native/`** - React Native SDK for mobile applications  
+- **`core/`** - Framework-agnostic core library with shared types, client logic, and utilities
+- **`react/`** - React web SDK for browser-based applications (built on core)
+- **`react-native/`** - React Native SDK for mobile applications (built on core)
+- **`server/`** - Server-side SDKs for Node.js and Python
 - **`eslint-config/`** - Shared ESLint configurations
 - **`typescript-config/`** - Shared TypeScript configurations
 
 ### 🚀 Example Applications (`apps/`)
 - **`web/`** - Next.js playground for testing the web SDK
 - **`mobile/`** - React Native playground for testing the mobile SDK
+- **`python-backend/`** - Python backend example for server-side integration
 
 ### 🎯 Purpose
 - **SDK Development:** Build and test the Orga AI SDKs
@@ -68,45 +71,76 @@ Before installing or publishing, configure your `.npmrc` in the project root:
 Install the SDK from npm. Choose the appropriate package and version based on your needs:
 
 ### Package Selection
+- **`@orga-ai/core`** - Framework-agnostic core library (for SDK developers)
 - **`@orga-ai/react`** - For React web applications
 - **`@orga-ai/react-native`** - For React Native mobile applications
+- **`@orga-ai/node`** - For Node.js server-side applications
+- **`@orga-ai/python`** - For Python server-side applications
 
 ### Version Types
 
 #### Latest Stable Release
 ```sh
+# Core SDK (for developers)
+npm install @orga-ai/core
+
 # React SDK
 npm install @orga-ai/react
 
 # React Native SDK  
 npm install @orga-ai/react-native
+
+# Server SDKs
+npm install @orga-ai/server-node
+pip install orga-ai-server
 ```
 
 #### Alpha/Beta Releases
 ```sh
+# Core SDK alpha
+npm install @orga-ai/core@alpha
+
 # React SDK alpha
 npm install @orga-ai/react@alpha
 
 # React Native SDK beta
 npm install @orga-ai/react-native@beta
+
+# Server SDKs alpha
+npm install @orga-ai/server-node@alpha
+pip install orga-ai-server==0.0.0a1
 ```
 
 #### Specific Test Versions
 ```sh
+# Core SDK test version
+npm install @orga-ai/core@0.0.0-test.1
+
 # React SDK test version
 npm install @orga-ai/react@0.0.0-test.1
 
 # React Native SDK test version
 npm install @orga-ai/react-native@0.0.0-test.5
+
+# Server SDKs test versions
+npm install @orga-ai/server-node@0.0.0-test.1
+pip install orga-ai-server==0.0.0.test.1
 ```
 
 #### Specific Alpha/Beta Versions
 ```sh
+# Core SDK specific alpha version
+npm install @orga-ai/core@0.0.0-alpha.2
+
 # React SDK specific alpha version
 npm install @orga-ai/react@0.0.0-alpha.2
 
 # React Native SDK specific beta version
 npm install @orga-ai/react-native@0.0.0-beta.3
+
+# Server SDKs specific versions
+npm install @orga-ai/server-node@0.0.0-alpha.2
+pip install orga-ai-server==0.0.0a2
 ```
 
 ### Package Managers
@@ -116,6 +150,13 @@ npm install @orga-ai/react
 pnpm add @orga-ai/react
 bun add @orga-ai/react
 ```
+
+For Python server SDK:
+```sh
+pip install orga-ai-server
+```
+
+> **Note:** This monorepo uses `pnpm` for package management [[memory:7276503]].
 
 > **Note:** Make sure your `.npmrc` is configured for private package access if using test/alpha versions.
 
@@ -182,6 +223,32 @@ function MyComponent() {
 
 ---
 
+## Architecture Overview
+
+The Orga SDK monorepo follows a layered architecture with shared core functionality:
+
+### Core Package (`@orga-ai/core`)
+The foundation of all SDKs, providing:
+- **Framework-agnostic client logic** - No React or React Native dependencies
+- **Shared types and interfaces** - Consistent API across all platforms
+- **Port-based architecture** - Clean abstractions for platform-specific functionality
+- **Error handling** - Standardized error types and handling
+- **Utilities** - Logging, validation, and common utilities
+
+### Platform Adapters
+- **`@orga-ai/core`** - Platform agnostic logic to reduce code duplication
+- **`@orga-ai/react`** - React web adapter built on core
+- **`@orga-ai/react-native`** - React Native adapter built on core
+- **`@orga-ai/node`** - Node.js server adapter 
+- **`@orga-ai/python`** - Python server adapter 
+This architecture ensures:
+- **Code reuse** - Shared logic reduces duplication and maintenance
+- **Consistency** - Same API patterns across all platforms
+- **Type safety** - Full TypeScript support throughout
+- **Modularity** - Each adapter focuses on platform-specific concerns
+
+---
+
 ## Configuration
 
 - **API Key:** Required for backend endpoint that provides ephemeral tokens. Never expose in client code.
@@ -200,7 +267,7 @@ The monorepo structure allows for efficient SDK development and testing:
 
 1. **SDK Development:**
    ```bash
-   cd packages/sdk-web          # or sdk-react-native
+   cd packages/react          # or react-native
    bun run build               # Build the SDK
    ```
 
@@ -223,13 +290,18 @@ The monorepo structure allows for efficient SDK development and testing:
   - Transcription features
   - Native device integration
 
+- **Python Backend (`apps/python-backend/`):** Python backend example for server-side integration
+  - FastAPI-based backend
+  - Session configuration endpoint
+  - Server-side SDK integration
+
 ### Development Workflow
 
 - **Install from npm** for normal usage and integration.
 - **Internal SDK development:** Use the mobile or web example applications to easily test SDK changes.
-1. `cd packages/sdk-web` or `cd packages/sdk-react-native`
+1. `cd packages/core` (for core changes) or `cd packages/react` or `cd packages/react-native`
 2. After making changes: `bun run build`  
-3. `cd apps/web` or `cd apps/mobile`
+3. `cd apps/web` or `cd apps/mobile` or `cd apps/python-backend`
 4. `bun install` incase of any added packages.
 5. Test.
 
@@ -248,11 +320,11 @@ Given the monorepo structure, with the example applications we are able to look 
 ## Known Issues & Future Work
 
 - **Breaking changes are expected** as the SDK evolves in early stages.
-- No shared code between web and native SDKs (yet) due to bundling issues.
+- **Shared core architecture implemented** - The `@orga-ai/core` package now provides shared functionality between web and native SDKs.
 - Future work:
-  - Add shared core logic to reduce duplication
   - Expand documentation and code examples
   - Add automated tests and CI
+  - Add more platform adapters
 
 ---
 

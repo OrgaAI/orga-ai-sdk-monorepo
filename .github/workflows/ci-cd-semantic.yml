@@ -20,7 +20,7 @@ jobs:
         id: check
         run: |
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-          if echo "$CHANGED_FILES" | grep -q "packages/sdk-react-native/"; then
+          if echo "$CHANGED_FILES" | grep -q "packages/react-native/"; then
             echo "should-run=true" >> $GITHUB_OUTPUT
             echo "Native SDK changes detected"
           else
@@ -72,32 +72,32 @@ jobs:
           echo "Checking if packages are accessible:"
           pnpm --filter="@orga-ai/react-native" list
 
-      - name: Run SDK tests (sdk-react-native)
+      - name: Run SDK tests (react-native)
         run: |
-          echo "Testing sdk-react-native with pnpm exec..."
+          echo "Testing react-native with pnpm exec..."
           pnpm --filter="@orga-ai/react-native" exec jest
 
-      - name: Build SDK packages (sdk-react-native)
+      - name: Build SDK packages (react-native)
         run: |
-          echo "Building sdk-react-native with pnpm exec..."
+          echo "Building react-native with pnpm exec..."
           pnpm --filter="@orga-ai/react-native" exec tsc --project tsconfig.json
 
       - name: Verify build outputs
         run: |
           echo "=== Verifying build outputs ==="
-          echo "sdk-react-native lib directory:"
-          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
-          echo "sdk-react-native package.json:"
-          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+          echo "react-native lib directory:"
+          ls -la packages/react-native/lib/ || echo "react-native lib directory not found"
+          echo "react-native package.json:"
+          ls -la packages/react-native/package.json || echo "react-native package.json not found"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: built-packages
           path: |
-            packages/sdk-react-native/lib/
-            packages/sdk-react-native/package.json
-            packages/sdk-react-native/README.md
+            packages/react-native/lib/
+            packages/react-native/package.json
+            packages/react-native/README.md
           retention-days: 1
 
       - name: CI Check
@@ -142,10 +142,10 @@ jobs:
       - name: Verify artifacts
         run: |
           echo "=== Verifying downloaded artifacts ==="
-          echo "sdk-react-native lib directory:"
-          ls -la packages/sdk-react-native/lib/ || echo "sdk-react-native lib directory not found"
-          echo "sdk-react-native package.json:"
-          ls -la packages/sdk-react-native/package.json || echo "sdk-react-native package.json not found"
+          echo "react-native lib directory:"
+          ls -la packages/react-native/lib/ || echo "react-native lib directory not found"
+          echo "react-native package.json:"
+          ls -la packages/react-native/package.json || echo "react-native package.json not found"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -208,10 +208,10 @@ jobs:
           echo "Testing npm config..."
           npm config list
 
-      - name: Run semantic-release for sdk-react-native
+      - name: Run semantic-release for react-native
         run: |
-          echo "Running semantic-release for sdk-react-native..."
-          cd packages/sdk-react-native
+          echo "Running semantic-release for react-native..."
+          cd packages/react-native
           # Set up npm authentication for the package directory
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           echo "@orga-ai:registry=https://registry.npmjs.org/" >> .npmrc
