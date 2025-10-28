@@ -4,6 +4,7 @@ export interface OrgaAIConfig {
   baseUrl?: string;
   debug?: boolean;
   timeout?: number;
+  enableTelemetry?: boolean;
   }
   
   export interface SessionConfig {
