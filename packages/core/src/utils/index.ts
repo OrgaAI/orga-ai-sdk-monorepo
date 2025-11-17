@@ -4,8 +4,9 @@ import type {
   SessionConfigResponse,
   RealtimeConnectionResponse,
   RTCIceCandidateInit,
-} from '../types';
-import { OrgaAI } from '../client/OrgaAI';
+} from "../types";
+import { OrgaAI } from "../client/OrgaAI";
+import { getTelemetry } from "../telemetry";
 
 // ============================================================================
 // Logger Utility
@@ -13,29 +14,29 @@ import { OrgaAI } from '../client/OrgaAI';
 
 export const logger = {
   debug: (message: string, ...args: any[]): void => {
-    const logLevel = globalThis.OrgaAI?.config?.logLevel || 'disabled';
-    if (logLevel === 'debug') {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (logLevel === "debug") {
       console.log(`[OrgaAI Debug] ${message}`, ...args);
     }
   },
-  
+
   info: (message: string, ...args: any[]): void => {
-    const logLevel = globalThis.OrgaAI?.config?.logLevel || 'disabled';
-    if (['debug', 'info'].includes(logLevel)) {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (["debug", "info"].includes(logLevel)) {
       console.info(`[OrgaAI Info] ${message}`, ...args);
     }
   },
-  
+
   warn: (message: string, ...args: any[]): void => {
-    const logLevel = globalThis.OrgaAI?.config?.logLevel || 'disabled';
-    if (['debug', 'info', 'warn'].includes(logLevel)) {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (["debug", "info", "warn"].includes(logLevel)) {
       console.warn(`[OrgaAI Warn] ${message}`, ...args);
     }
   },
-  
+
   error: (message: string, ...args: any[]): void => {
-    const logLevel = globalThis.OrgaAI?.config?.logLevel || 'disabled';
-    if (logLevel !== 'disabled') {
+    const logLevel = globalThis.OrgaAI?.config?.logLevel || "disabled";
+    if (logLevel !== "disabled") {
       console.error(`[OrgaAI Error] ${message}`, ...args);
     }
   },
@@ -47,18 +48,18 @@ export const logger = {
 
 /**
  * Get media constraints based on session configuration
- * 
+ *
  * @param config - Session configuration
  * @returns Media constraints for getUserMedia
  */
 export const getMediaConstraints = (
   config: SessionConfig = {}
 ): MediaConstraints => {
-  const videoQuality = config.videoQuality || 'medium';
-  const facingMode = config.facingMode || 'user';
+  const videoQuality = config.videoQuality || "medium";
+  const facingMode = config.facingMode || "user";
 
-  const { VIDEO_QUALITY_CONSTRAINTS } = require('../types');
-  
+  const { VIDEO_QUALITY_CONSTRAINTS } = require("../types");
+
   const video = {
     facingMode,
     ...VIDEO_QUALITY_CONSTRAINTS[videoQuality],
@@ -76,7 +77,7 @@ export const getMediaConstraints = (
 
 /**
  * Fetches session configuration (ephemeral token and ICE servers) from the developer's backend proxy
- * 
+ *
  * @param sessionConfigEndpoint - The URL to the developer's backend proxy endpoint
  * @returns Session configuration with ephemeral token and ICE servers
  * @throws Error if the fetch fails or response is invalid
@@ -92,10 +93,13 @@ export const fetchSessionConfig = async (
     );
   }
 
-  const data = await response.json() as { ephemeralToken?: string; iceServers?: any[] };
-  
+  const data = (await response.json()) as {
+    ephemeralToken?: string;
+    iceServers?: any[];
+  };
+
   if (!data?.ephemeralToken || !data?.iceServers) {
-    throw new Error('Invalid response from session config endpoint');
+    throw new Error("Invalid response from session config endpoint");
   }
 
   return {
@@ -120,7 +124,7 @@ interface GenericPeerConnection {
 
 /**
  * Sends the offer and ICE candidates to the backend and receives the answer
- * 
+ *
  * @param params - Connection parameters
  * @param params.ephemeralToken - Ephemeral authentication token
  * @param params.peerConnection - The WebRTC peer connection
@@ -137,6 +141,20 @@ export const connectToRealtime = async ({
   peerConnection: GenericPeerConnection;
   gathered: RTCIceCandidateInit[];
 }): Promise<RealtimeConnectionResponse> => {
+  // Simple operation - metrics only (no nested calls to trace)
+  const telemetry = getTelemetry();
+  const meter = telemetry.getMeter();
+
+  // Lazily create metric instruments (safe even if no-op)
+  const latency = meter.createHistogram("orga.web.operation.latency", {
+    unit: "ms",
+  });
+  const ops = meter.createCounter("orga.web.operation.count");
+  const errs = meter.createCounter("orga.web.errors");
+  const status = meter.createCounter("orga.web.http.status");
+
+  const t0 = Date.now();
+
   const config = OrgaAI.getConfig();
   const {
     voice,
@@ -148,7 +166,7 @@ export const connectToRealtime = async ({
     history,
   } = config;
 
-  const realtimeUrl = 'https://api.orga-ai.com/v1/realtime/calls';
+  const realtimeUrl = "https://api.orga-ai.com/v1/realtime/calls";
 
   logger.debug(
     `[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`
@@ -168,12 +186,12 @@ export const connectToRealtime = async ({
       candidates: gathered,
     },
     params: {
-      voice: voice || 'alloy',
-      model: model || 'orga-1-beta',
+      voice: voice || "alloy",
+      model: model || "orga-1-beta",
       temperature: temperature ?? 0.5,
       return_transcription: enableTranscriptions || false,
       instructions: instructions || null,
-      modalities: modalities || ['audio', 'video'],
+      modalities: modalities || ["audio", "video"],
       history: history ?? true,
     },
   };
@@ -183,9 +201,9 @@ export const connectToRealtime = async ({
 
   try {
     const response = await fetch(realtimeUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${ephemeralToken}`,
       },
       body: JSON.stringify(requestBody),
@@ -194,31 +212,54 @@ export const connectToRealtime = async ({
 
     clearTimeout(timeoutId);
 
+    status.add(1, { "http.status_code": response.status });
+
     if (!response.ok) {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "HttpError",
+      });
       throw new Error(
         `Failed to connect to realtime: ${response.status} ${response.statusText}`
       );
     }
 
-    const data = await response.json() as { 
-      answer?: { sdp: string; type: string }; 
-      conversation_id?: string 
+    const data = (await response.json()) as {
+      answer?: { sdp: string; type: string };
+      conversation_id?: string;
     };
     const { answer, conversation_id } = data;
 
     if (!answer || !conversation_id) {
-      throw new Error('Invalid response: missing answer or conversation_id');
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "InvalidResponse",
+      });
+      throw new Error("Invalid response: missing answer or conversation_id");
     }
+
+    const dt = Date.now() - t0;
+    latency.record(dt, { "operation.name": "connectToRealtime" });
+    ops.add(1, { "operation.name": "connectToRealtime" });
 
     return { conversation_id, answer };
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.name === "AbortError") {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "AbortError",
+      });
       throw new Error(
-        'Request timeout: Failed to connect to realtime within 10 seconds'
+        "Request timeout: Failed to connect to realtime within 10 seconds"
       );
+    }
+    if (error instanceof Error) {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": error.constructor.name,
+      });
     }
     throw error;
   }
 };
-

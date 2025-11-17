@@ -2,6 +2,16 @@
 // Constants & Enums
 // ============================================================================
 
+export type TelemetryOptions = {
+  enableTelemetry?: boolean;
+  serviceName?: string;
+  environment?: string;
+  region?: string;
+  traceUrl?: string;
+  metricsUrl?: string;
+  metricExportIntervalMs?: number;
+};
+
 export const ORGAAI_MODELS = ["orga-1-beta"] as const;
 export type OrgaAIModel = (typeof ORGAAI_MODELS)[number];
 
@@ -68,6 +78,7 @@ export interface RTCIceCandidateInit {
 // ============================================================================
 
 export interface OrgaAIConfig {
+  telemetry?: TelemetryOptions;
   logLevel?: "debug" | "info" | "warn" | "error" | "disabled";
   timeout?: number;
   sessionConfigEndpoint?: string;

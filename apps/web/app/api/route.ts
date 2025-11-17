@@ -6,6 +6,7 @@ const REALTIME_USER_EMAIL = process.env.REALTIME_USER_EMAIL;
 const orgaAI = new OrgaAI({
   apiKey: REALTIME_USER_TOKEN as string,
   userEmail: REALTIME_USER_EMAIL as string,
+  enableTelemetry: true,
 })
 
 export const GET = async () => {

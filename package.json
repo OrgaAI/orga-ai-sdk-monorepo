@@ -18,7 +18,8 @@
     "publish-web-test": "turbo run build --filter=@orga-ai/react && cd packages/react && pnpm publish --access private --tag test",
     "publish-native-alpha": "turbo run build --filter=@orga-ai/react-native && cd packages/react-native && pnpm publish --access private --tag alpha",
     "publish-web-alpha": "turbo run build --filter=@orga-ai/react && cd packages/react && pnpm publish --access private --tag alpha",
-    "prepare": "husky"
+    "prepare": "husky",
+    "otel-test": "cd packages/server/node && pnpm run build && cd ../../core && pnpm run build && cd ../react && pnpm run build && cd ../../ && pnpm install && cd packages/server/node && docker compose down && docker compose up -d && cd ../../../apps/web && pnpm run dev"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

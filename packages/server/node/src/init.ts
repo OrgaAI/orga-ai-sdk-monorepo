@@ -18,30 +18,6 @@ export class Telemetry {
   private meter: ReturnType<typeof metrics.getMeter> | null = null;
   private isInitialized = false;
 
-  private async pingOtlpEndpoint(url: string): Promise<boolean> {
-    try {
-    //   console.log(`🏓 Pinging OTLP endpoint: ${url}`);
-      const response = await fetch(url, {
-        method: "HEAD",
-      });
-
-      if (response.ok) {
-    //     console.log(`✅ OTLP endpoint reachable: ${url}`);
-        return true;
-      } else {
-    //     console.log(`⚠️ OTLP endpoint returned ${response.status}: ${url}`);
-        return false;
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-    //     console.log(`❌ OTLP endpoint unreachable: ${url}`, error.message);
-      } else {
-    //     console.log(`❌ OTLP endpoint unreachable: ${url}`, error);
-      }
-      return false;
-    }
-  }
-
   initialize(config: TelemetryConfig) {
     if (this.isInitialized || !config.enableTelemetry) {
     //   console.log(
@@ -80,7 +56,7 @@ export class Telemetry {
 
     this.sdk = new NodeSDK({
       resource: resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: config.serviceName || "orga-ai-app",
+        [ATTR_SERVICE_NAME]: config.serviceName || "orga-ai-sdk",
         "deployment.environment": "production",
         "deployment.region": config.region || "eu-central-2",
       }),
@@ -93,8 +69,8 @@ export class Telemetry {
 
     this.sdk.start();
     // Initialize tracer/meter AFTER SDK start so they are wired to the SDK (not NOOP)
-    this.tracer = trace.getTracer("orga-ai-node");
-    this.meter = metrics.getMeter("orga-ai-node");
+    this.tracer = trace.getTracer("orga-ai-sdk");
+    this.meter = metrics.getMeter("orga-ai-sdk");
     this.isInitialized = true;
   }
 
@@ -109,14 +85,14 @@ export class Telemetry {
 
   getTracer() {
     if (!this.tracer) {
-      this.tracer = trace.getTracer("orga-ai-node");
+      this.tracer = trace.getTracer("orga-ai-sdk");
     }
     return this.tracer;
   }
 
   getMeter() {
     if (!this.meter) {
-      this.meter = metrics.getMeter("orga-ai-node");
+      this.meter = metrics.getMeter("orga-ai-sdk");
     }
     return this.meter;
   }

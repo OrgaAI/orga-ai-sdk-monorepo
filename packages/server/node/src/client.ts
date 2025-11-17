@@ -41,35 +41,31 @@ export class OrgaAI {
     this.debug = config.debug || false;
     this.timeout = config.timeout || 10000;
 
-    console.log('🔧 Initializing OrgaAI client with telemetry:', config.enableTelemetry || false);
     this.telemetry.initialize({
-      serviceName: 'orga-ai-node',
+      serviceName: 'orga-ai-sdk',
       enableTelemetry: config.enableTelemetry || false,
     });
     
     if (config.enableTelemetry) {
-      console.log('✅ Telemetry enabled for OrgaAI client');
       // Initialize metric instruments once
       const meter = this.telemetry.getMeter();
-      this.latencyHistogram = meter.createHistogram('sdk.operation.latency', {
+      this.latencyHistogram = meter.createHistogram('orga.node.operation.latency', {
         description: 'Latency of SDK operations',
         unit: 'ms',
       });
-      this.errorCounter = meter.createCounter('sdk.errors', {
+      this.errorCounter = meter.createCounter('orga.node.errors', {
         description: 'Number of SDK errors',
       });
-      this.opCounter = meter.createCounter('sdk.operation.count', {
+      this.opCounter = meter.createCounter('orga.node.operation.count', {
         description: 'Number of SDK operations',
       });
-      this.statusCounter = meter.createCounter('sdk.http.status', {
+      this.statusCounter = meter.createCounter('orga.node.http.status', {
         description: 'HTTP status codes',
       });
-      this.apiLatencyHistogram = meter.createHistogram('api.operation.latency', {
+      this.apiLatencyHistogram = meter.createHistogram('orga.node.api.operation.latency', {
         description: 'Latency of API operations',
         unit: 'ms',
       });
-    } else {
-      console.log('⚠️ Telemetry disabled for OrgaAI client');
     }
   }
   private log(message: string, data?: any) {
@@ -102,29 +98,26 @@ export class OrgaAI {
    * @returns ephemeral token and ICE servers needed for WebRTC connection
    */
   async getSessionConfig(): Promise<SessionConfig> {
-    console.log('🎯 Starting getSessionConfig operation');
-    
+    // Use spans for nested operations to see breakdown
     const tracer = this.telemetry.getTracer();
     const span = tracer.startSpan('getSessionConfig', {
-      attributes: { 'operation.type': 'session-config' },
+      attributes: { 
+        'operation.type': 'session-config',
+        'service.name': 'orga-ai-node',
+      },
     });
 
     const startTime = Date.now();
-    console.log('📊 Created telemetry instruments for getSessionConfig');
     try {
       this.log("Fetching session config");
-      const ephemeralToken = await this.fetchEphemeralToken();
+      const ephemeralToken = await this.fetchEphemeralToken(); // has its own span
       this.log("Fetched ephemeral token", ephemeralToken);
-      const iceServers = await this.fetchIceServers(ephemeralToken);
+      const iceServers = await this.fetchIceServers(ephemeralToken); // has its own span
       this.log("Fetched ICE servers", iceServers);
 
       const duration = Date.now() - startTime;
-      console.log(`✅ getSessionConfig completed successfully in ${duration}ms`);
-      
       span.setStatus({ code: SpanStatusCode.OK });
       this.recordSuccess('getSessionConfig', duration);
-
-      console.log('📊 Recorded success metrics for getSessionConfig');
       span.end();
 
       return {
@@ -132,16 +125,11 @@ export class OrgaAI {
         iceServers,
       };
     } catch (error: unknown) {
-      const duration = Date.now() - startTime;
-      console.log(`❌ getSessionConfig failed after ${duration}ms:`, error);
-      
       if (error instanceof Error) {
         span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
         span.recordException(error);
         this.recordError('getSessionConfig', error);
-        console.log('📊 Recorded error metrics for getSessionConfig');
       }
-      
       span.end();
       
       if (error instanceof OrgaAIError) {
@@ -154,12 +142,13 @@ export class OrgaAI {
   }
 
   private async fetchEphemeralToken(): Promise<string> {
+    // Child span - shows up under getSessionConfig in traces
     const tracer = this.telemetry.getTracer();
     const span = tracer.startSpan('fetchEphemeralToken', {
       attributes: {
         'operation.type': 'ephemeral-token',
         'http.url': `${this.baseUrl}/v1/realtime/client-secrets`,
-        'user.email': this.userEmail, // Will be redacted
+        'service.name': 'orga-ai-node',
       },
     });
 
@@ -179,6 +168,7 @@ export class OrgaAI {
         if (response.status === 401) {
           throw new OrgaAIAuthenticationError('Invalid API key or user email');
         }
+        this.recordStatus(response.status);
         throw new OrgaAIServerError(
           `Failed to fetch ephemeral token: ${response.statusText}`,
           response.status
@@ -189,6 +179,7 @@ export class OrgaAI {
       span.setStatus({ code: SpanStatusCode.OK });
       this.recordSuccess('fetchEphemeralToken', Date.now() - startTime);
       this.recordStatus(response.status);
+      span.end();
       return data.ephemeral_token;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -196,20 +187,25 @@ export class OrgaAI {
         span.recordException(error);
         this.recordError('fetchEphemeralToken', error);
       }
+      span.end();
+      
+      if (error instanceof OrgaAIError) {
+        throw error;
+      }
       throw new OrgaAIServerError(
         `Failed to fetch ephemeral token: ${error instanceof Error ? error.message : "Unknown error"}`
       );
-    } finally {
-      span.end();
     }
   }
 
   private async fetchIceServers(ephemeralToken: string): Promise<IceServer[]> {
+    // Child span - shows up under getSessionConfig in traces
     const tracer = this.telemetry.getTracer();
     const span = tracer.startSpan('fetchIceServers', {
       attributes: {
         'operation.type': 'ice-servers',
         'http.url': `${this.baseUrl}/v1/realtime/ice-config`,
+        'service.name': 'orga-ai-node',
       },
     });
 
@@ -225,6 +221,7 @@ export class OrgaAI {
 
       span.setAttribute('http.status_code', response.status);
       if (!response.ok) {
+        this.recordStatus(response.status);
         throw new OrgaAIServerError(
           `Failed to fetch ICE servers: ${response.statusText}`,
           response.status
@@ -235,6 +232,7 @@ export class OrgaAI {
       span.setStatus({ code: SpanStatusCode.OK });
       this.recordSuccess('fetchIceServers', Date.now() - startTime);
       this.recordStatus(response.status);
+      span.end();
       return data.iceServers;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -242,11 +240,14 @@ export class OrgaAI {
         span.recordException(error);
         this.recordError('fetchIceServers', error);
       }
+      span.end();
+      
+      if (error instanceof OrgaAIError) {
+        throw error;
+      }
       throw new OrgaAIServerError(
         `Failed to fetch ICE servers: ${error instanceof Error ? error.message : "Unknown error"}`
       );
-    } finally {
-      span.end();
     }
   }
 
