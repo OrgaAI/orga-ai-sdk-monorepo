@@ -112,7 +112,7 @@ The Next.js frontend should be updated to call this Python backend instead of us
 
 **Before (Node.js SDK):**
 ```typescript
-// apps/web/app/api/route.ts
+// examples/next/app/api/route.ts
 import { OrgaAI } from "@orga-ai/node";
 const orgaAI = new OrgaAI({ apiKey, userEmail });
 const sessionConfig = await orgaAI.getSessionConfig();
@@ -120,7 +120,7 @@ const sessionConfig = await orgaAI.getSessionConfig();
 
 **After (Python Backend):**
 ```typescript
-// apps/web/app/api/route.ts
+// examples/next/app/api/route.ts
 const response = await fetch('http://localhost:8000/api/orga-session');
 const sessionConfig = await response.json();
 ```

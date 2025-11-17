@@ -4,7 +4,7 @@
       "lib": ["es2020"],
       "module": "commonjs",
       "declaration": true,
-      "outDir": "./lib",
+      "outDir": "./dist",
       "rootDir": "./src",
       "strict": true,
       "esModuleInterop": true,
@@ -18,5 +18,5 @@
       "types": ["jest", "node"]
     },
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "lib"]
+    "exclude": ["node_modules", "dist"]
   }

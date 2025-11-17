@@ -12,7 +12,7 @@ import {
   ConversationItem,
   SessionCreatedEvent,
   ConversationCreatedEvent
-} from "@orga-ai/react-test";
+} from "@orga-ai/react";
 import { Label } from "@/components/ui/label";
 import {
   Select,

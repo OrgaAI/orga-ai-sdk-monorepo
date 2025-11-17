@@ -4,8 +4,12 @@ export async function fetchEphemeralTokenAndIceServers(): Promise<{
     ephemeralToken: string;
     iceServers: RTCIceServer[];
   }> {
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+    if (!apiUrl) {
+      throw new Error("API URL is not set");
+    }
     try {
-      const response = await fetch("https://f702e4e2c5f0.ngrok-free.app/api/realtime/test");
+      const response = await fetch(`${apiUrl}`);
       const data = await response.json();
       return {
         ephemeralToken: data.ephemeralToken,

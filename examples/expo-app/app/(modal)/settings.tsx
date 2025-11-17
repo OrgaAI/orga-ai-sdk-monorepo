@@ -257,7 +257,7 @@ export default settings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1e293b", // slate-800
+    backgroundColor: "#1e293b", 
   },
   scrollView: {
     flex: 1,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#94a3b8", // slate-400
+    color: "#94a3b8", 
   },
   statusSection: {
     marginBottom: 24,
@@ -291,20 +291,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   connectedBadge: {
-    backgroundColor: "#dcfce7", // green-100
+    backgroundColor: "#dcfce7", 
   },
   disconnectedBadge: {
-    backgroundColor: "#fef2f2", // red-100
+    backgroundColor: "#fef2f2", 
   },
   statusText: {
     fontSize: 14,
     fontWeight: "600",
   },
   connectedText: {
-    color: "#166534", // green-800
+    color: "#166534", 
   },
   disconnectedText: {
-    color: "#dc2626", // red-600
+    color: "#dc2626", 
   },
   section: {
     marginBottom: 24,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   sectionDescription: {
     fontSize: 14,
-    color: "#94a3b8", // slate-400
+    color: "#94a3b8", 
     marginBottom: 12,
   },
   optionsGrid: {
@@ -335,10 +335,10 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   selectedOptionCard: {
-    backgroundColor: "#10b981", // green-500
+    backgroundColor: "#10b981", 
   },
   unselectedOptionCard: {
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
   },
   optionText: {
     fontSize: 14,
@@ -348,13 +348,13 @@ const styles = StyleSheet.create({
     color: "white",
   },
   unselectedOptionText: {
-    color: "#cbd5e1", // slate-300
+    color: "#cbd5e1", 
   },
   temperatureContainer: {
     alignItems: "center",
   },
   temperatureInput: {
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
     color: "white",
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -372,10 +372,10 @@ const styles = StyleSheet.create({
   },
   rangeLabel: {
     fontSize: 12,
-    color: "#64748b", // slate-500
+    color: "#64748b", 
   },
   instructionsInput: {
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
     color: "white",
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   saveButton: {
-    backgroundColor: "#3b82f6", // blue-500
+    backgroundColor: "#3b82f6", 
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   infoSection: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
     padding: 16,
     borderRadius: 12,
     gap: 12,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: "#94a3b8", // slate-400
+    color: "#94a3b8", 
     lineHeight: 20,
   },
 });

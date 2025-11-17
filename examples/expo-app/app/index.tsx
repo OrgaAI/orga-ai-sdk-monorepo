@@ -174,7 +174,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1e293b", // slate-800
+    backgroundColor: "#1e293b", 
   },
   header: {
     flexDirection: "row",
@@ -203,20 +203,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   connectedBadge: {
-    backgroundColor: "#dcfce7", // green-100
+    backgroundColor: "#dcfce7", 
   },
   disconnectedBadge: {
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
   },
   statusText: {
     fontSize: 12,
     fontWeight: "600",
   },
   connectedText: {
-    color: "#166534", // green-800
+    color: "#166534", 
   },
   disconnectedText: {
-    color: "#cbd5e1", // slate-300
+    color: "#cbd5e1", 
   },
   cameraContainer: {
     flex: 1,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#334155", // slate-700
+    backgroundColor: "#334155", 
   },
   cameraViewContainer: {
     width: "100%",
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   placeholderSubtext: {
-    color: "#94a3b8", // slate-400
+    color: "#94a3b8", 
     fontSize: 16,
     marginTop: 8,
     textAlign: "center",
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   featureText: {
-    color: "#cbd5e1", // slate-300
+    color: "#cbd5e1", 
     fontSize: 14,
   },
 });

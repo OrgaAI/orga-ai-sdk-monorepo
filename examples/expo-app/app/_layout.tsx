@@ -16,9 +16,7 @@ OrgaAI.init({
   logLevel: "debug",
   enableTranscriptions: true,
   model: "orga-1-beta",
-  voice: "echo",
-  temperature: 0.5,
-  instructions: "Refer to me as 'Austin'",
+  instructions: "You are a helpful assistant that can answer questions and help with tasks.",
   modalities: ["audio"]
 });
 
@@ -82,7 +80,7 @@ export default function RootLayout() {
                 headerShown: true,
                 title: "",
                 headerStyle: {
-                  backgroundColor: "#1e293b", // slate-800
+                  backgroundColor: "#1e293b", 
                 },
                 headerTintColor: "white",
                 headerLeft: () => <HeaderLeft />,
@@ -97,7 +95,7 @@ export default function RootLayout() {
                   title: "Settings",
                   presentation: "modal",
                   headerStyle: {
-                    backgroundColor: "#1e293b", // slate-800
+                    backgroundColor: "#1e293b", 
                   },
                   headerTintColor: "white",
                   headerTitleStyle: {

@@ -1,10 +1,10 @@
 {
   "name": "@orga-ai/react",
   "version": "1.0.5",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "lib/**/*",
+    "dist/**/*",
     "README.md",
     "LICENSE"
   ],
@@ -17,9 +17,9 @@
     "test:coverage": "jest --coverage"
   },
   "author": "Orga AI",
-  "license": "Proprietary",
+  "license": "Apache-2.0",
   "description": "React SDK for Orga AI — real-time multimodal AI that hears, sees, and speaks.",
-  "homepage": "https://docs.orga-ai.com/version-11/guide/react-sdk/introduction",
+  "homepage": "https://docs.orga-ai.com/docs/client-sdks/react/introduction",
   "keywords": [
     "react",
     "ai",

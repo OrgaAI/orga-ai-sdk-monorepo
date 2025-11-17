@@ -1,5 +1,5 @@
 {
-  "name": "@orga-ai/web-sdk-test",
+  "name": "@orga-ai/react-sdk-test",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@orga-ai/react": "file:../../packages/react",
-    "@orga-ai/node": "file:../../packages/server/node",
+    "@orga-ai/node": "1.0.0-beta.1",
+    "@orga-ai/react": "^1.0.5",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.5",

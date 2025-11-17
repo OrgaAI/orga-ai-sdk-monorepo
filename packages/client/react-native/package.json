@@ -1,10 +1,10 @@
 {
   "name": "@orga-ai/react-native",
   "version": "1.0.4-beta.1",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "lib/**/*",
+    "dist/**/*",
     "README.md",
     "LICENSE"
   ],
@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "homepage": "https://docs.orga-ai.com/version-11/guide/react-native-sdk/introduction",
+  "homepage": "https://docs.orga-ai.com/docs/client-sdks/react-native/introduction",
   "keywords": [
     "react-native",
     "expo",
@@ -29,7 +29,7 @@
     "react-native-webrtc"
   ],
   "author": "Orga AI",
-  "license": "Proprietary",
+  "license": "Apache-2.0",
   "dependencies": {
     "@orga-ai/core": "workspace:^1.0.0"
   },

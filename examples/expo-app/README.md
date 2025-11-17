@@ -33,7 +33,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 # From the monorepo root
-cd apps/mobile
+cd examples/expo-app
 bun install
 ```
 
@@ -47,7 +47,7 @@ Currently this app hits a separate backend to proxy the realtime API call. To co
 
 - **New Build:** If you need to create a new build
 ```bash
-cd apps/mobile 
+cd examples/expo-app 
 eas build --platform all --profile development
 ```
 Scan the QR once build has been completed.
@@ -60,97 +60,6 @@ bunx expo -c
 ```
 
 Scan the QR code to run the development build.
-
----
-
-## SDK Development and Testing Workflow
-
-This playground is designed for testing the OrgaAI SDK during development. Here's the complete workflow for testing SDK changes:
-
-### 1. Testing Private NPM Packages
-
-If you need to test private npm packages, import the `.npmrc` file with your auth token:
-
-```bash
-# Copy the .npmrc file to your project root
-cp .npmrc apps/mobile/
-```
-
-### 2. Local SDK Development Testing
-
-When making changes to the React Native SDK and want to test them in this app:
-
-1. **Build the SDK:**
-   ```bash
-   cd packages/react-native
-   bun run build
-   ```
-
-2. **Install dependencies and clean cache:**
-   ```bash
-   cd apps/mobile
-   bunx expo install  # In case new deps were added
-   ```
-
-3. **Test your changes:**
-   ```bash
-   bunx expo -c  # Clean cache (recommended for testing)
-   ```
-
-4. **Rinse and repeat** if you need to make more changes to the SDK and test them.
-
-### 3. Publishing Test Versions
-
-Once you're ready to publish to npm:
-
-1. **Bump the package version:**
-   ```bash
-   # Option A: Use the script at project root
-   # (This will commit the changes)
-   
-   # Option B: Manually bump version in package.json
-   # (If you don't want to commit changes yet)
-   ```
-
-2. **Publish test version:**
-   ```bash
-   pnpm publish-native-test --no-git-checks
-   ```
-   This script publishes a test version and ignores any uncommitted changes.
-
-### 4. Testing Published Versions
-
-To test the published test version in any other app:
-
-1. **Set up NPM token:**
-   ```bash
-   eas env:create
-   # Set variable name: NPM_TOKEN
-   # Set the secret variable to your token
-   ```
-
-2. **Configure eas.json:**
-   ```json
-   {
-     "build": {
-       "development": {
-         "developmentClient": true,
-         "distribution": "internal",
-         "env": {
-           "NPMRC": "@orga-ai:registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=${process.env.NPM_TOKEN}"
-         }
-       }
-     }
-   }
-   ```
-
-3. **Install expo-dev-client and build:**
-   ```bash
-   bunx expo install expo-dev-client
-   eas build --platform <ios | android> --profile development
-   ```
-
-This setup allows you to use the private package in your development builds.
 
 ---
 

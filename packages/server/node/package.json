@@ -25,8 +25,8 @@
     "typescript"
   ],
   "author": "OrgaAI",
-  "license": "Proprietary",
-  "homepage": "https://docs.orga-ai.com/",
+  "license": "Apache-2.0",
+  "homepage": "https://docs.orga-ai.com/docs/server-sdks/node/introduction",
   "devDependencies": {
     "@types/jest": "^29.0.0",
     "@types/node": "^20.0.0",
