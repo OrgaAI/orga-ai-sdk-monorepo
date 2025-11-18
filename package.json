@@ -23,6 +23,7 @@
     "prettier": "^3.6.2",
     "semantic-release": "^24.2.7",
     "semantic-release-monorepo": "^8.0.2",
+    "tsup": "^8.3.5",
     "turbo": "^2.5.5",
     "typescript": "5.8.3"
   },

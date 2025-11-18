@@ -39,7 +39,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "pnpm exec tsup",
     "clean": "rm -rf dist *.tsbuildinfo",
     "type-check": "tsc --noEmit --pretty",
     "test": "jest",

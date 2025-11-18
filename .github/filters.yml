@@ -1,0 +1,13 @@
+# .github/filters.yml
+
+react:
+  - 'packages/client/react/**'
+
+react-native:
+  - 'packages/client/react-native/**'
+
+core:
+  - 'packages/client/core/**'
+
+node:
+  - 'packages/server/node/**'
