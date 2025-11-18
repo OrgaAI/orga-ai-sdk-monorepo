@@ -7,7 +7,7 @@ name = "orga-ai"
 version = "1.0.0-beta.1"
 description = "OrgaAI backend SDK for Python - simplifies API integration"
 readme = "README.md"
-license = {text = "Proprietary"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "OrgaAI"}
 ]
