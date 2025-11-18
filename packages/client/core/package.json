@@ -41,10 +41,10 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "type-check": "tsc --noEmit --pretty",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "type-check": "pnpm exec tsc --noEmit --pretty", 
+    "test": "pnpm exec jest", 
+    "test:watch": "pnpm exec jest --watch",
+    "test:coverage": "pnpm exec jest --coverage"
   },
   "keywords": [
     "ai",
@@ -59,13 +59,10 @@
   "license": "Proprietary",
   "sideEffects": false,
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.9",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.4.0",
     "tsup": "^8.3.5",
     "typescript": "^5.8.3"
   }
