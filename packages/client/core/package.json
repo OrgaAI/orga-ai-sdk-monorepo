@@ -1,5 +1,6 @@
 {
   "name": "@orga-ai/core",
+  "private": true,
   "version": "1.0.0",
   "description": "Framework-agnostic core for Orga AI SDK - real-time multimodal AI",
   "main": "./dist/index.js",
@@ -39,12 +40,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm exec tsup",
+    "build": "tsup",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "type-check": "pnpm exec tsc --noEmit --pretty", 
-    "test": "pnpm exec jest", 
-    "test:watch": "pnpm exec jest --watch",
-    "test:coverage": "pnpm exec jest --coverage"
+    "type-check": "tsc --noEmit --pretty", 
+    "test": "jest", 
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "ai",
