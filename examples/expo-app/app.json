@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "orga-sdk-test",
+    "slug": "orga-sdk-test",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "orgasdktest",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.austinxorga.orga-sdk-test",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow Orga to access your camera so you can show things to Orga",
+        "NSMicrophoneUsageDescription": "Allow Orga to access your microphone so you can talk to Orga",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.austinxorga.orgasdktest",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "47945475-30b1-4b18-b3cf-83f51a7a9778"
+      }
+    }
+  }
+}

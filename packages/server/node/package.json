@@ -1,0 +1,42 @@
+{
+  "name": "@orga-ai/node",
+  "version": "1.0.0-beta.1",
+  "description": "Orga AI backend SDK for Node.js - simplifies API integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "orga-ai",
+    "backend",
+    "sdk",
+    "node",
+    "typescript"
+  ],
+  "author": "Orga AI",
+  "license": "Apache-2.0",
+  "homepage": "https://docs.orga-ai.com/docs/server-sdks/node/introduction",
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "nock": "^13.0.0",
+    "cross-fetch": "^4.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "node": ">=18.0.0"
+  }
+}
