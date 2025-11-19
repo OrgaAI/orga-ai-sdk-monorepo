@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/react",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -33,7 +33,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@orga-ai/core": "workspace:^1.0.0"
+    "@orga-ai/core": "workspace:^1.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.7.0",
