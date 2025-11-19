@@ -79,7 +79,7 @@ ORGA_API_KEY=your_orga_api_key_here
 USER_EMAIL=john@example.com
 ```
 
-> **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
+> **Note:** Get your API key from the Orga AI dashboard. Never commit this file to version control.
 > **Security:** Expo API Routes keep your environment variables secure by only exposing them server-side.
 
 #### Option B: Custom Backend Server
@@ -171,7 +171,7 @@ import cors from 'cors';
 // If you get type errors, you may need to install @types/webrtc or define the type:
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
-// Define types for OrgaAI API responses
+// Define types for Orga AI API responses
 interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
@@ -253,7 +253,7 @@ app.listen(5000, () => console.log('Server running on port 5000'));
 ```
 
 > **Security Note:** Your backend proxy should:
-> - Store the OrgaAI API key securely (use environment variables)
+> - Store the Orga AI API key securely (use environment variables)
 > - Implement proper authentication/authorization
 > - Add rate limiting and request validation
 > - Use HTTPS in production
@@ -427,7 +427,7 @@ OrgaAI.init({
 
 ## Secure Backend Example for Ephemeral Token & ICE Servers
 
-**Never expose your OrgaAI API key in client code. Always use a secure backend to fetch ephemeral tokens and ICE servers.**
+**Never expose your Orga AI API key in client code. Always use a secure backend to fetch ephemeral tokens and ICE servers.**
 
 ### Mobile Frontend Example (React Native)
 
@@ -452,7 +452,7 @@ const fetchSessionConfig = async () => {
 // If you get type errors, you may need to install @types/webrtc or define the type:
 // interface RTCIceServer { urls: string | string[]; username?: string; credential?: string; }
 
-// Define types for OrgaAI API responses
+// Define types for Orga AI API responses
 interface OrgaClientSecretsResponse {
   ephemeral_token: string;
 }
@@ -528,8 +528,8 @@ export const getEphemeralTokenAndIceServers = async (req: Request, res: Response
 ```
 
 **Your backend proxy should:**
-- Store the OrgaAI API key securely (never in the app).
-- Make the call to the OrgaAI backend.
+- Store the Orga AI API key securely (never in the app).
+- Make the call to the Orga AI backend.
 - Return only the ephemeral token and ICE servers to the app.
 
 ### Expo (SDK 50+)
@@ -541,7 +541,7 @@ If using Expo SDK 50 or greater, you can use [Expo Router API routes](https://do
 ---
 
 > **Summary:**
-> - Always keep your OrgaAI API key on a secure backend.
+> - Always keep your Orga AI API key on a secure backend.
 > - Never expose it in your app or client-side code.
 > - Use a backend proxy pattern for both web and mobile.
 

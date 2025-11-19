@@ -1,6 +1,6 @@
-# OrgaAI Python Backend
+# Orga AI Python Backend
 
-A FastAPI backend that uses the OrgaAI Python SDK to provide session configuration for WebRTC connections.
+A FastAPI backend that uses the Orga AI Python SDK to provide session configuration for WebRTC connections.
 
 ## Overview
 
@@ -13,9 +13,9 @@ Next.js Frontend (localhost:3000)
     ↓ HTTP Request
 Python FastAPI Backend (localhost:8000)
     ↓ Uses SDK
-OrgaAI Python SDK
+Orga AI Python SDK
     ↓ API Calls
-OrgaAI API
+Orga AI API
 ```
 
 ## Setup

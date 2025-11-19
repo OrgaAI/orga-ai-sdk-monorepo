@@ -169,9 +169,9 @@ The `OrgaAI` constructor accepts the following configuration options:
 
 | Option | Type | Description | Default | Required? |
 |--------|------|-------------|---------|-----------|
-| `apiKey` | `string` | Your OrgaAI API key | — | Yes |
+| `apiKey` | `string` | Your Orga AI API key | — | Yes |
 | `userEmail` | `string` | Developer's email address | — | Yes |
-| `baseUrl` | `string` | OrgaAI API base URL | `https://api.orga-ai.com` | No |
+| `baseUrl` | `string` | Orga AI API base URL | `https://api.orga-ai.com` | No |
 | `timeout` | `number` | Request timeout in milliseconds | `10000` | No |
 | `debug` | `boolean` | Enable debug logging | `false` | No |
 

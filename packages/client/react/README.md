@@ -59,7 +59,7 @@ ORGA_API_KEY=your_orga_api_key_here
 USER_EMAIL=john@example.com
 ```
 
-> **Note:** Get your API key from the OrgaAI dashboard. Never commit this file to version control.
+> **Note:** Get your API key from the Orga AI dashboard. Never commit this file to version control.
 
 ### 2. Create the API Route
 
@@ -211,7 +211,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-8">
-          OrgaAI SDK Quick Start
+          Orga AI SDK Quick Start
         </h1>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -297,14 +297,14 @@ export default function Home() {
 
 ## Why the Proxy Endpoint?
 
-The OrgaAI SDK requires a **proxy endpoint** on your backend server. This is a **security requirement**, not an optional pattern.
+The Orga AI SDK requires a **proxy endpoint** on your backend server. This is a **security requirement**, not an optional pattern.
 
 ### **Security Architecture**
 
 ```mermaid
 graph LR
     A[Client Browser] --> B[Your Backend]
-    B --> C[OrgaAI API]
+    B --> C[Orga AI API]
     C --> B
     B --> A
 ```
@@ -312,7 +312,7 @@ graph LR
 **Why this pattern is required:**
 
 1. **API Keys Must Stay Server-Side**
-   - Your OrgaAI API key contains sensitive credentials
+   - Your Orga AI API key contains sensitive credentials
    - If exposed to the client, anyone could use your account
    - The proxy keeps your API key secure on your server
 
@@ -327,11 +327,11 @@ graph LR
 Your backend endpoint (`/api/orga-client-secrets`) acts as a secure bridge:
 
 1. **Receives request** from your client
-2. **Uses your API key** to call OrgaAI (server-side)
+2. **Uses your API key** to call Orga AI (server-side)
 3. **Returns ephemeral token** to client (safe to expose)
 4. **Client uses ephemeral token** for WebRTC connection
 
-This ensures your API key never leaves your server while providing secure access to OrgaAI features.
+This ensures your API key never leaves your server while providing secure access to Orga AI features.
 
 ---
 
@@ -359,14 +359,14 @@ OrgaAI.init({
 
 ## Secure Backend Example for Ephemeral Token & ICE Servers
 
-**Never expose your OrgaAI API key in client code. Always use a secure backend to fetch ephemeral tokens and ICE servers.**
+**Never expose your Orga AI API key in client code. Always use a secure backend to fetch ephemeral tokens and ICE servers.**
 
 ---
 
 > **Summary:**
-> - Always keep your OrgaAI API key and developer email on a secure backend.
+> - Always keep your Orga AI API key and developer email on a secure backend.
 > - Never expose them in your app or client-side code.
-> - The client (web or mobile) should only call your backend, never OrgaAI directly.
+> - The client (web or mobile) should only call your backend, never Orga AI directly.
 
 ---
 
@@ -770,4 +770,4 @@ This will show you the complete timeline of events, making it easier to identify
 
 ## Support
 
-For issues, questions, or contributions, please refer to the SDK documentation or contact the OrgaAI team.
+For issues, questions, or contributions, please refer to the SDK documentation or contact the Orga AI team.

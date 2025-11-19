@@ -102,7 +102,7 @@ const settings = () => {
           <View style={styles.header}>
             <Text style={styles.title}>SDK Configuration</Text>
             <Text style={styles.subtitle}>
-              Configure OrgaAI SDK parameters
+              Configure Orga AI SDK parameters
             </Text>
           </View>
 

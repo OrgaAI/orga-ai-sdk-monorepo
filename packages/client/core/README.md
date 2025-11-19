@@ -200,7 +200,4 @@ OrgaAI.init({
 - `@orga-ai/core/utils` - Utility functions
 - `@orga-ai/core/ports` - Platform abstraction interfaces
 
-## License
-
-Proprietary
 

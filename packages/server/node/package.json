@@ -1,7 +1,7 @@
 {
   "name": "@orga-ai/node",
   "version": "1.0.0-beta.1",
-  "description": "OrgaAI backend SDK for Node.js - simplifies API integration",
+  "description": "Orga AI backend SDK for Node.js - simplifies API integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -24,7 +24,7 @@
     "node",
     "typescript"
   ],
-  "author": "OrgaAI",
+  "author": "Orga AI",
   "license": "Apache-2.0",
   "homepage": "https://docs.orga-ai.com/docs/server-sdks/node/introduction",
   "devDependencies": {
