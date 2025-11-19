@@ -87,13 +87,13 @@ export default function Home() {
   }, [conversationItems]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4">
       <div className="max-w-7xl mx-auto h-[calc(100vh-2rem)] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
-              OrgaAI Playground
+              Orga AI Playground
             </h1>
             <p className="text-slate-600 mt-1">
               Test and explore the OrgaAI SDK

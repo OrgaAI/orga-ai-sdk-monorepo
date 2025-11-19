@@ -1,12 +1,12 @@
-# OrgaAI Mobile SDK Playground
+# Orga AI Mobile SDK Playground
 
-A React Native application for testing and exploring the OrgaAI SDK capabilities in a mobile environment. Built with Expo and React Native, this playground demonstrates real-time AI conversations, transcription management, and SDK configuration.
+A React Native application for testing and exploring the Orga AI SDK capabilities in a mobile environment. Built with Expo and React Native, this playground demonstrates real-time AI conversations, transcription management, and SDK configuration.
 
 ---
 
 ## Project Overview
 
-- **Purpose:** Demonstrate and test OrgaAI SDK features in a mobile environment
+- **Purpose:** Demonstrate and test Orga AI SDK features in a mobile environment
 - **Platform:** React Native with Expo
 - **Key Features:** Real-time AI conversations, video/audio streaming, transcription
 
@@ -23,7 +23,7 @@ Before you begin, ensure you have the following installed:
 
 ### Required Accounts
 
-- **OrgaAI Account** - Get your API key from the [OrgaAI Dashboard](https://platform.orga-ai.com)
+- **Orga AI Account** - Get your API key from the [Orga AI Dashboard](https://platform.orga-ai.com)
 - **Expo Account** - For EAS builds and development builds
 - **NPM Account** - For testing private packages (if applicable)
 
@@ -222,7 +222,7 @@ OrgaAI.init({
 
 ### Getting Help
 
-- Check the [OrgaAI SDK Documentation](https://docs.orga-ai.com)
+- Check the [Orga AI SDK Documentation](https://docs.orga-ai.com)
 - Review the [Expo Documentation](https://docs.expo.dev)
 - Open an issue in the SDK repository
 
@@ -230,7 +230,7 @@ OrgaAI.init({
 
 ## Support
 
-For issues, questions, or contributions, please refer to the SDK documentation or contact the OrgaAI team.
+For issues, questions, or contributions, please refer to the SDK documentation or contact the Orga AI team.
 
 ## License
 
