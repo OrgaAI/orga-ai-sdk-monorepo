@@ -55,8 +55,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0(expo-font@13.3.2(expo@53.0.24(@babel/core@7.28.5)(@expo/metro-runtime@5.0.5(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0)
       '@orga-ai/react-native':
-        specifier: ^1.0.4
-        version: 1.0.4(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)))(react-native-webrtc@124.0.7(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0)
+        specifier: workspace:*
+        version: link:../../packages/client/react-native
       '@react-navigation/bottom-tabs':
         specifier: ^7.3.10
         version: 7.8.5(@react-navigation/native@7.1.20(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0))(react-native-screens@4.11.1(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0)
@@ -164,10 +164,10 @@ importers:
   examples/next:
     dependencies:
       '@orga-ai/node':
-        specifier: 1.0.0-beta.1
+        specifier: workspace:*
         version: link:../../packages/server/node
       '@orga-ai/react':
-        specifier: ^1.0.5
+        specifier: workspace:*
         version: link:../../packages/client/react
       '@radix-ui/react-dialog':
         specifier: ^1.1.14
@@ -1821,14 +1821,6 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
-
-  '@orga-ai/react-native@1.0.4':
-    resolution: {integrity: sha512-ebvthdgGp8QQ5jSEy+I8eb9mmzAPBn/O2nGQsvdpiS9boWoA1lX+ZzbdUc4LUZpv8xFgvSgqAd13MlWpLvDJdQ==}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-native: '>=0.78.0'
-      react-native-incall-manager: '>=4.2.1'
-      react-native-webrtc: '>=124.0.5'
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -8977,13 +8969,6 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
-
-  '@orga-ai/react-native@1.0.4(react-native-incall-manager@4.2.1(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)))(react-native-webrtc@124.0.7(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)))(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0)
-      react-native-incall-manager: 4.2.1(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))
-      react-native-webrtc: 124.0.7(react-native@0.79.5(@babel/core@7.28.5)(@types/react@18.2.66)(react@19.0.0))
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
