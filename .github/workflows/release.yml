@@ -13,12 +13,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'OrgaAI'
     steps:
-      - name: Log repository owner
-        run: |
-          echo "Repository owner: ${{ github.repository_owner }}"
-          echo "repository_owner=${{ github.repository_owner }}" >> $GITHUB_OUTPUT
-
       - name: Create access token from GitHub App
         uses: actions/create-github-app-token@v1
         id: app-token
