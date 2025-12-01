@@ -3,8 +3,7 @@ import { OrgaAI } from '../client';
 
 describe('OrgaAI Integration Tests', () => {
   const validConfig = {
-    apiKey: 'test-api-key',
-    userEmail: 'test@example.com'
+    apiKey: 'test-api-key'
   };
 
   beforeEach(() => {
@@ -25,7 +24,6 @@ describe('OrgaAI Integration Tests', () => {
 
     nock('https://api.orga-ai.com')
       .post('/v1/realtime/client-secrets')
-      .query({ email: 'test@example.com' })
       .reply(200, { ephemeral_token: mockEphemeralToken });
 
     nock('https://api.orga-ai.com')
@@ -44,18 +42,16 @@ describe('OrgaAI Integration Tests', () => {
   it('should handle 401 authentication error', async () => {
     nock('https://api.orga-ai.com')
       .post('/v1/realtime/client-secrets')
-      .query({ email: 'test@example.com' })
       .reply(401, { error: 'Unauthorized' });
 
     const client = new OrgaAI(validConfig);
 
-    await expect(client.getSessionConfig()).rejects.toThrow('Invalid API key or user email');
+    await expect(client.getSessionConfig()).rejects.toThrow('Invalid API key');
   });
 
   it('should handle 500 server error', async () => {
     nock('https://api.orga-ai.com')
       .post('/v1/realtime/client-secrets')
-      .query({ email: 'test@example.com' })
       .reply(500, { error: 'Internal Server Error' });
 
     const client = new OrgaAI(validConfig);
@@ -70,7 +66,6 @@ describe('OrgaAI Integration Tests', () => {
 
     nock(customBaseUrl)
       .post('/v1/realtime/client-secrets')
-      .query({ email: 'test@example.com' })
       .reply(200, { ephemeral_token: mockEphemeralToken });
 
     nock(customBaseUrl)

@@ -7,7 +7,6 @@ import {
 
 export class OrgaAI {
   private apiKey: string;
-  private userEmail: string;
   private baseUrl: string;
   private debug: boolean;
   private timeout: number;
@@ -16,17 +15,8 @@ export class OrgaAI {
     if (!config.apiKey) {
       throw new OrgaAIError("API key is required");
     }
-    if (!config.userEmail) {
-      throw new OrgaAIError("User email is required");
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(config.userEmail)) {
-      throw new OrgaAIError("Invalid email format");
-    }
 
     this.apiKey = config.apiKey;
-    this.userEmail = config.userEmail;
     this.baseUrl = config.baseUrl || "https://api.orga-ai.com";
     this.debug = config.debug || false;
     this.timeout = config.timeout || 10000;
@@ -82,7 +72,7 @@ export class OrgaAI {
   }
 
   private async fetchEphemeralToken(): Promise<string> {
-    const apiUrl = `${this.baseUrl}/v1/realtime/client-secrets?email=${encodeURIComponent(this.userEmail)}`;
+    const apiUrl = `${this.baseUrl}/v1/realtime/client-secrets`;
 
     const response = await this.fetchWithTimeout(apiUrl, {
       method: "POST",
@@ -94,7 +84,7 @@ export class OrgaAI {
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new OrgaAIAuthenticationError("Invalid API key or user email");
+        throw new OrgaAIAuthenticationError("Invalid API key");
       }
       throw new OrgaAIServerError(
         `Failed to fetch ephemeral token: ${response.statusText}`,

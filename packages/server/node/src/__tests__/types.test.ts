@@ -3,8 +3,7 @@ import { OrgaAIConfig, SessionConfig, IceServer } from '../types';
 describe('Type Definitions', () => {
   it('should accept valid OrgaAIConfig', () => {
     const config: OrgaAIConfig = {
-      apiKey: 'test-key',
-      userEmail: 'test@example.com'
+      apiKey: 'test-key'
     };
     expect(config).toBeDefined();
   });
@@ -12,7 +11,6 @@ describe('Type Definitions', () => {
   it('should accept OrgaAIConfig with optional baseUrl', () => {
     const config: OrgaAIConfig = {
       apiKey: 'test-key',
-      userEmail: 'test@example.com',
       baseUrl: 'https://custom-api.orga-ai.com'
     };
     expect(config).toBeDefined();

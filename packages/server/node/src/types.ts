@@ -1,6 +1,5 @@
 export interface OrgaAIConfig {
   apiKey: string;
-  userEmail: string;
   baseUrl?: string;
   debug?: boolean;
   timeout?: number;
