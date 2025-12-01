@@ -76,7 +76,6 @@ If using Expo API Routes, create a `.env` file in your Expo project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-USER_EMAIL=john@example.com
 ```
 
 > **Note:** Get your API key from the Orga AI dashboard. Never commit this file to version control.
@@ -128,15 +127,12 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export async function GET(request: Request) {
-  if (!USER_EMAIL) {
-    return Response.json({error: "Missing Email"}, { status: 500 });
-  }
   if (!ORGA_API_KEY) {
     return Response.json({error: "Missing API key"}, { status: 500 });
   }
 
   try {
-    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent(USER_EMAIL)}`
+    const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`
     const clientSecrets = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -421,7 +417,7 @@ OrgaAI.init({
 - **fetchSessionConfig:**
   - Signature: `() => Promise<{ ephemeralToken: string; iceServers: RTCIceServer[] }>`
   - Must be provided to `OrgaAI.init`.
-- **Other Config Options:** See SDK documentation for available options (logLevel, model, etc.).
+- **Other Config Options:** See [SDK documentation](https://docs.orga-ai.com) for available options (logLevel, model, etc.).
 
 ---
 
@@ -1253,22 +1249,11 @@ For questions or support, please contact your Orga platform representative or su
 
 ---
 
-## License
-
-**Proprietary License** - Copyright (c) 2025 Orga AI. All rights reserved.
-
 ### Key Terms
 
 - **Free to Use**: The SDK is free to use for developing applications that integrate with Orga AI services
 - **API Key Required**: A valid Orga AI account and API key are required for functionality
-- **Credits Required**: Purchased credits are needed to enable SDK features
-- **Non-Transferable**: This license is non-transferable and non-sublicensable
 
-### Restrictions
-
-- **No Reverse Engineering**: You may not reverse-engineer, decompile, disassemble, or modify the SDK
-- **No Redistribution**: Redistribution, sharing, or resale is strictly prohibited without written consent
-- **Platform Use Only**: Use is limited to purposes expressly permitted by this license and platform documentation
 
 ### Beta Status
 
@@ -1284,4 +1269,4 @@ For commercial use inquiries, questions about credits, or additional permissions
 
 ### Full License
 
-See the complete [LICENSE](LICENSE) file for detailed terms and conditions, or visit [https://docs.orga-ai.com/license](https://docs.orga-ai.com/license) for the most up-to-date license information. 
+See the complete [LICENSE](LICENSE) file for detailed terms and conditions. 

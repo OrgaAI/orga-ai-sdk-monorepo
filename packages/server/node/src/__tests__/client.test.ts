@@ -4,7 +4,6 @@ import { OrgaAIError, OrgaAIAuthenticationError, OrgaAIServerError } from '../er
 describe('OrgaAI Client', () => {
   const validConfig = {
     apiKey: 'test-api-key',
-    userEmail: 'test@example.com'
   };
 
   let fetchSpy: jest.SpyInstance;
@@ -26,20 +25,11 @@ describe('OrgaAI Client', () => {
 
     it('should throw error when apiKey is missing', () => {
       expect(() => {
-        new OrgaAI({ userEmail: 'test@example.com' } as any);
+        new OrgaAI({} as any);
       }).toThrow(OrgaAIError);
       expect(() => {
-        new OrgaAI({ userEmail: 'test@example.com' } as any);
+        new OrgaAI({} as any);
       }).toThrow('API key is required');
-    });
-
-    it('should throw error when userEmail is missing', () => {
-      expect(() => {
-        new OrgaAI({ apiKey: 'test-key' } as any);
-      }).toThrow(OrgaAIError);
-      expect(() => {
-        new OrgaAI({ apiKey: 'test-key' } as any);
-      }).toThrow('User email is required');
     });
   });
 
@@ -71,7 +61,7 @@ describe('OrgaAI Client', () => {
       const client = new OrgaAI(validConfig);
       const prom = client.getSessionConfig();
       await expect(prom).rejects.toThrow(OrgaAIAuthenticationError);
-      await expect(prom).rejects.toThrow('Invalid API key or user email');
+      await expect(prom).rejects.toThrow('Invalid API key');
     });
 
     it('should handle server error on ephemeral token fetch', async () => {

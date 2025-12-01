@@ -32,7 +32,6 @@ Create a `.env` file in your project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-ORGA_USER_EMAIL=developer@example.com
 ```
 
 > **Note:** Get your API key from the Orga AI dashboard. Never commit this file to version control.
@@ -43,8 +42,7 @@ ORGA_USER_EMAIL=developer@example.com
 import { OrgaAI } from '@orga-ai/node';
 
 const orgaAI = new OrgaAI({
-  apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL
+  apiKey: process.env.ORGA_API_KEY
 });
 
 // Get session configuration
@@ -60,8 +58,7 @@ import { OrgaAI } from '@orga-ai/node';
 import { NextResponse } from 'next/server';
 
 const orgaAI = new OrgaAI({
-  apiKey: process.env.ORGA_API_KEY!,
-  userEmail: process.env.ORGA_USER_EMAIL!
+  apiKey: process.env.ORGA_API_KEY!
 });
 
 export async function GET() {
@@ -87,8 +84,7 @@ import express from 'express';
 
 const app = express();
 const orgaAI = new OrgaAI({
-  apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL
+  apiKey: process.env.ORGA_API_KEY
 });
 
 app.get('/api/orga-session', async (req, res) => {
@@ -142,7 +138,7 @@ The Orga AI Backend SDK eliminates the need to write manual API integration code
 ### **Before (Manual API Calls):**
 ```typescript
 // 40+ lines of manual API code
-const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent("user@example.com")}`;
+const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
 const ephemeralResponse = await fetch(apiUrl, {
     method: "POST",
     headers: {
@@ -157,7 +153,7 @@ const iceServers = await fetchIceServers(data.ephemeral_token);
 ### **After (With Backend SDK):**
 ```typescript
 // Simple, clean interface
-const orgaAI = new OrgaAI({ apiKey, userEmail });
+const orgaAI = new OrgaAI({ apiKey });
 const sessionConfig = await orgaAI.getSessionConfig();
 ```
 
@@ -170,7 +166,6 @@ The `OrgaAI` constructor accepts the following configuration options:
 | Option | Type | Description | Default | Required? |
 |--------|------|-------------|---------|-----------|
 | `apiKey` | `string` | Your Orga AI API key | — | Yes |
-| `userEmail` | `string` | Developer's email address | — | Yes |
 | `baseUrl` | `string` | Orga AI API base URL | `https://api.orga-ai.com` | No |
 | `timeout` | `number` | Request timeout in milliseconds | `10000` | No |
 | `debug` | `boolean` | Enable debug logging | `false` | No |
@@ -180,7 +175,6 @@ The `OrgaAI` constructor accepts the following configuration options:
 ```typescript
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL,
   baseUrl: 'https://api.orga-ai.com',
   timeout: 30000, // 30 seconds
   debug: true // Enable debug logging
@@ -197,7 +191,6 @@ Creates a new OrgaAI client instance.
 
 **Parameters:**
 - `config.apiKey` (string): Your Orga AI API key
-- `config.userEmail` (string): Developer's email address  
 - `config.baseUrl` (string, optional): Orga AI API base URL
 - `config.timeout` (number, optional): Request timeout in milliseconds
 - `config.debug` (boolean, optional): Enable debug logging
@@ -235,7 +228,7 @@ try {
 } catch (error) {
   if (error instanceof OrgaAIAuthenticationError) {
     console.error('Authentication failed:', error.message);
-    // Handle invalid API key or user email
+    // Handle invalid API key
   } else if (error instanceof OrgaAIServerError) {
     console.error('Server error:', error.message);
     // Handle API server errors
@@ -252,7 +245,7 @@ try {
 ### Error Types
 
 - **`OrgaAIError`**: Base error class for all OrgaAI errors
-- **`OrgaAIAuthenticationError`**: Invalid API key or user email (401)
+- **`OrgaAIAuthenticationError`**: Invalid API key (401)
 - **`OrgaAIServerError`**: Server errors (500, 502, 503, etc.)
 
 ---
@@ -266,7 +259,6 @@ For different environments or regions:
 ```typescript
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL,
   baseUrl: 'https://api-staging.orga-ai.com' // Custom endpoint
 });
 ```
@@ -278,7 +270,6 @@ Enable detailed logging for development:
 ```typescript
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL,
   debug: true // Enables console logging
 });
 
@@ -295,7 +286,6 @@ Handle slow network conditions:
 ```typescript
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL,
   timeout: 60000 // 60 seconds
 });
 ```
@@ -313,7 +303,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY!,
-  userEmail: process.env.ORGA_USER_EMAIL!,
   timeout: 30000,
   debug: process.env.NODE_ENV === 'development'
 });
@@ -340,7 +329,6 @@ import { OrgaAI } from '@orga-ai/node';
 
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL
 });
 
 export const orgaSessionHandler = async (req, res, next) => {
@@ -367,7 +355,6 @@ import { OrgaAI } from '@orga-ai/node';
 
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL
 });
 
 export default async function orgaPlugin(fastify) {
@@ -392,8 +379,7 @@ The SDK is written in TypeScript and provides full type definitions:
 import { OrgaAI, SessionConfig, IceServer } from '@orga-ai/node';
 
 const orgaAI: OrgaAI = new OrgaAI({
-  apiKey: process.env.ORGA_API_KEY!,
-  userEmail: process.env.ORGA_USER_EMAIL!
+  apiKey: process.env.ORGA_API_KEY!
 });
 
 const sessionConfig: SessionConfig = await orgaAI.getSessionConfig();
@@ -426,8 +412,7 @@ describe('OrgaAI Integration', () => {
     }));
 
     const orgaAI = new OrgaAI({
-      apiKey: 'test-key',
-      userEmail: 'test@example.com'
+      apiKey: 'test-key'
     });
 
     const result = await orgaAI.getSessionConfig();
@@ -446,16 +431,12 @@ describe('OrgaAI Integration', () => {
    - Ensure `ORGA_API_KEY` environment variable is set
    - Check that the API key is valid
 
-2. **"Invalid email format"**
-   - Verify `ORGA_USER_EMAIL` is a valid email address
-   - Check for typos in the email format
-
-3. **"Failed to fetch ephemeral token"**
+2. **"Failed to fetch ephemeral token"**
    - Check your internet connection
    - Verify the API key has the correct permissions
    - Check if the Orga AI API is experiencing issues
 
-4. **Timeout errors**
+3. **Timeout errors**
    - Increase the timeout value if you have slow network
    - Check for network connectivity issues
 
@@ -466,7 +447,6 @@ Enable debug logging to see detailed information:
 ```typescript
 const orgaAI = new OrgaAI({
   apiKey: process.env.ORGA_API_KEY,
-  userEmail: process.env.ORGA_USER_EMAIL,
   debug: true // Enable debug logging
 });
 ```
