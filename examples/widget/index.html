@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orga Widget</title>
+</head>
+<body>
+  <div id="root">
+    <h1>HEY THIS IS THE WIDGET</h1>
+    <div data-orga-widget>
+
+    </div>
+  </div>
+  <!-- <script src="https://widget-test-inky-one.vercel.app/init.global.js"></script>
+  <script>
+    OrgaWidget.initWidget({
+      fetchSessionConfig: () =>
+        fetch("http://localhost:4000/api").then((res) => res.json()),
+    });
+  </script> -->
+
+  <!-- LOCAL DEV TESTING WIDGET -->
+ <script src="../../packages/client/widget/dist/init.global.js"></script>
+  <script type="module">
+    console.log("Initializing widget");
+    import { initWidget } from "../../packages/client/widget/dist/init.mjs";
+
+initWidget({
+  fetchSessionConfig: () =>
+    fetch("http://localhost:3000/api").then((res) => res.json()),
+//     ui: {
+//     // theme: "floating-badge",
+//     // theme: "panel",
+//     theme: "full",
+//     branding: {
+//       brandName: "Orga AI",
+//       tagline: "We’ll be right with you",
+//     //   badgeIconUrl: "https://cdn.acme.com/widget-icon.svg",
+//     //   logoUrl: "https://cdn.acme.com/logo.svg",
+//       accentColor: "#E41D1D",
+//     },
+//     features: {
+//       transcript: "panel",
+//       videoPreview: "optional",
+//     },
+//     overrides: {
+//       cssVariables: { "--orga-widget-radius": "24px" },
+//     },
+//   },
+});
+  </script>
+</body>
+</html>
