@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { OrgaAI } from "@orga-ai/node";
 const REALTIME_USER_TOKEN = process.env.REALTIME_USER_TOKEN;
-const REALTIME_USER_EMAIL = process.env.REALTIME_USER_EMAIL;
 
 const orgaAI = new OrgaAI({
-  apiKey: REALTIME_USER_TOKEN as string,
-  userEmail: REALTIME_USER_EMAIL as string,
+  apiKey: REALTIME_USER_TOKEN as string
 })
 
 export const GET = async () => {
