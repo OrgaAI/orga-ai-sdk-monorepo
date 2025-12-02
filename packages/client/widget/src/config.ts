@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import {sanitizeBranding, sanitizeOverrides} from "./utils"
+import { sanitizeBranding } from "./utils";
 
 export type WidgetThemeName = "floating-badge" | "panel" | "full";
 
@@ -18,6 +18,9 @@ export type WidgetBranding = {
   badgeIconUrl?: string;
   logoUrl?: string;
   logoAlt?: string;
+  transcriptBackgroundColor?: string;
+  assistantBubbleBackgroundColor?: string;
+  assistantBubbleTextColor?: string;
 };
 
 export type WidgetFeatureConfig = {
@@ -25,23 +28,10 @@ export type WidgetFeatureConfig = {
   videoPreview: VideoPreviewMode;
 };
 
-export type WidgetStyleOverrides = {
-  cssVariables?: Record<string, string>;
-  className?: string;
-};
-
-export type WidgetUiOptions = {
-  theme?: WidgetThemeName;
-  branding?: Partial<WidgetBranding>;
-  features?: Partial<WidgetFeatureConfig>;
-  overrides?: WidgetStyleOverrides;
-};
-
 export type WidgetRuntimeConfig = {
   theme: WidgetThemeName;
   branding: WidgetBranding;
   features: WidgetFeatureConfig;
-  overrides: WidgetStyleOverrides;
 };
 
 const DEFAULT_BRANDING: WidgetBranding = {
@@ -54,14 +44,20 @@ const DEFAULT_BRANDING: WidgetBranding = {
   secondaryTextColor: "#475569",
 };
 
-const DEFAULT_FEATURES: WidgetFeatureConfig = {
+export const DEFAULT_FEATURES: WidgetFeatureConfig = {
   transcript: "panel",
   videoPreview: "optional",
-  // theme: "floating-badge",
+};
+
+export type WidgetConfigInput = {
+  theme?: WidgetThemeName;
+  transcript?: TranscriptMode;
+  videoPreview?: VideoPreviewMode;
+  branding?: Partial<WidgetBranding>;
 };
 
 export const buildWidgetRuntimeConfig = (
-  options?: WidgetUiOptions
+  options?: WidgetConfigInput
 ): WidgetRuntimeConfig => {
   const mergedBranding: WidgetBranding = {
     ...DEFAULT_BRANDING,
@@ -75,26 +71,33 @@ export const buildWidgetRuntimeConfig = (
     branding,
     features: {
       ...DEFAULT_FEATURES,
-      ...options?.features,
+      transcript: options?.transcript ?? DEFAULT_FEATURES.transcript,
+      videoPreview: options?.videoPreview ?? DEFAULT_FEATURES.videoPreview,
     },
-    overrides: sanitizeOverrides(options?.overrides),
   };
 };
 
 export const buildCssVariableMap = (
   config: WidgetRuntimeConfig
 ): CSSProperties => {
+  // Use custom colors if provided, otherwise use sensible defaults
+  const transcriptBg = config.branding.transcriptBackgroundColor ?? "#f8fafc";
+  const assistantBubbleBg = config.branding.assistantBubbleBackgroundColor ?? "#ffffff";
+  const assistantBubbleText = config.branding.assistantBubbleTextColor ?? config.branding.textColor;
+
   const cssVars: CSSProperties & Record<string, string> = {
     "--orga-widget-accent": config.branding.accentColor,
     "--orga-widget-bg": config.branding.backgroundColor,
     "--orga-widget-border": config.branding.borderColor,
     "--orga-widget-primary": config.branding.textColor,
     "--orga-widget-secondary": config.branding.secondaryTextColor,
+    // Button outline text uses primary text color for better contrast
+    "--orga-widget-button-outline-text": config.branding.textColor,
+    // Transcript styling - customizable via branding
+    "--orga-widget-transcript-bg": transcriptBg,
+    "--orga-widget-bubble-assistant-bg": assistantBubbleBg,
+    "--orga-widget-bubble-assistant-text": assistantBubbleText,
   };
-
-  if (config.overrides?.cssVariables) {
-    Object.assign(cssVars, config.overrides.cssVariables);
-  }
 
   return cssVars;
 };

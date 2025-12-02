@@ -1,5 +1,6 @@
-import { WidgetBranding, WidgetStyleOverrides } from "../config";
-// TODO: Add js doc comments
+import type { WidgetBranding } from "../config";
+
+// TODO: Add JSDoc comments
 const sanitizeAssetUrl = (value?: string): string | undefined => {
   if (!value) {
     return undefined;
@@ -10,7 +11,14 @@ const sanitizeAssetUrl = (value?: string): string | undefined => {
     return undefined;
   }
 
+  // Allow data URIs for inline SVG/PNG, etc.
   if (trimmed.startsWith("data:image/")) {
+    return trimmed;
+  }
+
+  // Allow same-origin relative paths like "/favicon.ico".
+  // These will be resolved by the browser relative to the current origin.
+  if (trimmed.startsWith("/")) {
     return trimmed;
   }
 
@@ -25,7 +33,7 @@ const sanitizeAssetUrl = (value?: string): string | undefined => {
 
   if (process.env.NODE_ENV !== "production") {
     console.warn(
-      `[OrgaWidget] Ignoring unsafe asset URL. Only HTTPS or data:image URIs are allowed. Received: ${trimmed}`
+      `[OrgaWidget] Ignoring unsafe asset URL. Only HTTPS URLs, data:image URIs, or absolute paths starting with "/" are allowed. Received: ${trimmed}`
     );
   }
 
@@ -38,53 +46,4 @@ export const sanitizeBranding = (branding: WidgetBranding): WidgetBranding => {
     badgeIconUrl: sanitizeAssetUrl(branding.badgeIconUrl),
     logoUrl: sanitizeAssetUrl(branding.logoUrl),
   };
-};
-
-const sanitizeCssVariables = (
-  variables: Record<string, string>
-): Record<string, string> => {
-  const blockedPattern = /(url\(|expression\(|@import|javascript:)/i;
-  const sanitized: Record<string, string> = {};
-
-  for (const [key, value] of Object.entries(variables)) {
-    if (!key.startsWith("--")) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(
-          `[OrgaWidget] Ignoring CSS override "${key}". Custom properties must start with "--".`
-        );
-      }
-      continue;
-    }
-
-    if (!value || blockedPattern.test(value)) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(
-          `[OrgaWidget] Ignoring unsafe CSS value for "${key}". Value: "${value}"`
-        );
-      }
-      continue;
-    }
-
-    sanitized[key] = value;
-  }
-
-  return sanitized;
-};
-
-export const sanitizeOverrides = (
-  overrides?: WidgetStyleOverrides
-): WidgetStyleOverrides => {
-  if (!overrides) {
-    return {};
-  }
-
-  const sanitized: WidgetStyleOverrides = {
-    className: overrides.className,
-  };
-
-  if (overrides.cssVariables) {
-    sanitized.cssVariables = sanitizeCssVariables(overrides.cssVariables);
-  }
-
-  return sanitized;
 };

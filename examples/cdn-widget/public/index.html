@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orga AI CDN | Conversational AI (voice & video) via @orga-ai/react</title>
+    <meta
+      name="description"
+      content="Embed conversational AI with audio and video using the Orga AI CDN on top of @orga-ai/react. Requires your own backend service to exchange API keys for ephemeral tokens — open beta, no telemetry, no charge."
+    />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --secondary: #4f46e5;
+        --bg-dark: #0f172a;
+        --text-light: #f8fafc;
+        --text-gray: #94a3b8;
+        --card-bg: #1e293b;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        line-height: 1.6;
+      }
+
+      /* Navigation */
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .logo {
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--primary);
+        letter-spacing: -1px;
+      }
+
+      .nav-links a {
+        color: var(--text-gray);
+        text-decoration: none;
+        margin-left: 2rem;
+        transition: color 0.3s;
+        font-size: 0.95rem;
+      }
+
+      .nav-links a:hover {
+        color: var(--text-light);
+      }
+
+      /* Hero Section */
+      .hero {
+        text-align: left;
+        padding: 8rem 1rem;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 3.25rem;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(to right, #818cf8, #c084fc);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-eyebrow {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-gray);
+        margin-bottom: 0.75rem;
+      }
+
+      .subtitle {
+        font-size: 1.25rem;
+        color: var(--text-gray);
+        margin-bottom: 2rem;
+      }
+
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .btn {
+        background-color: var(--primary);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.3s;
+        display: inline-block;
+        border: 1px solid transparent;
+      }
+
+      .btn:hover {
+        background-color: var(--secondary);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-light);
+        border-color: rgba(148, 163, 184, 0.5);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .hero-subtext {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        max-width: 28rem;
+      }
+
+      .hero-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 2rem;
+      }
+
+      .tag-pill {
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        color: var(--text-gray);
+      }
+
+      /* Dashboard Preview (Simulated) */
+      .dashboard-preview {
+        display: flex;
+        justify-content: center;
+        max-width: 1000px;
+        margin: 0 auto;
+        align-items: center;
+      }
+
+      .preview-stat {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .preview-chart {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-gray);
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .preview-title {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+      }
+
+      .preview-badge {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-radius: 999px;
+        padding: 0.15rem 0.7rem;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        color: var(--text-gray);
+      }
+
+      /* Features Grid */
+      .features {
+        max-width: 1200px;
+        margin: 6rem auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .feature-card h3 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+      }
+
+      .feature-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-gray);
+        margin-bottom: 0.4rem;
+      }
+
+      /* Generic section layout */
+      .section {
+        max-width: 1100px;
+        margin: 4rem auto;
+        padding: 0 2rem;
+      }
+
+      .section-header {
+        margin-bottom: 2rem;
+      }
+
+      .section-kicker {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-gray);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-subtitle {
+        color: var(--text-gray);
+        max-width: 32rem;
+      }
+
+      /* How it works */
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .step-card {
+        background: var(--card-bg);
+        padding: 1.5rem 1.75rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .step-number {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-gray);
+        margin-bottom: 0.4rem;
+      }
+
+      /* Code block */
+      .code-block {
+        background: radial-gradient(circle at top left, #1f2937, #020617);
+        border-radius: 12px;
+        padding: 1.5rem 1.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        color: #e5e7eb;
+      }
+
+      .code-comment {
+        color: #6b7280;
+      }
+
+      /* Pricing */
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .pricing-card {
+        background: var(--card-bg);
+        padding: 2rem 1.75rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .pricing-tier {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-gray);
+      }
+
+      .pricing-price {
+        font-size: 2rem;
+        font-weight: 600;
+      }
+
+      .pricing-meta {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+      }
+
+      .pricing-list {
+        margin-top: 0.5rem;
+        padding-left: 1.1rem;
+        color: var(--text-gray);
+        font-size: 0.9rem;
+      }
+
+      .pricing-list li + li {
+        margin-top: 0.25rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 0.15rem 0.6rem;
+        font-size: 0.75rem;
+        color: var(--text-gray);
+      }
+
+      /* Testimonial */
+      .testimonial {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.3);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+        color: var(--text-gray);
+      }
+
+      .testimonial-author {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+
+      /* Inline widget card */
+      .widget-section {
+        max-width: 1100px;
+        margin: 4rem auto 0;
+        padding: 0 2rem;
+      }
+
+      .widget-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px dashed rgba(148, 163, 184, 0.5);
+        padding: 1.75rem;
+      }
+
+      .widget-heading {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .widget-copy {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        margin-bottom: 1rem;
+      }
+
+      .widget-self {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Responsive tweaks */
+      @media (max-width: 768px) {
+        nav {
+          padding: 1rem 1.25rem;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 5rem;
+        }
+
+        h1 {
+          font-size: 2.4rem;
+        }
+      }
+
+      /* Footer */
+      footer {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: var(--text-gray);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+
+    <!-- ============================================== -->
+    <!--  CDN TEST ZONE: INSERT YOUR SCRIPT BELOW       -->
+    <!-- ============================================== -->
+
+    <!-- Example: <script src="https://cdn.your-domain.com/analytics.js"></script> -->
+
+    <!-- ============================================== -->
+  </head>
+  <body>
+    <nav>
+      <div class="logo">Orga AI.</div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="https://docs.orga-ai.com" target="_blank" rel="noreferrer">Docs</a>
+        <a href="https://platform.orga-ai.com" target="_blank" rel="noreferrer">Console</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <p class="hero-eyebrow">Conversational AI widget on top of @orga-ai/react</p>
+      <h1>Add voice &amp; video conversations with two script tags.</h1>
+      <p class="subtitle">
+        This page is a live CDN test harness for the Orga AI widget. Under the hood
+        it runs on our <code>@orga-ai/react</code> SDK to handle real-time
+        conversational AI with audio and video.
+      </p>
+
+      <div class="hero-cta">
+        <a
+          href="https://platform.orga-ai.com"
+          target="_blank"
+          class="btn"
+          id="start-trial-btn"
+        >
+          Get your API key
+        </a>
+        <a href="#how-it-works" class="btn btn-secondary">See how setup works</a>
+      </div>
+
+      <p class="hero-subtext">
+        You’ll bring your own backend service (to keep your Orga API key secret),
+        we’ll handle the ephemeral tokens, media servers, and WebRTC plumbing.
+      </p>
+
+      <div class="hero-tags">
+        <span class="tag-pill">Audio &amp; video first</span>
+        <span class="tag-pill">Built on @orga-ai/react</span>
+        <span class="tag-pill">Open beta — no charge</span>
+      </div>
+    </section>
+
+    <div class="dashboard-preview">
+      <div class="widget-card">
+        <h3 class="widget-heading">Live Orga AI demo</h3>
+        <p class="widget-copy">
+          This is the same conversational widget you’ll embed in your own app —
+          running on top of <code>@orga-ai/react</code> and powered by your backend
+          session endpoint. Try speaking or turning on video to see how it feels
+          before you wire up your own keys.
+        </p>
+        <div data-orga-widget class="widget-self"></div>
+      </div>
+    </div>
+
+    <div class="features" id="features">
+      <div class="feature-card">
+        <div class="feature-label">Multimodal</div>
+        <h3>Conversational AI with audio and video</h3>
+        <p style="color: var(--text-gray)">
+          Give users a full conversational interface — microphone, camera, text —
+          without rebuilding the stack yourself. The CDN widget wires straight
+          into our <code>@orga-ai/react</code> components.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-label">Your backend</div>
+        <h3>Keep your API keys on the server</h3>
+        <p style="color: var(--text-gray)">
+          You run a tiny backend service that holds your Orga API key and calls our
+          servers to exchange it for ephemeral tokens and <code>iceServers</code>.
+          The widget never sees the secret — only the short-lived session config.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-label">Developer experience</div>
+        <h3>TypeScript-first SDKs</h3>
+        <p style="color: var(--text-gray)">
+          Build with our React SDK on the client and our Node SDK on the server.
+          Strong typing helps you pass the right session config into the widget and
+          makes future migrations safer.
+        </p>
+      </div>
+    </div>
+
+    <section class="section" id="how-it-works">
+      <div class="section-header">
+        <div class="section-kicker">How it works</div>
+        <h2 class="section-title">Three pieces: API key, backend, widget.</h2>
+        <p class="section-subtitle">
+          To run Orga AI in production you’ll need an API key, a small backend
+          service, and the widget snippet that this page is already using.
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">Step 1</div>
+          <h3>Get your API key</h3>
+          <p style="color: var(--text-gray); font-size: 0.95rem">
+            Sign up at <strong>platform.orga-ai.com</strong> and create an Orga AI
+            project. You’ll get a secret API key that must live on your backend,
+            never in client-side code.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">Step 2</div>
+          <h3>Create a tiny backend service</h3>
+          <p style="color: var(--text-gray); font-size: 0.95rem">
+            Use our Node SDK (or your language of choice) to expose an endpoint like
+            <code>/orga/session</code>. It receives a request from your frontend,
+            calls Orga with your API key, and returns an ephemeral token and
+            <code>iceServers</code> configuration.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">Step 3</div>
+          <h3>Mount the widget via CDN</h3>
+          <p style="color: var(--text-gray); font-size: 0.95rem">
+            Drop the two script tags and the <code>data-orga-widget</code> div into
+            your page. The widget calls your backend for the session config and
+            then connects to Orga’s infrastructure to handle the conversation.
+            Make sure your backend’s CORS settings allow requests from the origin
+            where this page is hosted, otherwise the browser will block the call.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="developers">
+      <div class="section-header">
+        <div class="section-kicker">For developers</div>
+        <h2 class="section-title">Front-end widget, back-end service, all in TypeScript.</h2>
+        <p class="section-subtitle">
+          The CDN widget runs on top of <code>@orga-ai/react</code>. Your backend
+          can use our Node SDK to exchange your API key for an ephemeral token and
+          <code>iceServers</code>. No telemetry, just what’s needed to run calls.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <span class="code-comment">// Frontend: two scripts + widget mount</span
+        ><br />
+        &lt;!-- 1. Load the Orga AI widget from the CDN --&gt;<br />
+        &lt;script
+        src="https://widget-test-inky-one.vercel.app/init.global.js"
+        async&gt;&lt;/script&gt;<br />
+        <br />
+        &lt;!-- 2. Initialize it and point at your backend session endpoint --&gt;<br />
+        &lt;script&gt;<br />
+        &nbsp;&nbsp;OrgaWidget.initWidget(&#123;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;fetchSessionConfig: () =&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fetch("/orga/session").then((res) =&gt;
+        res.json()),<br />
+        &nbsp;&nbsp;&#125;);<br />
+        &lt;/script&gt;<br />
+        <br />
+        &lt;!-- 3. Place the widget near the bottom of your page --&gt;<br />
+        &lt;div data-orga-widget /&gt;<br />
+        <br />
+        <span class="code-comment">// Backend: minimal Node/Express (TypeScript)</span
+        ><br />
+        <span class="code-comment"
+          >// Use our Node SDK as documented at docs.orga-ai.com</span
+        ><br />
+        import express, &#123; Request, Response &#125; from "express";<br />
+        import cors from "cors";<br />
+        import &#123; OrgaAI &#125; from "@orga-ai/node";<br />
+        <br />
+        const app = express();<br />
+        <br />
+        <span class="code-comment"
+          >// IMPORTANT: allow CORS from the origin where your widget is hosted</span
+        ><br />
+        app.use(cors(&#123; origin: "https://your-widget-domain.com" &#125;));<br />
+        <br />
+        const orga = new OrgaAI(&#123;<br />
+            &nbsp;&nbsp; apiKey: process.env.ORGA_API_KEY!,<br/>
+            &nbsp;&nbsp; debug: true,<br/>
+            &#125;);<br />
+        <br />
+        app.get("/api/orga-client-secrets", async (_req: Request, res: Response) =&gt; &#123;<br />
+        &nbsp;&nbsp;try &#123;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;const creds = await orga.getSessionConfig();<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;res.json(creds); <span class="code-comment">// &#123; ephemeralToken, iceServers &#125;</span>
+        <br />
+        &nbsp;&nbsp;&#125; catch (error) &#123;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;console.error("Failed to get Orga session config", error);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;res.status(500).json(&#123; error: "Internal server error" &#125;);<br />
+        &nbsp;&nbsp;&#125;<br />
+        &#125;);<br />
+        <br />
+        app.listen(5000, () =&gt; &#123;<br />
+        &nbsp;&nbsp;console.log("Backend listening on http://localhost:5000");<br />
+        &#125;);
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Orga AI Inc. All rights reserved.</p>
+    </footer>
+
+    <script src="https://widget-test-inky-one.vercel.app/init.global.js"></script>
+    <script>
+      OrgaWidget.initWidget({
+        fetchSessionConfig: () =>
+          fetch("http://localhost:3000/api").then((res) => res.json()),
+      });
+    </script>
+  </body>
+</html>

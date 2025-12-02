@@ -3,7 +3,15 @@ import { createRoot, Root } from "react-dom/client";
 import { OrgaAI, OrgaAIProvider } from "@orga-ai/react";
 import type { SessionConfigResponse, OrgaAIVoice } from "@orga-ai/core";
 import { WidgetApp } from "./WidgetApp";
-import { buildWidgetRuntimeConfig, type WidgetUiOptions } from "./config";
+
+import {
+  buildWidgetRuntimeConfig,
+  type WidgetThemeName,
+  type TranscriptMode,
+  type VideoPreviewMode,
+  type WidgetBranding,
+  type WidgetFeatureConfig,
+} from "./config";
 import { safeFetchSessionConfig } from "./utils/safeFetch";
 
 export type WidgetInitOptions = {
@@ -18,7 +26,9 @@ export type WidgetInitOptions = {
    */
   fetchSessionConfig: () => Promise<SessionConfigResponse>;
   /**
-   * Optional session configuration endpoint to seed OrgaAI.init.*/
+   * Optional session configuration endpoint to seed OrgaAI.init.
+   * Used only for logging / diagnostics.
+   */
   sessionConfigEndpoint?: string;
   /**
    * Optional voice/model configuration to seed OrgaAI.init.
@@ -29,9 +39,21 @@ export type WidgetInitOptions = {
    */
   logLevel?: "disabled" | "error" | "warn" | "info" | "debug";
   /**
-   * UI customization options (themes, branding, feature toggles).
+   * Theme/layout preset for the widget shell.
    */
-  ui?: WidgetUiOptions;
+  theme?: WidgetThemeName;
+  /**
+   * Controls whether the transcript panel is visible.
+   */
+  transcript?: TranscriptMode;
+  /**
+   * Controls camera preview behavior.
+   */
+  videoPreview?: VideoPreviewMode;
+  /**
+   * UI branding: name, tagline, and color palette.
+   */
+  branding?: Partial<WidgetBranding>;
 };
 
 const DEFAULT_SELECTOR = "[data-orga-widget]";
@@ -62,7 +84,13 @@ const resolveTarget = (target?: HTMLElement | string): HTMLElement => {
   return fallback;
 };
 
- export const initWidget = (options: WidgetInitOptions) => {
+export const initWidget = (options: WidgetInitOptions): void => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    throw new Error(
+      "[OrgaWidget] initWidget must be called in a browser environment where window and document are available."
+    );
+  }
+
   if (!options || typeof options.fetchSessionConfig !== "function") {
     throw new Error(
       "[OrgaWidget] fetchSessionConfig is required to initialize the widget."
@@ -71,7 +99,12 @@ const resolveTarget = (target?: HTMLElement | string): HTMLElement => {
 
   const hostNode = resolveTarget(options.target);
 
-  const uiConfig = buildWidgetRuntimeConfig(options.ui);
+  const uiConfig = buildWidgetRuntimeConfig({
+    theme: options.theme,
+    transcript: options.transcript,
+    videoPreview: options.videoPreview,
+    branding: options.branding,
+  });
 
   const safeFetch = () =>
     safeFetchSessionConfig(options.fetchSessionConfig, {
@@ -79,15 +112,18 @@ const resolveTarget = (target?: HTMLElement | string): HTMLElement => {
     });
 
   if (!isInitialized) {
-    OrgaAI.init({
-      fetchSessionConfig: safeFetch,
-      // fetchSessionConfig: options.fetchSessionConfig,
-      voice: options.voice ?? "fable",
-      logLevel: options.logLevel ?? "info",
-      sessionConfigEndpoint: options.sessionConfigEndpoint ?? undefined,
-      enableTranscriptions: uiConfig.features.transcript !== "hidden",
-    });
-    isInitialized = true;
+    try {
+      OrgaAI.init({
+        fetchSessionConfig: safeFetch,
+        voice: options.voice ?? "fable",
+        logLevel: options.logLevel ?? "info",
+        sessionConfigEndpoint: options.sessionConfigEndpoint ?? undefined,
+        enableTranscriptions: uiConfig.features.transcript !== "hidden",
+      });
+      isInitialized = true;
+    } catch (error) {
+      throw error;
+    }
   }
 
   if (!widgetRoot) {
@@ -96,7 +132,8 @@ const resolveTarget = (target?: HTMLElement | string): HTMLElement => {
 
   widgetRoot.render(
     <OrgaAIProvider>
-      <WidgetApp config={uiConfig} />
+      <WidgetApp config={uiConfig}
+      />
     </OrgaAIProvider>
   );
 
@@ -104,22 +141,37 @@ const resolveTarget = (target?: HTMLElement | string): HTMLElement => {
     const nextOrgaWidget = {
       ...(window.OrgaWidget ?? {}),
       initWidget,
-      version: "0.0.1", 
+      destroyWidget,
+      version: "0.0.1",
     };
-  
+
     try {
       window.OrgaWidget = Object.freeze(nextOrgaWidget);
     } catch {
       window.OrgaWidget = nextOrgaWidget;
-      console.warn("[OrgaWidget] Unable to freeze global API; continuing unfrozen.");
+      console.warn(
+        "[OrgaWidget] Unable to freeze global API; continuing unfrozen."
+      );
     }
   }
 };
 
+export const destroyWidget = (): void => {
+  if (!widgetRoot) {
+    return;
+  }
+
+  try {
+    widgetRoot.unmount();
+  } finally {
+    widgetRoot = null;
+  }
+};
 
 export type {
-  WidgetUiOptions,
   WidgetThemeName,
+  TranscriptMode,
+  VideoPreviewMode,
   WidgetFeatureConfig,
   WidgetBranding,
 } from "./config";
@@ -128,6 +180,8 @@ declare global {
   interface Window {
     OrgaWidget?: {
       initWidget: typeof initWidget;
+      destroyWidget: typeof destroyWidget;
+      version?: string;
     };
   }
 }

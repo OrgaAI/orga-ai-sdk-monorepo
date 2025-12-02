@@ -1,0 +1,15 @@
+{
+  "name": "@orga-ai/widget-cdn",
+  "version": "0.0.1",
+  "private": true,
+  "description": "CDN deployment target for Orga AI widget — static files served via Vercel",
+  "scripts": {
+    "build": "echo 'Widget files are copied from @orga-ai/widget package during build'"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Orga AI",
+  "license": "Apache-2.0"
+}
+

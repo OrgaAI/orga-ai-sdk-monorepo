@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import {
   ConnectionState,
   ConversationItem,
@@ -148,13 +149,31 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
 
   const cssVariables = useMemo(() => buildCssVariableMap(config), [config]);
 
+  const primaryButtonStyle = useMemo<CSSProperties>(
+    () => ({
+      backgroundColor: config.branding.accentColor,
+      color: "#ffffff",
+    }),
+    [config.branding.accentColor]
+  );
+
+  const outlineButtonStyle = useMemo<CSSProperties>(
+    () => ({
+      borderColor: config.branding.accentColor,
+      // Color is handled by CSS variable --orga-widget-button-outline-text
+    }),
+    [config.branding.accentColor]
+  );
+
   const renderBadgeIcon = () => {
-    const badgeIconSrc = config.branding.badgeIconUrl || ORGA_BADGE_ICON_DATA_URI;
+    const badgeIconSrc =
+      config.branding.badgeIconUrl || ORGA_BADGE_ICON_DATA_URI;
+
     return (
       <img
         src={badgeIconSrc}
         alt={config.branding.logoAlt ?? `${config.branding.brandName} logo`}
-        className="orga-widget__badge-logo"
+        className="orga-widget__badge-logo orga-widget__badge-logo--full"
         loading="lazy"
         decoding="async"
       />
@@ -253,6 +272,7 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
               ? "orga-widget__button--danger"
               : "orga-widget__button--primary"
           }`}
+          style={primaryButtonStyle}
           onClick={handleSessionToggle}
           disabled={isBusy || isConnecting}
         >
@@ -266,6 +286,7 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
         <button
           type="button"
           className="orga-widget__button orga-widget__button--outline"
+          style={outlineButtonStyle}
           onClick={handleMicToggle}
           disabled={!isConnected || isBusy}
         >
@@ -276,6 +297,7 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
           <button
             type="button"
             className="orga-widget__button orga-widget__button--outline"
+            style={outlineButtonStyle}
             onClick={handleCameraToggle}
             disabled={!isConnected || isBusy}
           >
@@ -303,13 +325,11 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
   };
 
   const panelClassName = useMemo(() => {
-    return ["orga-widget__panel", config.overrides?.className]
-      .filter(Boolean)
-      .join(" ");
-  }, [config.overrides?.className]);
+    return "orga-widget__panel";
+  }, []);
 
   const panel = (
-    <div className={panelClassName} style={cssVariables}>
+    <div className={panelClassName}>
       <div className="orga-widget__header">
         <div className="orga-widget__title">
           <div className="orga-widget__title-row">
@@ -367,6 +387,7 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
         className="orga-widget-shell"
         data-theme="floating-badge"
         data-open={isBadgeOpen}
+        style={cssVariables}
       >
         {!isBadgeOpen && (
           <button
@@ -411,6 +432,7 @@ export const WidgetApp = ({ config }: WidgetAppProps) => {
     <div
       className={`orga-widget-shell orga-widget--${config.theme}`}
       data-theme={config.theme}
+      style={cssVariables}
     >
       {panel}
     </div>

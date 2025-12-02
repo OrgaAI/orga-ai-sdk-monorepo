@@ -24,7 +24,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup --config tsup.config.ts",
+    "build": "tsup --config tsup.config.ts && npm run copy:cdn",
+    "copy:cdn": "mkdir -p ../../../apps/widget-cdn/public && cp -r dist/* ../../../apps/widget-cdn/public/",
     "clean": "rm -rf dist lib build *.tsbuildinfo",
     "type-check": "tsc --noEmit --pretty",
     "test": "jest",

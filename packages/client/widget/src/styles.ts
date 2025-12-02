@@ -7,10 +7,32 @@ const baseStyles = `
   --orga-widget-primary: #0f172a;
   --orga-widget-secondary: #475569;
   --orga-widget-accent: #2D9FBC;
-//   --orga-widget-accent: #033147;
   --orga-widget-success: #10b981;
   --orga-widget-error: #ef4444;
   --orga-widget-radius: 18px;
+  /* Controls */
+  --orga-widget-badge-size: 64px;
+  --orga-widget-control-radius: 999px;
+  /* Status badge tokens */
+  --orga-widget-status-radius: 999px;
+  --orga-widget-status-default-bg: #f1f5f9;
+  --orga-widget-status-default-text: var(--orga-widget-secondary);
+  --orga-widget-status-connected-bg: rgba(16, 185, 129, 0.15);
+  --orga-widget-status-connected-text: var(--orga-widget-success);
+  --orga-widget-status-connecting-bg: rgba(45, 159, 188, 0.15);
+  --orga-widget-status-connecting-text: var(--orga-widget-accent);
+  /* Button tokens */
+  --orga-widget-button-primary-bg: var(--orga-widget-accent);
+  --orga-widget-button-primary-text: #ffffff;
+  --orga-widget-button-danger-bg: var(--orga-widget-error);
+  --orga-widget-button-danger-text: #ffffff;
+  /* By default, outline buttons are accent-colored outlines */
+  --orga-widget-button-outline-border: var(--orga-widget-accent);
+  --orga-widget-button-outline-text: var(--orga-widget-primary);
+  /* Transcript tokens */
+  --orga-widget-transcript-bg: #f8fafc;
+  --orga-widget-bubble-assistant-bg: #ffffff;
+  --orga-widget-bubble-assistant-text: var(--orga-widget-primary);
 }
 
 .orga-widget-shell {
@@ -29,9 +51,9 @@ const baseStyles = `
 }
 
 .orga-widget__badge-button {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
+  width: var(--orga-widget-badge-size);
+  height: var(--orga-widget-badge-size);
+  border-radius: var(--orga-widget-control-radius);
   border: none;
   background: var(--orga-widget-accent);
   color: #fff;
@@ -60,6 +82,13 @@ const baseStyles = `
   object-fit: contain;
   position: relative;
   z-index: 1;
+}
+
+.orga-widget__badge-logo--full {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  object-fit: cover;
 }
 
 .orga-widget__badge-button::after {
@@ -222,20 +251,20 @@ const baseStyles = `
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--orga-widget-status-radius);
   text-transform: capitalize;
-  background: #f1f5f9;
-  color: var(--orga-widget-secondary);
+  background: var(--orga-widget-status-default-bg);
+  color: var(--orga-widget-status-default-text);
 }
 
 .orga-widget__status--connected {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--orga-widget-success);
+  background: var(--orga-widget-status-connected-bg);
+  color: var(--orga-widget-status-connected-text);
 }
 
 .orga-widget__status--connecting {
-  background: rgba(37, 99, 235, 0.15);
-  color: var(--orga-widget-accent);
+  background: var(--orga-widget-status-connecting-bg);
+  color: var(--orga-widget-status-connecting-text);
 }
 
 .orga-widget__header-actions {
@@ -331,7 +360,7 @@ const baseStyles = `
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #f8fafc;
+  background: var(--orga-widget-transcript-bg);
 }
 
 .orga-widget__empty-state {
@@ -351,8 +380,9 @@ const baseStyles = `
 
 .orga-widget__bubble--assistant {
   align-self: flex-start;
-  background: #ffffff;
+  background: var(--orga-widget-bubble-assistant-bg);
   border: 1px solid var(--orga-widget-border);
+  color: var(--orga-widget-bubble-assistant-text);
 }
 
 .orga-widget__bubble--user {
@@ -379,7 +409,7 @@ const baseStyles = `
 .orga-widget__button {
   flex: 1 1 auto;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--orga-widget-control-radius);
   padding: 10px 14px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -393,19 +423,19 @@ const baseStyles = `
 }
 
 .orga-widget__button--primary {
-  background: var(--orga-widget-accent);
-  color: #fff;
+  background: var(--orga-widget-button-primary-bg);
+  color: var(--orga-widget-button-primary-text);
 }
 
 .orga-widget__button--danger {
-  background: var(--orga-widget-error);
-  color: #fff;
+  background: var(--orga-widget-button-danger-bg);
+  color: var(--orga-widget-button-danger-text);
 }
 
 .orga-widget__button--outline {
   background: transparent;
-  border: 1px solid var(--orga-widget-border);
-  color: var(--orga-widget-primary);
+  border: 1px solid var(--orga-widget-button-outline-border);
+  color: var(--orga-widget-button-outline-text);
 }
 
 .orga-widget__hint {
