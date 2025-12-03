@@ -1,6 +1,6 @@
 {
   "name": "@orga-ai/react-native",
-  "version": "1.0.4-beta.1",
+  "version": "1.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -31,7 +31,7 @@
   "author": "Orga AI",
   "license": "Apache-2.0",
   "dependencies": {
-    "@orga-ai/core": "workspace:^1.0.0"
+    "@orga-ai/core": "workspace:^1.0.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
