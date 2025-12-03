@@ -56,7 +56,6 @@ Create a `.env.local` file in your project root:
 
 ```env
 ORGA_API_KEY=your_orga_api_key_here
-USER_EMAIL=john@example.com
 ```
 
 > **Note:** Get your API key from the Orga AI dashboard. Never commit this file to version control.
@@ -91,13 +90,6 @@ const fetchIceServers = async (ephemeralToken: string) => {
 };
 
 export const GET = async () => {
-  if (!USER_EMAIL) {
-    return NextResponse.json(
-      { error: 'Missing ORGA_DEV_EMAIL environment variable' }, 
-      { status: 500 }
-    );
-  }
-
   if (!ORGA_API_KEY) {
     return NextResponse.json(
       { error: 'Missing ORGA_API_KEY environment variable' }, 
@@ -105,7 +97,7 @@ export const GET = async () => {
     );
   }
 
-  const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets?email=${encodeURIComponent(USER_EMAIL)}`;
+  const apiUrl = `https://api.orga-ai.com/v1/realtime/client-secrets`;
   const clientSecrets = await fetch(apiUrl, {
     method: "POST",
     headers: {
@@ -364,7 +356,7 @@ OrgaAI.init({
 ---
 
 > **Summary:**
-> - Always keep your Orga AI API key and developer email on a secure backend.
+> - Always keep your Orga AI API key on a secure backend.
 > - Never expose them in your app or client-side code.
 > - The client (web or mobile) should only call your backend, never Orga AI directly.
 
