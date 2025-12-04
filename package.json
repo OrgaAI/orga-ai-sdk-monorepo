@@ -2,7 +2,7 @@
   "name": "orga-ai-sdk-monorepo",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build --filter='./packages/**'",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -10,7 +10,7 @@
     "test": "turbo run test",
     "prepare": "husky",
     "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",
-    "ci:publish": "pnpm turbo run build && pnpm changeset publish"
+    "ci:publish": "pnpm turbo run build --filter='./packages/**' && pnpm changeset publish"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
