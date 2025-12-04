@@ -31,6 +31,7 @@ import {
   logger,
   connectToRealtime,
   RTCIceServer,
+  stripEmotionTags
 } from "@orga-ai/core";
 
 interface RTCIceCandidateInit {
@@ -350,12 +351,14 @@ export function useOrgaAI(
               conversationIdRef.current || conversationId;
             logger.debug("🤖 Processing assistant response");
             if (currentConversationId) {
+              const rawMessage = dataChannelEvent.text || dataChannelEvent.message || "";
+              const cleanedMessage = stripEmotionTags(rawMessage);
               const conversationItem: ConversationItem = {
                 conversationId: currentConversationId,
                 sender: "assistant",
                 content: {
                   type: "text",
-                  message: dataChannelEvent.text || dataChannelEvent.message || "",
+                  message: cleanedMessage,
                 },
                 voiceType: voice,
                 modelVersion: model,
@@ -671,27 +674,67 @@ export function useOrgaAI(
       "✅ Microphone stream obtained:",
       stream.getTracks().map((t) => ({ id: t.id, kind: t.kind }))
     );
+    
+    const audioTrack = stream.getAudioTracks()[0];
+    if (!audioTrack) {
+      stream.getTracks().forEach((track) => track.stop());
+      throw new Error('No audio track found in stream');
+    }
+    
+    // Replace audio track FIRST before updating state
+    if (audioTransceiverRef.current && audioTransceiverRef.current.sender) {
+      logger.debug("🔄 Replacing audio sender track:", audioTrack.id);
+      try {
+        await audioTransceiverRef.current.sender.replaceTrack(audioTrack);
+        audioTrack.enabled = true;
+        logger.debug("✅ Audio track replaced successfully");
+      } catch (replaceError) {
+        logger.error("❌ Failed to replace audio track:", replaceError);
+        stream.getTracks().forEach((track) => track.stop());
+        throw new Error(`Failed to replace audio track: ${replaceError instanceof Error ? replaceError.message : 'Unknown error'}`);
+      }
+    } else {
+      logger.error("❌ Audio transceiver or sender not available");
+      stream.getTracks().forEach((track) => track.stop());
+      throw new Error('Audio transceiver sender not available. Please ensure the session is properly connected.');
+    }
+    
+    // Calculate new modalities BEFORE updating state
+    const currentModalities = modalities;
+    const newModalities = currentModalities.includes("audio") 
+      ? currentModalities 
+      : [...currentModalities, "audio" as Modality];
+    logger.debug("🎤 Updated modalities for mic enable:", newModalities);
+    
+    // Update state after successful track replacement
     setUserAudioStream(stream);
     setIsMicOn(true);
-
-    setModalities(prev => {
-      const newModalities = prev.includes("audio") ? prev : [...prev, "audio" as Modality];
-      logger.debug("🎤 Updated modalities for mic enable:", newModalities);
-      return newModalities;
-    });
-
+    setModalities(newModalities);
+    
+    // Send updated params with the NEW modalities immediately
     if (connectionState === "connected") {
-      sendUpdatedParams();
+      const dataChannel = dataChannelRef.current;
+      if (dataChannel && dataChannel.readyState === "open") {
+        const payload = {
+          event: DataChannelEventTypes.SESSION_UPDATE,
+          data: {
+            ...(model && { model: model }),
+            ...(voice && { voice: voice }),
+            ...(temperature !== null && { temperature: temperature }),
+            ...(instructions && { instructions: instructions }),
+            modalities: newModalities, // Use the new modalities directly
+          },
+        };
+        logger.debug("📤 Sending updated parameters with audio modality:", payload);
+        logger.info("⚙️ Sending updated parameters with modalities:", { modalities: newModalities });
+        dataChannel.send(JSON.stringify(payload));
+      } else {
+        logger.warn("⚠️ Cannot send updated params: data channel not open");
+      }
     }
-
-    if (audioTransceiverRef.current) {
-      const audioTrack = stream.getAudioTracks()[0];
-      logger.debug("🔄 Replacing audio sender track:", audioTrack.id);
-      await audioTransceiverRef.current.sender.replaceTrack(audioTrack);
-      audioTrack.enabled = true;
-    }
+    
     logger.info("✅ Microphone enabled");
-  }, [userAudioStream, connectionState, sendUpdatedParams]);
+  }, [userAudioStream, connectionState, modalities, model, voice, temperature, instructions]);
 
   const disableMic = useCallback(
     async (hardDisable = false) => {
@@ -719,19 +762,38 @@ export function useOrgaAI(
         }
       }
       setIsMicOn(false);
-      setModalities(prev => {
-        const newModalities = prev.filter(modality => modality !== "audio");
-        logger.debug("🎤 Updated modalities for mic disable:", newModalities);
-        return newModalities;
-      });
       
+      // Calculate new modalities BEFORE updating state
+      const currentModalities = modalities;
+      const newModalities = currentModalities.filter(modality => modality !== "audio");
+      logger.debug("🎤 Updated modalities for mic disable:", newModalities);
+      setModalities(newModalities);
+      
+      // Send updated params with the NEW modalities immediately
       if (connectionState === "connected") {
-        sendUpdatedParams();
+        const dataChannel = dataChannelRef.current;
+        if (dataChannel && dataChannel.readyState === "open") {
+          const payload = {
+            event: DataChannelEventTypes.SESSION_UPDATE,
+            data: {
+              ...(model && { model: model }),
+              ...(voice && { voice: voice }),
+              ...(temperature !== null && { temperature: temperature }),
+              ...(instructions && { instructions: instructions }),
+              modalities: newModalities, // Use the new modalities directly
+            },
+          };
+          logger.debug("📤 Sending updated parameters without audio modality:", payload);
+          logger.info("⚙️ Sending updated parameters with modalities:", { modalities: newModalities });
+          dataChannel.send(JSON.stringify(payload));
+        } else {
+          logger.warn("⚠️ Cannot send updated params: data channel not open");
+        }
       }
 
       logger.info("✅ Microphone disabled");
     },
-    [userAudioStream, connectionState, sendUpdatedParams]
+    [userAudioStream, connectionState, modalities, model, voice, temperature, instructions]
   );
 
   const toggleMic = useCallback(async () => {
@@ -767,32 +829,80 @@ export function useOrgaAI(
       logger.debug("📹 Camera constraints:", constraints);
       const stream = await mediaDevices.getUserMedia(constraints);
       logger.debug("✅ Camera stream obtained:", stream.getTracks().map(t => ({ id: t.id, kind: t.kind })));
+      
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw new Error('No video track found in stream');
+      }
+      
+      // Replace video track FIRST before updating state
+      if (videoTransceiverRef.current && videoTransceiverRef.current.sender) {
+        // Ensure transceiver direction is set to sendonly for video
+        if (videoTransceiverRef.current.direction !== 'sendonly' && videoTransceiverRef.current.direction !== 'sendrecv') {
+          logger.debug("📹 Setting video transceiver direction to sendonly");
+          videoTransceiverRef.current.direction = 'sendonly';
+        }
+        
+        logger.debug("🔄 Replacing video sender track:", {
+          trackId: videoTrack.id,
+          transceiverDirection: videoTransceiverRef.current.direction,
+          currentSenderTrack: videoTransceiverRef.current.sender.track?.id || 'null',
+        });
+        
+        try {
+          await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
+          videoTrack.enabled = true;
+          logger.debug("✅ Video track replaced successfully");
+        } catch (replaceError) {
+          logger.error("❌ Failed to replace video track:", replaceError);
+          stream.getTracks().forEach((track) => track.stop());
+          throw new Error(`Failed to replace video track: ${replaceError instanceof Error ? replaceError.message : 'Unknown error'}`);
+        }
+      } else {
+        logger.error("❌ Video transceiver or sender not available");
+        stream.getTracks().forEach((track) => track.stop());
+        throw new Error('Video transceiver sender not available. Please ensure the session is properly connected.');
+      }
+      
+      // Calculate new modalities BEFORE updating state
+      const currentModalities = modalities;
+      const newModalities = Array.from(new Set([...currentModalities, "video" as Modality]));
+      logger.debug("📹 Updated modalities for camera enable:", newModalities);
+      
+      // Update state after successful track replacement
       setUserVideoStream(stream);
       setIsCameraOn(true);
-
-      setModalities(prev => {
-        // Ensure we don't add duplicate video modality
-        const newModalities = Array.from(new Set([...prev, "video" as Modality]));
-        logger.debug("📹 Updated modalities for camera enable:", newModalities);
-        return newModalities;
-      });
-
+      setModalities(newModalities);
+      
+      // Send updated params with the NEW modalities immediately
       if (connectionState === "connected") {
-        sendUpdatedParams();
+        const dataChannel = dataChannelRef.current;
+        if (dataChannel && dataChannel.readyState === "open") {
+          const payload = {
+            event: DataChannelEventTypes.SESSION_UPDATE,
+            data: {
+              ...(model && { model: model }),
+              ...(voice && { voice: voice }),
+              ...(temperature !== null && { temperature: temperature }),
+              ...(instructions && { instructions: instructions }),
+              modalities: newModalities, // Use the new modalities directly
+            },
+          };
+          logger.debug("📤 Sending updated parameters with video modality:", payload);
+          logger.info("⚙️ Sending updated parameters with modalities:", { modalities: newModalities });
+          dataChannel.send(JSON.stringify(payload));
+        } else {
+          logger.warn("⚠️ Cannot send updated params: data channel not open");
+        }
       }
-
-      if (videoTransceiverRef.current) {
-        const videoTrack = stream.getVideoTracks()[0];
-        logger.debug("🔄 Replacing video sender track:", videoTrack.id);
-        await videoTransceiverRef.current.sender.replaceTrack(videoTrack);
-        videoTrack.enabled = true;
-      }
+      
       logger.info("✅ Camera enabled");
     } catch (error) {
       logger.error("❌ Failed to enable camera:", error);
       throw error;
     }
-  }, [userVideoStream, connectionState, sendUpdatedParams]);
+  }, [userVideoStream, connectionState, modalities, model, voice, temperature, instructions, cameraPosition]);
 
   const disableCamera = useCallback(
     async (hardDisable = false) => {
@@ -820,20 +930,38 @@ export function useOrgaAI(
         }
       }
       setIsCameraOn(false);
-
-      setModalities(prev => {
-        const newModalities = prev.filter(modality => modality !== "video");
-        logger.debug("📹 Updated modalities for camera disable:", newModalities);
-        return newModalities;
-      });
       
+      // Calculate new modalities BEFORE updating state
+      const currentModalities = modalities;
+      const newModalities = currentModalities.filter(modality => modality !== "video");
+      logger.debug("📹 Updated modalities for camera disable:", newModalities);
+      setModalities(newModalities);
+      
+      // Send updated params with the NEW modalities immediately
       if (connectionState === "connected") {
-        sendUpdatedParams();
+        const dataChannel = dataChannelRef.current;
+        if (dataChannel && dataChannel.readyState === "open") {
+          const payload = {
+            event: DataChannelEventTypes.SESSION_UPDATE,
+            data: {
+              ...(model && { model: model }),
+              ...(voice && { voice: voice }),
+              ...(temperature !== null && { temperature: temperature }),
+              ...(instructions && { instructions: instructions }),
+              modalities: newModalities, // Use the new modalities directly
+            },
+          };
+          logger.debug("📤 Sending updated parameters without video modality:", payload);
+          logger.info("⚙️ Sending updated parameters with modalities:", { modalities: newModalities });
+          dataChannel.send(JSON.stringify(payload));
+        } else {
+          logger.warn("⚠️ Cannot send updated params: data channel not open");
+        }
       }
 
       logger.info("✅ Camera disabled");
     },
-    [userVideoStream, connectionState, sendUpdatedParams]
+    [userVideoStream, connectionState, modalities, model, voice, temperature, instructions]
   );
 
   const toggleCamera = useCallback(async () => {
