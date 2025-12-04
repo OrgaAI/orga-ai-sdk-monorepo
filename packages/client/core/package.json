@@ -42,8 +42,8 @@
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "type-check": "tsc --noEmit --pretty", 
-    "test": "jest", 
+    "type-check": "tsc --noEmit --pretty",
+    "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -68,4 +68,3 @@
     "typescript": "^5.8.3"
   }
 }
-
