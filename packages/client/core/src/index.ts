@@ -81,6 +81,7 @@ export {
   fetchSessionConfig,
   connectToRealtime,
   getMediaConstraints,
+  stripEmotionTags,
 } from './utils';
 
 // ============================================================================

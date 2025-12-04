@@ -42,6 +42,35 @@ export const logger = {
 };
 
 // ============================================================================
+// Text Processing Utility
+// ============================================================================
+
+/**
+ * Removes emotion tags and other XML-like tags from transcription text
+ * 
+ * Removes tags like:
+ * - <emotion value="happy"/>
+ * - <emotion value="content"/>
+ * 
+ * @param text - The text to clean
+ * @returns The text with emotion tags removed
+ */
+export const stripEmotionTags = (text: string): string => {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  
+  // Remove emotion tags (self-closing XML tags)
+  // Matches: <emotion value="..."/> or <emotion value='...'/>
+  let cleaned = text.replace(/<emotion\s+value=["'][^"']*["']\s*\/?>/gi, '');
+  
+  // Clean up any extra whitespace (multiple spaces, spaces at start/end of lines)
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  
+  return cleaned;
+};
+
+// ============================================================================
 // Media Constraints Utility
 // ============================================================================
 
