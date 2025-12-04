@@ -1,5 +1,13 @@
 # @orga-ai/react-native
 
+## 1.0.5
+
+### Patch Changes
+
+- 727b441: Fix to updating modalities feature and add script to clean returned assistant transcription
+- Updated dependencies [727b441]
+  - @orga-ai/core@1.0.2
+
 ## 1.0.4
 
 ### Patch Changes
