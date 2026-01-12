@@ -545,12 +545,15 @@ export function useOrgaAI(
         }
       }
       logger.error("❌", errorMessage, error);
-      setConnectionState("failed");
-      setConversationId(null);
+      
+      // Perform full cleanup to reset state back to "closed"
+      // This ensures the user can retry connection without reloading
+      await cleanup();
+      
       callbacksRef.current.onError?.(error as Error);
       throw error;
     }
-  }, [buildPeerConnection]);
+  }, [buildPeerConnection, cleanup]);
 
   // Start session
   const startSession = useCallback(
@@ -598,6 +601,15 @@ export function useOrgaAI(
         // Removed initializeMedia call - media streams will be created when user enables camera/mic
         await connect();
       } catch (error) {
+        // Re-throw specific error types as-is
+        if (error instanceof ConfigurationError || error instanceof SessionError) {
+          logger.error("❌", error.message, error);
+          // Perform full cleanup to reset state back to "closed"
+          await cleanup();
+          callbacksRef.current.onError?.(error as Error);
+          throw error;
+        }
+
         // Improve error message for better debugging
         let errorMessage = "Failed to start session";
         if (error instanceof Error) {
@@ -610,7 +622,11 @@ export function useOrgaAI(
           }
         }
         logger.error("❌", errorMessage, error);
-        setConnectionState("failed");
+        
+        // Perform full cleanup to reset state back to "closed"
+        // This ensures the user can retry connection without reloading
+        await cleanup();
+        
         callbacksRef.current.onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
       }
@@ -619,6 +635,7 @@ export function useOrgaAI(
       connectionState,
       connect,
       initializeParams,
+      cleanup,
       // requestPermissions,
     ]
   );

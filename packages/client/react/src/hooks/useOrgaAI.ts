@@ -445,12 +445,15 @@ export function useOrgaAI(
         }
       }
       logger.error("❌", errorMessage, error);
-      setConnectionState("failed");
-      setConversationId(null);
+      
+      // Perform full cleanup to reset state back to "closed"
+      // This ensures the user can retry connection without reloading
+      await cleanup();
+      
       callbacksRef.current.onError?.(error as Error);
       throw error;
     }
-  }, [buildPeerConnection]);
+  }, [buildPeerConnection, cleanup]);
 
   // Start session
   const startSession = useCallback(
@@ -500,7 +503,8 @@ export function useOrgaAI(
         // Re-throw specific error types as-is
         if (error instanceof ConfigurationError || error instanceof SessionError) {
           logger.error("❌", error.message, error);
-          setConnectionState("failed");
+          // Perform full cleanup to reset state back to "closed"
+          await cleanup();
           callbacksRef.current.onError?.(error as Error);
           throw error;
         }
@@ -517,7 +521,11 @@ export function useOrgaAI(
           }
         }
         logger.error("❌", errorMessage, error);
-        setConnectionState("failed");
+        
+        // Perform full cleanup to reset state back to "closed"
+        // This ensures the user can retry connection without reloading
+        await cleanup();
+        
         callbacksRef.current.onError?.(error as Error);
         throw new ConnectionError("Failed to start session");
       }
@@ -526,6 +534,8 @@ export function useOrgaAI(
       connectionState,
       initializeMedia,
       connect,
+      cleanup,
+      initializeParams,
     ]
   );
 
@@ -548,21 +558,6 @@ export function useOrgaAI(
           track.stop();
         });
         setUserAudioStream(null);
-      }
-
-      try {
-        logger.debug("🛑 Cleaning up any additional active streams");
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          const activeStreams = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: true,
-          });
-          activeStreams.getTracks().forEach((track) => {
-            track.stop();
-          });
-        }
-      } catch (e) {
-        logger.debug("✅ No additional streams to clean up");
       }
 
       await cleanup();
