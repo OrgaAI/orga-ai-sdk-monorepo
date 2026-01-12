@@ -1,5 +1,12 @@
 # @orga-ai/react
 
+## 1.0.8
+
+### Patch Changes
+
+- f2b5a8f: Fix bug when attempting to start a session after the first one failed.
+  Improve the handling of permissions.
+
 ## 1.0.7
 
 ### Patch Changes
