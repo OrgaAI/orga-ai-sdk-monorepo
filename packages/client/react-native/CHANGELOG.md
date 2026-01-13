@@ -1,5 +1,20 @@
 # @orga-ai/react-native
 
+## 1.0.6
+
+### Patch Changes
+
+- f2b5a8f: Fix bug when attempting to start a session after the first one failed.
+  Improve the handling of permissions.
+
+## 1.0.5
+
+### Patch Changes
+
+- 727b441: Fix to updating modalities feature and add script to clean returned assistant transcription
+- Updated dependencies [727b441]
+  - @orga-ai/core@1.0.2
+
 ## 1.0.4
 
 ### Patch Changes
