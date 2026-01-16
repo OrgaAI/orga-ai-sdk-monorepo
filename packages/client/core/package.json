@@ -66,5 +66,16 @@
     "eslint": "^9.31.0",
     "tsup": "^8.3.5",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/context-zone": "^2.3.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.209.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.209.0",
+    "@opentelemetry/resources": "^2.3.0",
+    "@opentelemetry/sdk-metrics": "^2.3.0",
+    "@opentelemetry/sdk-trace-base": "^2.3.0",
+    "@opentelemetry/sdk-trace-web": "^2.3.0",
+    "@opentelemetry/semantic-conventions": "^1.38.0"
   }
 }

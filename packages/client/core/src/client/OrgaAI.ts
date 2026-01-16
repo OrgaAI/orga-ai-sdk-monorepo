@@ -1,6 +1,7 @@
 import type { OrgaAIConfig } from '../types';
 import { ConfigurationError } from '../errors';
 import { ORGAAI_TEMPERATURE_RANGE } from '../types';
+import { initTelemetry } from '../telemetry';
 
 /**
  * Global type augmentation for OrgaAI SDK state
@@ -81,6 +82,19 @@ export class OrgaAI {
       ...config,
       fetchSessionConfig: fetchFn,
     };
+
+    // Initialize telemetry if requested TODO: Change from default of true
+    if (defaultConfig.telemetry?.enableTelemetry || true) { //Update to === true
+      initTelemetry({
+        serviceName: defaultConfig.telemetry?.serviceName ?? 'orga-ai-sdk',
+        environment: defaultConfig.telemetry?.environment ?? 'production',
+        region: defaultConfig.telemetry?.region ?? 'eu-central-2',
+        enableTelemetry: true,
+        traceUrl: defaultConfig.telemetry?.traceUrl,
+        metricsUrl: defaultConfig.telemetry?.metricsUrl,
+        metricExportIntervalMs: defaultConfig.telemetry?.metricExportIntervalMs,
+      });
+    }
     
     // Store in global state
     globalThis.OrgaAI = {

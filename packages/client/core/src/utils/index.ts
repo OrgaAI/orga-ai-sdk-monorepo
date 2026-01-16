@@ -6,6 +6,7 @@ import type {
   RTCIceCandidateInit,
 } from '../types';
 import { OrgaAI } from '../client/OrgaAI';
+import { getTelemetry } from "../telemetry";
 
 // ============================================================================
 // Logger Utility
@@ -166,6 +167,25 @@ export const connectToRealtime = async ({
   peerConnection: GenericPeerConnection;
   gathered: RTCIceCandidateInit[];
 }): Promise<RealtimeConnectionResponse> => {
+    // Simple operation - metrics only (no nested calls to trace)
+  const telemetry = getTelemetry();
+  const meter = telemetry.getMeter();
+
+  // Lazily create metric instruments (safe even if no-op)
+  const latency = meter.createHistogram("orga.web.operation.latency", {
+      unit: "ms",
+  });
+  const ops = meter.createCounter("orga.web.operation.count");
+  const errs = meter.createCounter("orga.web.errors");
+  // Initialize error counter to 0 so it exists as a time series
+  errs.add(0, {
+    "operation.name": "_init",
+    "error.type": "none",
+  });
+  const status = meter.createCounter("orga.web.http.status");
+  
+  const t0 = Date.now();
+
   const config = OrgaAI.getConfig();
   const {
     voice,
@@ -223,7 +243,14 @@ export const connectToRealtime = async ({
 
     clearTimeout(timeoutId);
 
+    status.add(1, { "http.status_code": response.status });
+
     if (!response.ok) {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "HttpError",
+      });
+
       throw new Error(
         `Failed to connect to realtime: ${response.status} ${response.statusText}`
       );
@@ -236,16 +263,36 @@ export const connectToRealtime = async ({
     const { answer, conversation_id } = data;
 
     if (!answer || !conversation_id) {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "InvalidResponse",
+      });
+
       throw new Error('Invalid response: missing answer or conversation_id');
     }
+
+    const dt = Date.now() - t0;
+    latency.record(dt, { "operation.name": "connectToRealtime" });
+    ops.add(1, { "operation.name": "connectToRealtime" });
 
     return { conversation_id, answer };
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": "AbortError",
+      });
+
       throw new Error(
         'Request timeout: Failed to connect to realtime within 10 seconds'
       );
+    }
+    if (error instanceof Error) {
+      errs.add(1, {
+        "operation.name": "connectToRealtime",
+        "error.type": error.constructor.name,
+      });
     }
     throw error;
   }

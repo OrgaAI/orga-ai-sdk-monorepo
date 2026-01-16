@@ -8,6 +8,9 @@ OrgaAI.init({
   enableTranscriptions: true,
   fetchSessionConfig: fetchSessionConfig,
   voice: "fable",
+  telemetry: {
+    enableTelemetry: true,
+  },
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
