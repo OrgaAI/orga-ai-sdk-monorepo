@@ -3,7 +3,8 @@ import { OrgaAI } from "@orga-ai/node";
 const REALTIME_USER_TOKEN = process.env.REALTIME_USER_TOKEN;
 
 const orgaAI = new OrgaAI({
-  apiKey: REALTIME_USER_TOKEN as string
+  apiKey: REALTIME_USER_TOKEN as string,
+  enableTelemetry: true
 })
 
 export const GET = async () => {

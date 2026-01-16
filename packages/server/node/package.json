@@ -30,13 +30,23 @@
   "devDependencies": {
     "@types/jest": "^29.0.0",
     "@types/node": "^20.0.0",
+    "cross-fetch": "^4.0.0",
     "jest": "^29.0.0",
     "nock": "^13.0.0",
-    "cross-fetch": "^4.0.0",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.67.3",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.209.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.209.0",
+    "@opentelemetry/resources": "^2.3.0",
+    "@opentelemetry/sdk-metrics": "^2.3.0",
+    "@opentelemetry/sdk-node": "^0.209.0",
+    "@opentelemetry/semantic-conventions": "^1.38.0"
   }
 }
