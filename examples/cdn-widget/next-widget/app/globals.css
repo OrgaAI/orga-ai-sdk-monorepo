@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #6366f1;
+  --secondary: #4f46e5;
+  --bg-dark: #0f172a;
+  --text-light: #f8fafc;
+  --text-gray: #94a3b8;
+  --card-bg: #1e293b;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  line-height: 1.6;
+}
