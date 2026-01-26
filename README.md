@@ -23,14 +23,15 @@ Learn more about every SDK, guide, and API surface in the public docs: **[docs.o
 ## Project layout
 ```
 packages/
-  client/           # Core + React + React Native adapters (shared logic & UI bindings)
-  server/           # Node & Python server SDKs for token exchange + orchestration
-  eslint-config/    # Shared lint rules
-  typescript-config/# TS project references + presets
+  client/              # Core + React + React Native adapters (shared logic & UI bindings)
+  server/              # Node & Python server SDKs for token exchange + orchestration
+  create-orga-next-app/# CLI to scaffold Next.js projects with Orga AI pre-configured
+  eslint-config/       # Shared lint rules
+  typescript-config/   # TS project references + presets
 examples/
-  next/              # Next.js playground (browser)
-  expo-app/           # Expo / React Native playground
-  python-backend/   # FastAPI example for session config + tokens
+  next/                # Next.js playground (browser)
+  expo-app/            # Expo / React Native playground
+  python-backend/      # FastAPI example for session config + tokens
 ```
 
 - `pnpm` manages workspaces, builds, and dependency hoisting.
@@ -52,6 +53,11 @@ examples/
 | `@orga-ai/server-node` | Node.js helper for issuing ephemeral session tokens and orchestrating sessions. | Beta | [Node server docs](https://docs.orga-ai.com/docs/server-sdks/node/introduction) |
 | `orga-ai-server` (PyPI) | Python helper (FastAPI-ready) for token exchange endpoints and admin flows. | In development | - |
 
+### CLI Tools
+| Package | Description | Status | Documentation |
+| --- | --- | --- | --- |
+| `@orga-ai/create-orga-next-app` | CLI to scaffold Next.js projects with Orga AI SDKs, ShadCN UI, and pre-configured setup. | Stable | [README](packages/create-orga-next-app/README.md) |
+
 ### Example apps & tooling
 - **`examples/next`**: Next.js playground with UI controls, transcription feed, and device settings.
 - **`examples/expo-app`**: Expo project showcasing voice controls, reconnect flows, and DataChannel events.
@@ -60,6 +66,15 @@ examples/
 
 ## Getting started
 Use these steps to work with the monorepo locally or integrate the Orga SDKs into your own app.
+
+### Quick start with CLI (recommended)
+The fastest way to get started is using our CLI to scaffold a fully configured Next.js project:
+```sh
+npx @orga-ai/create-orga-next-app my-app
+cd my-app
+npm run dev
+```
+This creates a Next.js project with Orga AI SDKs, ShadCN UI components, and a pre-built playground page. See the [create-orga-next-app README](packages/create-orga-next-app/README.md) for more options.
 
 ### 1. Prerequisites
 - Node.js 18+
