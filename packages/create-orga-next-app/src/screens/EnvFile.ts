@@ -1,0 +1,1 @@
+export const envContent = `ORGAAI_API_KEY=your_token_here`;
