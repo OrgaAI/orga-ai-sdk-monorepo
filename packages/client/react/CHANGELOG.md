@@ -1,5 +1,11 @@
 # @orga-ai/react
 
+## 1.0.9
+
+### Patch Changes
+
+- d2d2157: Parse [laughter] tags in transcriptions
+
 ## 1.0.8
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @orga-ai/react-native
 
+## 1.0.7
+
+### Patch Changes
+
+- d2d2157: Parse [laughter] tags in transcriptions
+
 ## 1.0.6
 
 ### Patch Changes
