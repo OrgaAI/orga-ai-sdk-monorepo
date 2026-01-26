@@ -95,11 +95,11 @@ importers:
   examples/cdn-widget/static-site-cdn:
     dependencies:
       '@orga-ai/node':
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../../../packages/server/node
       '@orga-ai/react':
-        specifier: ^1.0.8
-        version: 1.0.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: workspace:*
+        version: link:../../../packages/client/react
       '@orga-ai/widget':
         specifier: workspace:*
         version: link:../../../packages/client/widget
@@ -2097,19 +2097,6 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
-
-  '@orga-ai/core@1.0.2':
-    resolution: {integrity: sha512-tJx2aS96LzoZ7IJbPnXHboMJGHsRgL3YIwH53lu1cvO4tLOZ5lHX+kvSFukLbhPBdWpDTuclBtvwvy9m/YkeHg==}
-
-  '@orga-ai/node@1.0.1':
-    resolution: {integrity: sha512-gKV6breUjZIQoJ84xDqIe2JDUVPtRH3z7iVBo59VVazi96FTLZc6ZPJ8USEGotgzXffi4pMQu6A/fwirkmKFZA==}
-    engines: {node: '>=18.0.0'}
-
-  '@orga-ai/react@1.0.8':
-    resolution: {integrity: sha512-VBYQw6zDyFOdE35W2GZc2ifDhH20Zw3XdJzW7KX0KMCyj5dCpGM5roIYVWnQT9jxxs8OSMDTE2v9iHhCtfOyXw==}
-    peerDependencies:
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -9486,16 +9473,6 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
-
-  '@orga-ai/core@1.0.2': {}
-
-  '@orga-ai/node@1.0.1': {}
-
-  '@orga-ai/react@1.0.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@orga-ai/core': 1.0.2
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
