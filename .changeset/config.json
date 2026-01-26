@@ -7,5 +7,6 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@orga-ai/react-sdk-test", "@orga-ai/react-native-sdk-test"]
+  "ignore": ["@orga-ai/react-sdk-test", "@orga-ai/react-native-sdk-test"],
+  "privatePackages": false
 }
