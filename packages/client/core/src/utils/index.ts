@@ -55,14 +55,25 @@ export const logger = {
  * @param text - The text to clean
  * @returns The text with emotion tags removed
  */
+/**
+ * Parses transcription tags and replaces them with emojis
+ * e.g., [laughter] -> 😂
+ */
+const parseTranscriptionTags = (text: string): string => {
+  return text.replace(/\[laughter\]/gi, '😂');
+};
+
 export const stripEmotionTags = (text: string): string => {
   if (!text || typeof text !== 'string') {
-    return text;
+    return '';
   }
+  
+  // First, parse transcription tags like [laughter] -> 😂
+  let cleaned = parseTranscriptionTags(text);
   
   // Remove emotion tags (self-closing XML tags)
   // Matches: <emotion value="..."/> or <emotion value='...'/>
-  let cleaned = text.replace(/<emotion\s+value=["'][^"']*["']\s*\/?>/gi, '');
+  cleaned = cleaned.replace(/<emotion\s+value=["'][^"']*["']\s*\/?>/gi, '');
   
   // Clean up any extra whitespace (multiple spaces, spaces at start/end of lines)
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
