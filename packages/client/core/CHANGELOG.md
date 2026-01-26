@@ -1,5 +1,11 @@
 # @orga-ai/core
 
+## 1.0.3
+
+### Patch Changes
+
+- a9bcdd7: Parse [laughter] tags in transcriptions and replace with emoji
+
 ## 1.0.2
 
 ### Patch Changes
