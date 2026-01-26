@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@orga-ai/node": "1.0.1",
-    "@orga-ai/react": "^1.0.8",
+    "@orga-ai/node": "workspace:*",
+    "@orga-ai/react": "workspace:*",
     "@orga-ai/widget": "workspace:*",
     "next": "0.1.1",
     "react": "19.2.0",
