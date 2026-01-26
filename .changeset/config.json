@@ -7,6 +7,11 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@orga-ai/react-sdk-test", "@orga-ai/react-native-sdk-test"],
+  "ignore": [
+    "@orga-ai/react-sdk-test",
+    "@orga-ai/react-native-sdk-test",
+    "orga-next-widget-example",
+    "orga-cdn-test"
+  ],
   "privatePackages": false
 }
