@@ -1,6 +1,12 @@
 {
   "name": "orga-ai-sdk-monorepo",
   "private": true,
+  "pnpm": {
+    "overrides": {
+      "react": "19.0.0",
+      "react-native": "0.79.5"
+    }
+  },
   "scripts": {
     "build": "turbo run build --filter='./packages/**'",
     "dev": "turbo run dev",
