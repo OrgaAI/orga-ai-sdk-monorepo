@@ -305,6 +305,40 @@ export function useOrgaAI(
 
       dc.addEventListener("open", () => {
         logger.info("📡 Data channel opened");
+        // Send initial SESSION_UPDATE so the backend knows we have audio modality
+        // from the start (mic is on). Without this, the backend may not process
+        // audio until the user toggles mic (which sends SESSION_UPDATE).
+        const channel = dataChannelRef.current;
+        if (channel && channel.readyState === "open") {
+          const globalConfig = OrgaAI.getConfig();
+          const sessionConfig = currentConfigRef.current;
+          const model = sessionConfig.model ?? globalConfig.model;
+          const voice = sessionConfig.voice ?? globalConfig.voice;
+          const temperature =
+            sessionConfig.temperature ?? globalConfig.temperature ?? null;
+          const instructions =
+            sessionConfig.instructions ?? globalConfig.instructions ?? null;
+          const baseModalities =
+            sessionConfig.modalities ?? globalConfig.modalities ?? [];
+          const initialModalities = Array.from(
+            new Set([...baseModalities, "audio" as Modality])
+          );
+          const payload = {
+            event: DataChannelEventTypes.SESSION_UPDATE,
+            data: {
+              ...(model && { model }),
+              ...(voice && { voice }),
+              ...(temperature !== null && temperature !== undefined && { temperature }),
+              ...(instructions && { instructions }),
+              modalities: initialModalities,
+            },
+          };
+          logger.debug(
+            "📤 Sending initial session params (audio on):",
+            payload
+          );
+          channel.send(JSON.stringify(payload));
+        }
       });
 
       dc.addEventListener("message", (event) => {

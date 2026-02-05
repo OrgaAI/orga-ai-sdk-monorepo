@@ -32,16 +32,19 @@ export const OrgaAICameraView = ({
 
   const shouldMirror = cameraPosition === "front";
   
+  // Cast to any when passing to RN View/TouchableOpacity to avoid React 19 vs RN @types/react ReactNode conflict
+  const rn = (node: React.ReactNode) => node as any;
+
   return (
     <View style={containerStyle}>
-      {props.streamURL ? <RTCView mirror={shouldMirror} {...props} /> : placeholder || null}
+      {props.streamURL ? <RTCView mirror={shouldMirror} {...props} /> : rn(placeholder ?? null)}
       {onFlipCamera && props.streamURL && (
         <TouchableOpacity onPress={onFlipCamera} style={flipCameraButtonStyle}>
-          {icon}
+          {rn(icon)}
           {text}
         </TouchableOpacity>
       )}
-      {children}
+      {rn(children)}
     </View>
   );
 };
