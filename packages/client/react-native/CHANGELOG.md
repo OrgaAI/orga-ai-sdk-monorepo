@@ -1,5 +1,11 @@
 # @orga-ai/react-native
 
+## 1.0.8
+
+### Patch Changes
+
+- 3f0c94e: Update initial session params to fix mic on by default not working.
+
 ## 1.0.7
 
 ### Patch Changes
