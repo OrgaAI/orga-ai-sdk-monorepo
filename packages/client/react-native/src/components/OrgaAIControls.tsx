@@ -11,6 +11,9 @@ import {
 } from "react-native";
 import { ConnectionState } from "../types/index";
 
+// Cast to any when passing to RN View/TouchableOpacity to avoid React 19 vs RN @types/react ReactNode conflict
+const rn = (node: React.ReactNode) => node as any;
+
 const DefaultMicOn = () => (
   <Text style={{ fontSize: 24, color: "white" }}>🎤</Text>
 );
@@ -139,9 +142,9 @@ export const OrgaAIControls = ({
 
   const ConnectingIndicator = () => (
     <View style={styles.connectingContainer}>
-      {loadingIndicator || (
+      {rn(loadingIndicator ?? (
         <ActivityIndicator size="small" color={loadingIndicatorColor} />
-      )}
+      ))}
       <Text style={[styles.connectingText]}>{connectingText}</Text>
     </View>
   );
@@ -162,9 +165,9 @@ export const OrgaAIControls = ({
               onPress={onToggleCamera}
               style={[styles.controlButton, controlButtonStyle]}
             >
-              {isCameraOn
-                ? cameraOnIcon || <DefaultCameraOn />
-                : cameraOffIcon || <DefaultCameraOff />}
+              {rn(isCameraOn
+                ? cameraOnIcon ?? <DefaultCameraOn />
+                : cameraOffIcon ?? <DefaultCameraOff />)}
               <Text style={[styles.controlLabel, controlLabelStyle]}>
                 {isCameraOn ? cameraOnText : cameraOffText}
               </Text>
@@ -177,9 +180,9 @@ export const OrgaAIControls = ({
               onPress={onToggleMic}
               style={[styles.controlButton, controlButtonStyle]}
             >
-              {isMicOn
-                ? micOnIcon || <DefaultMicOn />
-                : micOffIcon || <DefaultMicOff />}
+              {rn(isMicOn
+                ? micOnIcon ?? <DefaultMicOn />
+                : micOffIcon ?? <DefaultMicOff />)}
               <Text style={[styles.controlLabel, controlLabelStyle]}>
                 {isMicOn ? micOnText : micOffText}
               </Text>
@@ -192,9 +195,9 @@ export const OrgaAIControls = ({
               onPress={onFlipCamera}
               style={[styles.controlButton, controlButtonStyle]}
             >
-              {flipIcon || (
+              {rn(flipIcon ?? (
                 <Text style={{ fontSize: 24, color: "white" }}>🔄</Text>
-              )}
+              ))}
               <Text style={[styles.controlLabel, controlLabelStyle]}>
                 {flipText}
               </Text>
@@ -212,9 +215,9 @@ export const OrgaAIControls = ({
                 disconnectButtonStyle,
               ]}
             >
-              {endIcon || (
+              {rn(endIcon ?? (
                 <Text style={{ fontSize: 24, color: "white" }}>❌</Text>
-              )}
+              ))}
               <Text style={[styles.controlLabel, controlLabelStyle]}>
                 {endText}
               </Text>
@@ -239,7 +242,7 @@ export const OrgaAIControls = ({
           ) : (
             <View style={styles.connectContent}>
               <View style={styles.connectIconContainer}>
-                {startIcon || (
+                {rn(startIcon ?? (
                   <>
                     <Text style={{ fontSize: 28, color: "white" }}>🎤</Text>
                     <Text
@@ -251,7 +254,7 @@ export const OrgaAIControls = ({
                       ➕
                     </Text>
                   </>
-                )}
+                ))}
               </View>
               <Text style={styles.connectText}>{getButtonText()}</Text>
               <Text style={styles.connectSubtext}>{connectSubtext}</Text>
