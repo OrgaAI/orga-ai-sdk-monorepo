@@ -1,5 +1,11 @@
 # @orga-ai/core
 
+## 1.0.4
+
+### Patch Changes
+
+- 08ee448: Add baseUrl config option
+
 ## 1.0.3
 
 ### Patch Changes

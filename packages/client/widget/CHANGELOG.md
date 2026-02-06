@@ -1,5 +1,12 @@
 # @orga-ai/widget
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [08ee448]
+  - @orga-ai/core@1.0.4
+
 ## 0.0.3
 
 ### Patch Changes
