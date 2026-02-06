@@ -186,9 +186,10 @@ export const connectToRealtime = async ({
     instructions,
     modalities,
     history,
+    baseUrl = 'https://api.orga-ai.com',
   } = config;
 
-  const realtimeUrl = 'https://api.orga-ai.com/v1/realtime/calls';
+  const realtimeUrl = `${baseUrl}/v1/realtime/calls`;
 
   logger.debug(
     `[OrgaAI] Connecting to realtime with config: ${JSON.stringify(config)}`
