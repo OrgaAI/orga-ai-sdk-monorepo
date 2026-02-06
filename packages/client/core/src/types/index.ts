@@ -83,6 +83,7 @@ export interface OrgaAIConfig {
   instructions?: string;
   modalities?: Modality[];
   history?: boolean;
+  baseUrl?: string;
 }
 
 export interface SessionConfig {
