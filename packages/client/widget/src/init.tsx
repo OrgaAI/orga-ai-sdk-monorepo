@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { OrgaAI, OrgaAIProvider } from "@orga-ai/react";
-import type { SessionConfigResponse, OrgaAIVoice } from "@orga-ai/core";
+import { SessionConfigResponse, OrgaAIVoice, DEFAULT_ORGAAI_VOICE } from "@orga-ai/core";
 import { WidgetApp } from "./WidgetApp";
 
 import {
@@ -115,7 +115,7 @@ export const initWidget = (options: WidgetInitOptions): void => {
     try {
       OrgaAI.init({
         fetchSessionConfig: safeFetch,
-        voice: options.voice ?? "fable",
+        voice: options.voice ?? DEFAULT_ORGAAI_VOICE,
         logLevel: options.logLevel ?? "info",
         sessionConfigEndpoint: options.sessionConfigEndpoint ?? undefined,
         enableTranscriptions: uiConfig.features.transcript !== "hidden",

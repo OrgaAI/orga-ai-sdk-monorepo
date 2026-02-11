@@ -5,25 +5,14 @@
 export const ORGAAI_MODELS = ["orga-1-beta"] as const;
 export type OrgaAIModel = (typeof ORGAAI_MODELS)[number];
 
+import { type OrgaAIVoice } from './OrgaVoices';
+
 export const MODALITIES_ENUM = {
   VIDEO: "video",
   AUDIO: "audio",
 } as const;
 export type Modality = (typeof MODALITIES_ENUM)[keyof typeof MODALITIES_ENUM];
 
-export const ORGAAI_VOICES = [
-  "alloy",
-  "ash",
-  "ballad",
-  "coral",
-  "echo",
-  "fable",
-  "onyx",
-  "nova",
-  "sage",
-  "shimmer",
-] as const;
-export type OrgaAIVoice = (typeof ORGAAI_VOICES)[number];
 
 export const ORGAAI_TEMPERATURE_RANGE = {
   min: 0.0,
@@ -77,6 +66,7 @@ export interface OrgaAIConfig {
   }>;
   // Optional parameters for default session configuration
   model?: OrgaAIModel;
+  /** Voice for TTS. Full details on the docs: {@link https://docs.orga-ai.com/reference/constants/voices | Full voice info}. */
   voice?: OrgaAIVoice;
   temperature?: number;
   enableTranscriptions?: boolean;
@@ -92,6 +82,7 @@ export interface SessionConfig {
   timeout?: number;
   facingMode?: "user" | "environment";
   // Optional parameters to override defaults
+  /** Voice for TTS. Full details on the docs: {@link https://docs.orga-ai.com/reference/constants/voices | Full voice info}. */
   voice?: OrgaAIVoice;
   model?: OrgaAIModel;
   temperature?: number;

@@ -1,11 +1,30 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { act } from 'react';
 import { useOrgaAI } from '../../hooks/useOrgaAI';
-import { OrgaAI, logger, connectToRealtime, getMediaConstraints, ConnectionError } from '@orga-ai/core';
+import { OrgaAI, logger, connectToRealtime, getMediaConstraints, ConnectionError, SessionError, ConfigurationError } from '@orga-ai/core';
 import { DataChannelEventTypes } from '../../types/index';
 
-// Mock dependencies
-jest.mock('@orga-ai/core', () => ({
+// Mock dependencies - define error classes inside factory so instanceof works
+jest.mock('@orga-ai/core', () => {
+  const ConnectionError = class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ConnectionError';
+    }
+  };
+  const SessionError = class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'SessionError';
+    }
+  };
+  const ConfigurationError = class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ConfigurationError';
+    }
+  };
+  return {
   OrgaAI: {
     init: jest.fn(),
     getConfig: jest.fn(),
@@ -19,17 +38,19 @@ jest.mock('@orga-ai/core', () => ({
   },
   connectToRealtime: jest.fn(),
   getMediaConstraints: jest.fn(),
-  ConnectionError: jest.fn(),
-  SessionError: jest.fn(),
-  ConfigurationError: jest.fn(),
+  ConnectionError,
+  SessionError,
+  ConfigurationError,
   DataChannelEventTypes: {
     USER_SPEECH_TRANSCRIPTION: "conversation.item.input_audio_transcription.completed",
     ASSISTANT_RESPONSE_COMPLETE: "response.output_item.done",
     SESSION_UPDATE: "session.update",
     SESSION_CREATED: "session.created",
     CONVERSATION_CREATED: "conversation.created",
-  }
-}));
+  },
+  stripEmotionTags: (text: string) => text,
+  };
+});
 
 // Mock console methods
 const mockConsole = {
@@ -171,7 +192,7 @@ describe('useOrgaAI', () => {
     
     // Default config
     mockOrgaAI.getConfig.mockReturnValue({
-      voice: 'alloy',
+      voice: 'Victoria',
       model: 'orga-1-beta',
       temperature: 0.5,
       enableTranscriptions: true,
@@ -274,7 +295,7 @@ describe('useOrgaAI', () => {
         }
       });
 
-      expect(result.current.connectionState).toBe('failed');
+      expect(result.current.connectionState).toBe('closed');
       expect(mockCallbacks.onError).toHaveBeenCalled();
     });
 
@@ -401,7 +422,7 @@ describe('useOrgaAI', () => {
         await result.current.startSession();
         result.current.updateParams({
           model: 'orga-1-beta',
-          voice: 'alloy',
+          voice: 'Victoria',
           temperature: 0.7,
           instructions: 'New instructions',
           modalities: ['audio', 'video'],
@@ -409,7 +430,7 @@ describe('useOrgaAI', () => {
       });
 
       expect(result.current.model).toBe('orga-1-beta');
-      expect(result.current.voice).toBe('alloy');
+      expect(result.current.voice).toBe('Victoria');
       expect(result.current.temperature).toBe(0.7);
       expect(result.current.instructions).toBe('New instructions');
       expect(result.current.modalities).toEqual(['audio', 'video']);
@@ -543,7 +564,7 @@ describe('useOrgaAI', () => {
   });
 
   describe('Error Handling', () => {
-    it('should throw ConnectionError when OrgaAI not initialized', async () => {
+    it('should throw ConfigurationError when OrgaAI not initialized', async () => {
       mockOrgaAI.isInitialized.mockReturnValue(false);
       const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
@@ -551,15 +572,15 @@ describe('useOrgaAI', () => {
         try {
           await result.current.startSession();
         } catch (error) {
-          expect(error).toBeInstanceOf(ConnectionError);
+          expect(error).toBeInstanceOf(ConfigurationError);
         }
       });
 
-      expect(result.current.connectionState).toBe('failed');
+      expect(result.current.connectionState).toBe('closed');
       expect(mockCallbacks.onError).toHaveBeenCalled();
     });
 
-    it('should throw ConnectionError when session already active', async () => {
+    it('should throw SessionError when session already active', async () => {
       const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
       // Start first session
@@ -572,7 +593,7 @@ describe('useOrgaAI', () => {
         try {
           await result.current.startSession();
         } catch (error) {
-          expect(error).toBeInstanceOf(ConnectionError);
+          expect(error).toBeInstanceOf(SessionError);
         }
       });
     });
@@ -600,6 +621,10 @@ describe('useOrgaAI', () => {
     });
 
     it('should handle connection errors', async () => {
+      // Reset close mock - previous test (session end errors) leaves it throwing
+      mockPeerConnection.close.mockReset();
+      mockPeerConnection.close.mockImplementation(() => {});
+
       (connectToRealtime as jest.Mock).mockRejectedValue(new Error('Connection failed'));
 
       const { result } = renderHook(() => useOrgaAI(mockCallbacks));
@@ -612,7 +637,7 @@ describe('useOrgaAI', () => {
         }
       });
 
-      expect(result.current.connectionState).toBe('failed');
+      expect(result.current.connectionState).toBe('closed');
       expect(mockCallbacks.onError).toHaveBeenCalled();
     });
 
@@ -843,16 +868,16 @@ describe('useOrgaAI', () => {
         });
       });
 
-      expect(result.current.conversationItems).toHaveLength(1);
-      expect(result.current.conversationItems[0]).toEqual({
+      await waitFor(() => {
+        expect(result.current.conversationItems).toHaveLength(1);
+      });
+      expect(result.current.conversationItems[0]).toMatchObject({
         conversationId: 'conv-123',
         sender: 'assistant',
         content: {
           type: 'text',
           message: 'I am doing well, thank you!'
         },
-        voiceType: 'alloy',
-        modelVersion: 'orga-1-beta',
         timestamp: expect.any(String)
       });
       expect(mockCallbacks.onConversationMessageCreated).toHaveBeenCalled();

@@ -1,11 +1,11 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { OrgaAIHookReturn, OrgaAIHookCallbacks, OrgaAIModel, OrgaAIVoice } from '../types';
 import { useOrgaAI as useOrgaAIInternalHook } from './useOrgaAI';
-import { OrgaAI, ORGAAI_TEMPERATURE_RANGE, ORGAAI_MODELS, ORGAAI_VOICES, logger } from '@orga-ai/core';
+import { OrgaAI, ORGAAI_TEMPERATURE_RANGE, ORGAAI_MODELS, ORGAAI_VOICES, DEFAULT_ORGAAI_VOICE, logger } from '@orga-ai/core';
 
 // Define the available options for model and voice
 const DEFAULT_MODEL: OrgaAIModel = "orga-1-beta";
-const DEFAULT_VOICE: OrgaAIVoice = "alloy";
+const DEFAULT_VOICE: OrgaAIVoice = DEFAULT_ORGAAI_VOICE;
 const DEFAULT_TEMPERATURE: number = 0.5;
 
 interface OrgaAIProviderProps {
@@ -37,7 +37,7 @@ export const OrgaAIProvider = ({
 
   // Validation helpers
   const isValidModel = (val: OrgaAIModel) => ORGAAI_MODELS.includes(val);
-  const isValidVoice = (val: OrgaAIVoice) => ORGAAI_VOICES.includes(val);
+  const isValidVoice = (val: OrgaAIVoice) => ORGAAI_VOICES.some(voice => voice.name === val);
   const isValidTemperature = (val: number) => val >= ORGAAI_TEMPERATURE_RANGE.min && val <= ORGAAI_TEMPERATURE_RANGE.max;
 
   // Setters update both state and OrgaAI global config

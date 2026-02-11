@@ -97,14 +97,14 @@ describe('OrgaAI Client', () => {
       OrgaAI.init({
         sessionConfigEndpoint: 'https://api.example.com/session',
         model: 'orga-1-beta',
-        voice: 'alloy',
+        voice: 'Victoria',
       });
 
       const config = OrgaAI.getConfig();
       expect(config.logLevel).toBe('warn'); // default
       expect(config.timeout).toBe(30000); // default
       expect(config.model).toBe('orga-1-beta');
-      expect(config.voice).toBe('alloy');
+      expect(config.voice).toBe('Victoria');
     });
   });
 
