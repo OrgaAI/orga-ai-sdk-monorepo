@@ -27,7 +27,7 @@ declare global {
  *   sessionConfigEndpoint: 'https://api.example.com/session',
  *   logLevel: 'info',
  *   model: 'orga-1-beta',
- *   voice: 'Victoria',
+ *   voice: 'Sofía',
  * });
  * ```
  */
@@ -81,7 +81,7 @@ export class OrgaAI {
 
     // Merge config: prefer incoming values, but don't let provider defaults overwrite
     // explicit user choices (e.g. voice: "Alex" in init should not be replaced by
-    // the default "Victoria" when wrappedStartSession merges in provider state).
+    // the default "Sofía" when wrappedStartSession merges in provider state).
     const merged: OrgaAIConfig = {
       logLevel: 'warn',
       timeout: 30000,

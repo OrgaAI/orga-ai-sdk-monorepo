@@ -38,10 +38,10 @@ jest.mock('@orga-ai/core', () => ({
   ORGAAI_TEMPERATURE_RANGE: { min: 0, max: 1 },
   ORGAAI_MODELS: ['orga-1-beta'],
   ORGAAI_VOICES: [
-    { name: 'Victoria', description: 'Reassuring Agent', gender: 'feminine', language: 'English' },
+    { name: 'Sofía', description: 'Soft Calm Spanish Woman', gender: 'feminine', language: 'Español' },
     { name: 'Juan', description: 'Formal Speaker', gender: 'masculine', language: 'Español' },
   ],
-  DEFAULT_ORGAAI_VOICE: 'Victoria',
+  DEFAULT_ORGAAI_VOICE: 'Sofía',
 }));
 
 // Mock console methods
@@ -73,7 +73,7 @@ const TestComponent = () => {
       </button>
       <button 
         data-testid="set-voice" 
-        onClick={() => context.setVoice('Victoria')}
+        onClick={() => context.setVoice('Sofía')}
       >
         Set Voice
       </button>
@@ -122,7 +122,7 @@ describe('OrgaAIProvider', () => {
       );
 
       expect(screen.getByTestId('model')).toHaveTextContent('orga-1-beta');
-      expect(screen.getByTestId('voice')).toHaveTextContent('Victoria');
+      expect(screen.getByTestId('voice')).toHaveTextContent('Sofía');
       expect(screen.getByTestId('temperature')).toHaveTextContent('0.5');
     });
 
@@ -157,7 +157,7 @@ describe('OrgaAIProvider', () => {
       );
 
       expect(screen.getByTestId('model')).toHaveTextContent('orga-1-beta');
-      expect(screen.getByTestId('voice')).toHaveTextContent('Victoria'); // default
+      expect(screen.getByTestId('voice')).toHaveTextContent('Sofía'); // default
       expect(screen.getByTestId('temperature')).toHaveTextContent('0.5'); // default
     });
   });
@@ -199,10 +199,10 @@ describe('OrgaAIProvider', () => {
 
       expect((OrgaAI.init as jest.Mock)).toHaveBeenCalledWith(
         expect.objectContaining({
-          voice: 'Victoria'
+          voice: 'Sofía'
         })
       );
-      expect((logger as jest.Mocked<typeof logger>).debug).toHaveBeenCalledWith('[Voice] Setting voice to Victoria');
+      expect((logger as jest.Mocked<typeof logger>).debug).toHaveBeenCalledWith('[Voice] Setting voice to Sofía');
     });
 
     it('should update temperature state and call OrgaAI.init', async () => {
