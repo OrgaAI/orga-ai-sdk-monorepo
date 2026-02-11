@@ -6,6 +6,7 @@ import type {
   RTCIceCandidateInit,
 } from '../types';
 import { OrgaAI } from '../client/OrgaAI';
+import { DEFAULT_ORGAAI_VOICE } from '../types/OrgaVoices';
 
 // ============================================================================
 // Logger Utility
@@ -209,7 +210,7 @@ export const connectToRealtime = async ({
       candidates: gathered,
     },
     params: {
-      voice: voice || 'alloy',
+      voice: voice ?? DEFAULT_ORGAAI_VOICE,
       model: model || 'orga-1-beta',
       temperature: temperature ?? 0.5,
       return_transcription: enableTranscriptions || false,

@@ -1,6 +1,7 @@
 import type { OrgaAIConfig } from '../types';
 import { ConfigurationError } from '../errors';
-import { ORGAAI_TEMPERATURE_RANGE } from '../types';
+import { ORGAAI_TEMPERATURE_RANGE, ORGAAI_MODELS } from '../types';
+import { DEFAULT_ORGAAI_VOICE } from '../types/OrgaVoices';
 
 /**
  * Global type augmentation for OrgaAI SDK state
@@ -26,7 +27,7 @@ declare global {
  *   sessionConfigEndpoint: 'https://api.example.com/session',
  *   logLevel: 'info',
  *   model: 'orga-1-beta',
- *   voice: 'alloy',
+ *   voice: 'Victoria',
  * });
  * ```
  */
@@ -74,17 +75,35 @@ export class OrgaAI {
       };
     }
     
-    // Create default config with user overrides
-    const defaultConfig: OrgaAIConfig = {
+    const DEFAULT_MODEL = ORGAAI_MODELS[0];
+    const DEFAULT_TEMPERATURE = 0.5;
+    const existing = globalThis.OrgaAI?.config;
+
+    // Merge config: prefer incoming values, but don't let provider defaults overwrite
+    // explicit user choices (e.g. voice: "Alex" in init should not be replaced by
+    // the default "Victoria" when wrappedStartSession merges in provider state).
+    const merged: OrgaAIConfig = {
       logLevel: 'warn',
       timeout: 30000,
       ...config,
       fetchSessionConfig: fetchFn,
     };
-    
+
+    if (existing) {
+      if (config.voice === DEFAULT_ORGAAI_VOICE && existing.voice && existing.voice !== DEFAULT_ORGAAI_VOICE) {
+        merged.voice = existing.voice;
+      }
+      if (config.model === DEFAULT_MODEL && existing.model && existing.model !== DEFAULT_MODEL) {
+        merged.model = existing.model;
+      }
+      if (config.temperature === DEFAULT_TEMPERATURE && existing.temperature != null && existing.temperature !== DEFAULT_TEMPERATURE) {
+        merged.temperature = existing.temperature;
+      }
+    }
+
     // Store in global state
     globalThis.OrgaAI = {
-      config: defaultConfig,
+      config: merged,
       isInitialized: true,
     };
   }

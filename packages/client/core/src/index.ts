@@ -12,6 +12,13 @@
 // ============================================================================
 
 export { OrgaAI } from './client/OrgaAI';
+export {
+  ORGAAI_VOICES,
+  DEFAULT_ORGAAI_VOICE,
+  getVoiceDetails,
+  type OrgaAIVoice,
+  type OrgaAIVoiceEntry,
+} from './types/OrgaVoices';
 
 // ============================================================================
 // Types
@@ -20,7 +27,6 @@ export { OrgaAI } from './client/OrgaAI';
 export type {
   // Models & Voices
   OrgaAIModel,
-  OrgaAIVoice,
   Modality,
   
   // Configuration
@@ -51,7 +57,6 @@ export type {
 export {
   // Constants
   ORGAAI_MODELS,
-  ORGAAI_VOICES,
   ORGAAI_TEMPERATURE_RANGE,
   MODALITIES_ENUM,
   VIDEO_QUALITY_CONSTRAINTS,
