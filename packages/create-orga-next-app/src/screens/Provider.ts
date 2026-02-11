@@ -12,7 +12,7 @@ OrgaAI.init({
     }
     return response.json();
   },
-  voice: "fable",
+  voice: "Sofía",
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {

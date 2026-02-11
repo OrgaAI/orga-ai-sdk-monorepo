@@ -192,7 +192,7 @@ describe('useOrgaAI', () => {
     
     // Default config
     mockOrgaAI.getConfig.mockReturnValue({
-      voice: 'Victoria',
+      voice: 'Sofía',
       model: 'orga-1-beta',
       temperature: 0.5,
       enableTranscriptions: true,
@@ -422,7 +422,7 @@ describe('useOrgaAI', () => {
         await result.current.startSession();
         result.current.updateParams({
           model: 'orga-1-beta',
-          voice: 'Victoria',
+          voice: 'Sofía',
           temperature: 0.7,
           instructions: 'New instructions',
           modalities: ['audio', 'video'],
@@ -430,7 +430,7 @@ describe('useOrgaAI', () => {
       });
 
       expect(result.current.model).toBe('orga-1-beta');
-      expect(result.current.voice).toBe('Victoria');
+      expect(result.current.voice).toBe('Sofía');
       expect(result.current.temperature).toBe(0.7);
       expect(result.current.instructions).toBe('New instructions');
       expect(result.current.modalities).toEqual(['audio', 'video']);

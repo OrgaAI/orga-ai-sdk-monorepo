@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { stdout } from "process";
 
 export class Spinner {
-  private interval: NodeJS.Timeout | null = null;
+  private interval: ReturnType<typeof setInterval> | null = null;
   private frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   private frameIndex = 0;
   private message: string;

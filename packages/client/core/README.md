@@ -29,7 +29,7 @@ const config: OrgaAIConfig = {
   sessionConfigEndpoint: 'https://your-api.com/session',
   logLevel: 'info',
   model: 'orga-1-beta',
-  voice: 'Victoria',
+  voice: 'Sofía',
   temperature: 0.7,
   enableTranscriptions: true,
 };

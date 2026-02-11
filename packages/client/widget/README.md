@@ -85,7 +85,7 @@ After the CDN script loads, a global `OrgaWidget` object is available on `window
     sessionConfigEndpoint: "https://your-backend.example.com/api/orga-session",
 
     // Optional: override default voice and logging
-    voice: "fable",
+    voice: "Sofía",
     logLevel: "info",
 
     // Optional: layout & UI configuration (see full table below)
@@ -272,7 +272,7 @@ export type WidgetInitOptions = {
 | `target`                | `HTMLElement \| string`                             | No       | First `[data-orga-widget]` | DOM element or CSS selector where the widget shell is mounted. |
 | `fetchSessionConfig`    | `() => Promise<SessionConfigResponse>`             | **Yes**  | –                       | Async function that calls your backend and returns `{ ephemeralToken, iceServers }`. |
 | `sessionConfigEndpoint` | `string`                                           | No       | `undefined`             | Human‑readable endpoint label for logging and error messages. |
-| `voice`                 | `OrgaAIVoice`                                      | No       | `"fable"`               | Default voice/model to use for the session. |
+| `voice`                 | `OrgaAIVoice`                                      | No       | `"Sofía"`               | Default voice/model to use for the session. |
 | `logLevel`              | `"disabled" \| "error" \| "warn" \| "info" \| "debug"` | No  | `"info"`                | Controls internal logging verbosity. |
 | `theme`                 | `WidgetThemeName`                                 | No       | `"floating-badge"`      | Layout preset for the widget shell. |
 | `transcript`            | `TranscriptMode`                                  | No       | `"panel"`               | Whether to show the transcript panel. |
