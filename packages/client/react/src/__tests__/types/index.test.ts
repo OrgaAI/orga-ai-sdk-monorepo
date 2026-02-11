@@ -21,8 +21,9 @@ describe('Types - Business Logic Validation', () => {
 
   describe('Data Consistency Validation', () => {
     it('should not have duplicate voices', () => {
-      const uniqueVoices = [...new Set(ORGAAI_VOICES)];
-      expect(uniqueVoices).toHaveLength(ORGAAI_VOICES.length);
+      const names = ORGAAI_VOICES.map((v) => v.name);
+      const uniqueNames = [...new Set(names)];
+      expect(uniqueNames).toHaveLength(ORGAAI_VOICES.length);
     });
 
     it('should not have duplicate models', () => {

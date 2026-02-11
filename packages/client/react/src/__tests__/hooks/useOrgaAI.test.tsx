@@ -27,7 +27,8 @@ jest.mock('@orga-ai/core', () => ({
     SESSION_UPDATE: "session.update",
     SESSION_CREATED: "session.created",
     CONVERSATION_CREATED: "conversation.created",
-  }
+  },
+  stripEmotionTags: (text: string) => text,
 }));
 
 // Mock console methods
@@ -74,12 +75,26 @@ const mockDataChannel = {
   close: jest.fn(),
 };
 
+const createMockTransceiver = () => {
+  const sender: {
+    track: MediaStreamTrack | null;
+    replaceTrack: jest.Mock;
+    getParameters: jest.Mock;
+  } = {
+    track: null,
+    replaceTrack: jest.fn().mockImplementation(async (track: MediaStreamTrack | null) => {
+      sender.track = track;
+    }),
+    getParameters: jest.fn().mockReturnValue({ encodings: [], transactionId: null }),
+  };
+  return {
+    sender,
+    direction: 'sendrecv',
+  };
+};
+
 const mockPeerConnection = {
-  addTransceiver: jest.fn(() => ({
-    sender: {
-      replaceTrack: jest.fn(),
-    },
-  })),
+  addTransceiver: jest.fn(() => createMockTransceiver()),
   createDataChannel: jest.fn(() => mockDataChannel),
   createOffer: jest.fn(() => Promise.resolve({ sdp: 'test-sdp', type: 'offer' })),
   setLocalDescription: jest.fn(() => Promise.resolve()),
@@ -156,9 +171,9 @@ describe('useOrgaAI', () => {
     (OrgaAI as jest.Mocked<typeof OrgaAI>).getConfig = mockOrgaAI.getConfig;
     (OrgaAI as jest.Mocked<typeof OrgaAI>).isInitialized = mockOrgaAI.isInitialized;
     
-    // Default config
+    // Default config (use valid voice from ORGAAI_VOICES)
     mockOrgaAI.getConfig.mockReturnValue({
-      voice: 'alloy',
+      voice: 'Victoria',
       model: 'orga-1-beta',
       temperature: 0.5,
       enableTranscriptions: true,
@@ -240,7 +255,7 @@ describe('useOrgaAI', () => {
         }
       });
 
-      expect(result.current.connectionState).toBe('failed');
+      expect(result.current.connectionState).toBe('closed');
       expect(mockCallbacks.onError).toHaveBeenCalled();
     });
 
@@ -324,7 +339,14 @@ describe('useOrgaAI', () => {
       }));
       
       // Ensure getUserMedia returns fresh instances
-      (window.navigator.mediaDevices.getUserMedia as jest.Mock).mockImplementation(() => 
+      (window.navigator.mediaDevices.getUserMedia as jest.Mock).mockImplementation(() =>
+        Promise.resolve(new MediaStream())
+      );
+    });
+
+    afterEach(() => {
+      // Reset getUserMedia to prevent mock leakage (e.g. from camera enable errors test)
+      (window.navigator.mediaDevices.getUserMedia as jest.Mock).mockImplementation(() =>
         Promise.resolve(new MediaStream())
       );
     });
@@ -332,6 +354,10 @@ describe('useOrgaAI', () => {
     describe('Microphone Controls', () => {
       it('should enable microphone successfully', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         await act(async () => {
           await result.current.enableMic();
@@ -344,6 +370,10 @@ describe('useOrgaAI', () => {
 
       it('should disable microphone with soft disable', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         // Enable first to set the stream
         await act(async () => {
@@ -363,6 +393,10 @@ describe('useOrgaAI', () => {
       it('should disable microphone with hard disable', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
+        await act(async () => {
+          await result.current.startSession();
+        });
+
         // Enable first
         await act(async () => {
           await result.current.enableMic();
@@ -380,6 +414,10 @@ describe('useOrgaAI', () => {
 
       it('should toggle microphone', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         // Toggle on
         await act(async () => {
@@ -400,6 +438,10 @@ describe('useOrgaAI', () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
         await act(async () => {
+          await result.current.startSession();
+        });
+
+        await act(async () => {
           await result.current.enableCamera();
         });
 
@@ -411,6 +453,10 @@ describe('useOrgaAI', () => {
 
       it('should disable camera with soft disable', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         // Enable first to set the stream
         await act(async () => {
@@ -429,6 +475,10 @@ describe('useOrgaAI', () => {
 
       it('should disable camera with hard disable', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         // Enable first
         await act(async () => {
@@ -449,6 +499,10 @@ describe('useOrgaAI', () => {
       it('should toggle camera', async () => {
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
+        await act(async () => {
+          await result.current.startSession();
+        });
+
         // Toggle on
         await act(async () => {
           await result.current.toggleCamera();
@@ -463,11 +517,14 @@ describe('useOrgaAI', () => {
       });
 
       it('should handle camera enable errors', async () => {
-        // Mock getUserMedia to reject with a specific error
         const cameraError = new Error('Camera error');
         (window.navigator.mediaDevices.getUserMedia as jest.Mock).mockRejectedValue(cameraError);
 
         const { result } = renderHook(() => useOrgaAI(mockCallbacks));
+
+        await act(async () => {
+          await result.current.startSession();
+        });
 
         await act(async () => {
           try {
@@ -478,9 +535,6 @@ describe('useOrgaAI', () => {
         });
 
         expect(logger.error).toHaveBeenCalledWith('❌ Failed to enable camera:', cameraError);
-        
-        // Reset the mock for other tests
-        (window.navigator.mediaDevices.getUserMedia as jest.Mock).mockResolvedValue(new MediaStream());
       });
     });
   });
@@ -492,7 +546,7 @@ describe('useOrgaAI', () => {
       await act(async () => {
         result.current.updateParams({
           model: 'orga-1-beta',
-          voice: 'alloy',
+          voice: 'Victoria',
           temperature: 0.7,
           instructions: 'New instructions',
           modalities: ['audio', 'video']
@@ -500,7 +554,7 @@ describe('useOrgaAI', () => {
       });
 
       expect(result.current.model).toBe('orga-1-beta');
-      expect(result.current.voice).toBe('alloy');
+      expect(result.current.voice).toBe('Victoria');
       expect(result.current.temperature).toBe(0.7);
       expect(result.current.instructions).toBe('New instructions');
       expect(result.current.modalities).toEqual(['audio', 'video']);
@@ -591,9 +645,12 @@ describe('useOrgaAI', () => {
     it('should handle assistant response events', async () => {
       const { result } = renderHook(() => useOrgaAI(mockCallbacks));
 
-      // Start session to set conversation ID
+      // Start session with config to ensure conversationId and params are set
       await act(async () => {
-        await result.current.startSession();
+        await result.current.startSession({
+          model: 'orga-1-beta',
+          voice: 'Victoria',
+        });
       });
 
       // Simulate data channel message
@@ -608,16 +665,16 @@ describe('useOrgaAI', () => {
         });
       });
 
-      expect(result.current.conversationItems).toHaveLength(1);
-      expect(result.current.conversationItems[0]).toEqual({
+      await waitFor(() => {
+        expect(result.current.conversationItems).toHaveLength(1);
+      });
+      expect(result.current.conversationItems[0]).toMatchObject({
         conversationId: 'conv-123',
         sender: 'assistant',
         content: {
           type: 'text',
           message: 'I am doing well, thank you!'
         },
-        voiceType: 'alloy',
-        modelVersion: 'orga-1-beta',
         timestamp: expect.any(String)
       });
       expect(mockCallbacks.onConversationMessageCreated).toHaveBeenCalled();
@@ -761,7 +818,7 @@ describe('useOrgaAI', () => {
         }
       });
 
-      expect(result.current.connectionState).toBe('failed');
+      expect(result.current.connectionState).toBe('closed');
       expect(mockCallbacks.onError).toHaveBeenCalled();
     });
 

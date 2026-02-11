@@ -38,7 +38,11 @@ jest.mock('@orga-ai/core', () => ({
   },
   ORGAAI_TEMPERATURE_RANGE: { min: 0, max: 1 },
   ORGAAI_MODELS: ['orga-1-beta'],
-  ORGAAI_VOICES: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
+  ORGAAI_VOICES: [
+    { name: 'Victoria', description: 'Reassuring Agent', gender: 'feminine', language: 'English' },
+    { name: 'Juan', description: 'Formal Speaker', gender: 'masculine', language: 'Español' },
+  ],
+  DEFAULT_ORGAAI_VOICE: 'Victoria',
 }));
 // Mock console methods
 const mockConsole = {
@@ -69,7 +73,7 @@ const TestComponent = () => {
       </TouchableOpacity>
       <TouchableOpacity
         testID="set-voice"
-        onPress={() => context.setVoice("alloy")}
+        onPress={() => context.setVoice("Victoria")}
       >
         <Text>Set Voice</Text>
       </TouchableOpacity>
@@ -115,14 +119,14 @@ describe("OrgaAIProvider", () => {
       );
 
       expect(screen.getByTestId("model")).toHaveTextContent("orga-1-beta");
-      expect(screen.getByTestId("voice")).toHaveTextContent("alloy");
+      expect(screen.getByTestId("voice")).toHaveTextContent("Victoria");
       expect(screen.getByTestId("temperature")).toHaveTextContent("0.5");
     });
 
     it("should initialize with config values when available", () => {
       mockOrgaAI.getConfig.mockReturnValue({
         model: "orga-1-beta" as OrgaAIModel,
-        voice: "echo" as OrgaAIVoice,
+        voice: "Juan" as OrgaAIVoice,
         temperature: 0.8,
       });
 
@@ -133,7 +137,7 @@ describe("OrgaAIProvider", () => {
       );
 
       expect(screen.getByTestId("model")).toHaveTextContent("orga-1-beta");
-      expect(screen.getByTestId("voice")).toHaveTextContent("echo");
+      expect(screen.getByTestId("voice")).toHaveTextContent("Juan");
       expect(screen.getByTestId("temperature")).toHaveTextContent("0.8");
     });
 
@@ -150,7 +154,7 @@ describe("OrgaAIProvider", () => {
       );
 
       expect(screen.getByTestId("model")).toHaveTextContent("orga-1-beta");
-      expect(screen.getByTestId("voice")).toHaveTextContent("alloy"); // default
+      expect(screen.getByTestId("voice")).toHaveTextContent("Victoria"); // default
       expect(screen.getByTestId("temperature")).toHaveTextContent("0.5"); // default
     });
   });
@@ -194,11 +198,11 @@ describe("OrgaAIProvider", () => {
 
       expect(mockOrgaAI.init).toHaveBeenCalledWith(
         expect.objectContaining({
-          voice: "alloy",
+          voice: "Victoria",
         })
       );
       expect(logger.debug).toHaveBeenCalledWith(
-        "[Voice] Setting voice to alloy"
+        "[Voice] Setting voice to Victoria"
       );
     });
 

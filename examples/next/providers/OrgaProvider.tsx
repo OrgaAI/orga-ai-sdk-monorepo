@@ -7,7 +7,6 @@ OrgaAI.init({
   logLevel: "disabled",
   enableTranscriptions: true,
   fetchSessionConfig: fetchSessionConfig,
-  voice: "fable",
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
