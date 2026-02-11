@@ -12,6 +12,12 @@ export interface OrgaAIVoiceEntry {
 
 export const ORGAAI_VOICES = [
   {
+    name: "Sofía",
+    description: "Soft Calm Spanish Woman",
+    gender: "feminine",
+    language: "Español",
+  },
+  {
     name: "Victoria",
     description: "Reassuring Agent",
     gender: "feminine",
@@ -276,12 +282,6 @@ export const ORGAAI_VOICES = [
     language: "Français",
   },
   {
-    name: "Sofía",
-    description: "Soft Calm Spanish Woman",
-    gender: "feminine",
-    language: "Español",
-  },
-  {
     name: "Teresa",
     description: "Doting Mother",
     gender: "feminine",
@@ -377,7 +377,7 @@ export const ORGAAI_VOICES = [
  */
 export type OrgaAIVoice = (typeof ORGAAI_VOICES)[number]["name"];
 
-/** Default voice used when none is set (Victoria). */
+/** Default voice used when none is set (Sofía). */
 export const DEFAULT_ORGAAI_VOICE: OrgaAIVoice = ORGAAI_VOICES[0].name;
 
 /**
