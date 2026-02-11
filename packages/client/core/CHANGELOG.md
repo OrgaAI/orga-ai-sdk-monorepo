@@ -1,5 +1,11 @@
 # @orga-ai/core
 
+## 1.1.0
+
+### Minor Changes
+
+- 271f9c2: New voices
+
 ## 1.0.4
 
 ### Patch Changes
