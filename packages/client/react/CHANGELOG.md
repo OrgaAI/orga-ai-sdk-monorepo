@@ -1,5 +1,16 @@
 # @orga-ai/react
 
+## 1.1.0
+
+### Minor Changes
+
+- 271f9c2: New voices
+
+### Patch Changes
+
+- Updated dependencies [271f9c2]
+  - @orga-ai/core@1.1.0
+
 ## 1.0.9
 
 ### Patch Changes

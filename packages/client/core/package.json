@@ -1,7 +1,7 @@
 {
   "name": "@orga-ai/core",
   "private": false,
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Framework-agnostic core for Orga AI SDK - real-time multimodal AI",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
