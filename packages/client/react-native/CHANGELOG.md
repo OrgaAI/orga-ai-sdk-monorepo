@@ -1,5 +1,19 @@
 # @orga-ai/react-native
 
+## 1.1.2
+
+### Patch Changes
+
+- e860df6: Fix param updates
+
+## 1.1.1
+
+### Patch Changes
+
+- 6427447: Change default voice and update tests.
+- Updated dependencies [6427447]
+  - @orga-ai/core@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes

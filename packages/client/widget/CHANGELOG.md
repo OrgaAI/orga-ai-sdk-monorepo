@@ -1,5 +1,21 @@
 # @orga-ai/widget
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [e860df6]
+  - @orga-ai/react@1.1.2
+
+## 0.1.1
+
+### Patch Changes
+
+- 6427447: Change default voice and update tests.
+- Updated dependencies [6427447]
+  - @orga-ai/react@1.1.1
+  - @orga-ai/core@1.1.1
+
 ## 0.1.0
 
 ### Minor Changes
