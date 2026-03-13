@@ -79,33 +79,51 @@ export function useOrgaAI(
   // Use a ref to store current callbacks so they can be updated
   const callbacksRef = useRef(callbacks);
 
-  // Function to send updated parameters to the session
-  const sendUpdatedParams = useCallback(() => {
-    const dataChannel = dataChannelRef.current;
-    if (!dataChannel || dataChannel.readyState !== "open") {
-      logger.warn("Cannot send updated params: data channel not open");
-      return;
-    }
+  // Function to send updated parameters to the session.
+  // Accepts an optional merged payload so we send the new values immediately
+  // (avoids stale closure when called from updateParams right after setState).
+  const sendUpdatedParams = useCallback(
+    (merged?: {
+      model?: OrgaAIModel | null;
+      voice?: OrgaAIVoice | null;
+      temperature?: number | null;
+      instructions?: string | null;
+      modalities?: Modality[];
+    }) => {
+      const dataChannel = dataChannelRef.current;
+      if (!dataChannel || dataChannel.readyState !== "open") {
+        logger.warn("Cannot send updated params: data channel not open");
+        return;
+      }
 
-    const payload = {
-      event: DataChannelEventTypes.SESSION_UPDATE,
-      data: {
-        ...(model && { model: model }),
-        ...(voice && { voice: voice }),
-        ...(temperature !== null && { temperature: temperature }),
-        ...(instructions && { instructions: instructions }),
-        modalities: modalities,
-      },
-    };
+      const m = merged ?? {
+        model,
+        voice,
+        temperature,
+        instructions,
+        modalities,
+      };
+      const payload = {
+        event: DataChannelEventTypes.SESSION_UPDATE,
+        data: {
+          ...(m.model && { model: m.model }),
+          ...(m.voice && { voice: m.voice }),
+          ...(m.temperature !== null && m.temperature !== undefined && { temperature: m.temperature }),
+          ...(m.instructions && { instructions: m.instructions }),
+          modalities: m.modalities ?? modalities,
+        },
+      };
 
-    logger.debug("📤 Sending updated parameters via data channel:", payload);
-    logger.info("⚙️ Sending updated parameters:", {
-      model,
-      voice,
-      temperature,
-    });
-    dataChannel.send(JSON.stringify(payload));
-  }, [model, voice, temperature, instructions, modalities]);
+      logger.debug("📤 Sending updated parameters via data channel:", payload);
+      logger.info("⚙️ Sending updated parameters:", {
+        model: m.model,
+        voice: m.voice,
+        temperature: m.temperature,
+      });
+      dataChannel.send(JSON.stringify(payload));
+    },
+    [model, voice, temperature, instructions, modalities]
+  );
 
   // Parameter update function
   const updateParams = useCallback(
@@ -127,10 +145,17 @@ export function useOrgaAI(
       }
 
       if (connectionState === "connected") {
-        sendUpdatedParams();
+        // Pass merged params so we send the new values immediately (state not flushed yet)
+        sendUpdatedParams({
+          model: params.model !== undefined ? params.model : model,
+          voice: params.voice !== undefined ? params.voice : voice,
+          temperature: params.temperature !== undefined ? params.temperature : temperature,
+          instructions: params.instructions !== undefined ? params.instructions : instructions,
+          modalities: params.modalities !== undefined ? params.modalities : modalities,
+        });
       }
     },
-    [connectionState, sendUpdatedParams]
+    [connectionState, sendUpdatedParams, model, voice, temperature, instructions, modalities]
   );
 
   // Initialize parameters from config when session starts
