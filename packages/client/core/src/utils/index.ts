@@ -188,6 +188,7 @@ export const connectToRealtime = async ({
     modalities,
     history,
     baseUrl = 'https://api.orga-ai.com',
+    mcpServer = null,
   } = config;
 
   const realtimeUrl = `${baseUrl}/v1/realtime/calls`;
@@ -202,6 +203,7 @@ export const connectToRealtime = async ({
   logger.debug(`[OrgaAI] Instructions: ${instructions}`);
   logger.debug(`[OrgaAI] Modalities: ${modalities}`);
   logger.debug(`[OrgaAI] History: ${history}`);
+  logger.debug(`[OrgaAI] MCP Server: ${mcpServer}`);
 
   const requestBody = {
     offer: {
@@ -217,6 +219,7 @@ export const connectToRealtime = async ({
       instructions: instructions || null,
       modalities: modalities || ['audio', 'video'],
       history: history ?? true,
+      ...(mcpServer ? { mcp_server: mcpServer } : {}),
     },
   };
 

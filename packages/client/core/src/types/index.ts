@@ -74,6 +74,11 @@ export interface OrgaAIConfig {
   modalities?: Modality[];
   history?: boolean;
   baseUrl?: string;
+  mcpServer?: {
+    id: string;
+    url: string;
+    alias: string;
+  } | null;
 }
 
 export interface SessionConfig {
@@ -193,6 +198,7 @@ export interface RealtimeConnectionRequest {
     instructions: string | null;
     modalities: Modality[];
     history: boolean;
+    mcp_server?: { id: string; url: string; alias: string } | null;
   };
 }
 

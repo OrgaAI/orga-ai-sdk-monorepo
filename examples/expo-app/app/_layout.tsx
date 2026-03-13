@@ -17,7 +17,13 @@ OrgaAI.init({
   enableTranscriptions: true,
   model: "orga-1-beta",
   instructions: "You are a helpful assistant that can answer questions and help with tasks.",
-  modalities: ["audio"]
+  modalities: ["audio"],
+  baseUrl: "https://dev.orga-ai.com",
+  mcpServer: {
+    id: "orga-mobile-mcp-server",
+    alias: "Mobile MCP Server",
+    url: "https://80dc-84-126-42-0.ngrok-free.app/mcp"
+  }
 });
 
 function HeaderRight() {

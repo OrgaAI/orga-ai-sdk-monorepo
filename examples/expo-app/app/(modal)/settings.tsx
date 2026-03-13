@@ -1,7 +1,6 @@
 import {
   ORGAAI_MODELS,
   ORGAAI_VOICES,
-  ORGAAI_TEMPERATURE_RANGE,
   useOrgaAI,
 } from "@orga-ai/react-native";
 import React, { useEffect, useState } from "react";
@@ -12,7 +11,6 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -22,7 +20,6 @@ const settings = () => {
     updateParams,
     model,
     voice,
-    instructions,
     connectionState,
   } = useOrgaAI();
   
@@ -32,7 +29,7 @@ const settings = () => {
   const [instructionsValue, setInstructionsValue] = useState("");
   const [instructionsUpdated, setInstructionsUpdated] = useState(false);
 
-  const voices = Object.values(ORGAAI_VOICES);
+  const voices = Object.values(ORGAAI_VOICES).map((voice) => voice.name);
   const models = Object.values(ORGAAI_MODELS);
   const isConnected = connectionState === "connected";
 
@@ -67,32 +64,14 @@ const settings = () => {
 
   const handleModelChange = (model: string) => {
     if (isConnected) {
-      Alert.alert(
-        "Model Change",
-        "Changing the model will affect the current session. Continue?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Continue", onPress: () => updateParams({ model: model as any }) },
-        ]
-      );
+      updateParams({ model: model as any })
     } else {
       updateParams({ model: model as any });
     }
   };
 
   const handleVoiceChange = (voice: string) => {
-    if (isConnected) {
-      Alert.alert(
-        "Voice Change",
-        "Changing the voice will affect the current session. Continue?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Continue", onPress: () => updateParams({ voice: voice as any }) },
-        ]
-      );
-    } else {
       updateParams({ voice: voice as any });
-    }
   };
 
   return (
