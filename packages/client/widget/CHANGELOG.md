@@ -1,5 +1,12 @@
 # @orga-ai/widget
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [e860df6]
+  - @orga-ai/react@1.1.2
+
 ## 0.1.1
 
 ### Patch Changes

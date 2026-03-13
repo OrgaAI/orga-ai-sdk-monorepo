@@ -1,5 +1,11 @@
 # @orga-ai/react
 
+## 1.1.2
+
+### Patch Changes
+
+- e860df6: Fix param updates
+
 ## 1.1.1
 
 ### Patch Changes
